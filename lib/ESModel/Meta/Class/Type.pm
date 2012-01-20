@@ -7,7 +7,6 @@ use ESModel::Types qw(DynamicTemplates DynamicMapping);
 use Carp;
 
 has 'type_name' => ( isa => 'Str', is => 'ro', writer => '_set_type_name' );
-
 has 'type_settings' =>
     ( isa => 'HashRef', is => 'rw', default => sub { {} } );
 
@@ -63,7 +62,7 @@ sub mapping {
     my $self            = shift;
     my $properties_only = $_[0];
 
-    my %properties;
+    my %properties = ( __CLASS__ => { type => 'string', index => 'no' } );
     for my $attr ( $self->get_all_attributes ) {
         next if $attr->exclude;
         my $attr_mapping = build_mapping($attr) or next;

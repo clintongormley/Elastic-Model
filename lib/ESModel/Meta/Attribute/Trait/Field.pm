@@ -1,6 +1,7 @@
 package ESModel::Meta::Attribute::Trait::Field;
 
 use Moose::Role;
+use ESModel::Type::Deflator qw(find_deflator find_inflator);
 use ESModel::Types qw(
     FieldType IndexMapping TermVectorMapping MultiFields
     StoreMapping DynamicMapping PathMapping
@@ -48,5 +49,15 @@ has '_properties' => ( isa => 'HashRef[Str]', is => 'ro' );
 # nested
 has 'include_in_parent' => ( isa => 'Bool', is => 'ro' );
 has 'include_in_root'   => ( isa => 'Bool', is => 'ro' );
+
+# Disable raw get/set
+has 'safe_access' => ( isa => 'Bool',           is => 'ro', default    => 0 );
+has 'deflator'    => ( isa => 'Maybe[CodeRef]', is => 'ro', lazy_build => 1 );
+has 'inflator'    => ( isa => 'Maybe[CodeRef]', is => 'ro', lazy_build => 1 );
+
+#===================================
+sub _build_deflator { find_deflator(@_) }
+sub _build_inflator { find_inflator(@_) }
+#===================================
 
 1;

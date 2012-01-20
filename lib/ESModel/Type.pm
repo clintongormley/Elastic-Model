@@ -13,7 +13,6 @@ Moose::Exporter->setup_import_methods(
             disable_indexing
             disable_numeric_detection
             disable_source_compression
-            disable_source
             dynamic_date_formats
             dynamic
             dynamic_templates
@@ -53,7 +52,6 @@ sub disable_date_detection     { shift->date_detection(0) }
 sub disable_indexing           { shift->disable_indexing(1) }
 sub disable_numeric_detection  { shift->numeric_detection(0) }
 sub disable_source_compression { shift->disable_source_compression(1) }
-sub disable_source             { shift->disable_source(1) }
 sub dynamic_date_formats       { shift->dynamic_date_formats(@_) }
 sub dynamic                    { shift->dynamic(@_) }
 sub dynamic_templates          { shift->dynamic_templates(@_) }
