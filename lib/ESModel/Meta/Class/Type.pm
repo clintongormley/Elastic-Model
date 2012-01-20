@@ -18,14 +18,13 @@ has 'dynamic_date_formats' => ( isa => 'ArrayRef[Str]', is => 'rw' );
 
 has 'dynamic' => ( isa => DynamicMapping, is => 'rw', default => 'strict' );
 
-has 'date_detection'       => ( isa => 'Bool',          is => 'rw', default=>1 );
+has 'date_detection'    => ( isa => 'Bool', is => 'rw', default => 1 );
 has 'numeric_detection' => ( isa => 'Bool', is => 'rw', default => 1 );
 has 'include_in_all'    => ( isa => 'Bool', is => 'rw', default => 1 );
 
 has 'dynamic_templates' => ( isa => DynamicTemplates, is => 'rw' );
 
 has 'index_id'                   => ( isa => 'Bool', is => 'rw' );
-has 'disable_source'             => ( isa => 'Bool', is => 'rw' );
 has 'disable_source_compression' => ( isa => 'Bool', is => 'rw' );
 has 'disable_all'                => ( isa => 'Bool', is => 'rw' );
 has 'routing_required'           => ( isa => 'Bool', is => 'rw' );
@@ -98,17 +97,12 @@ sub _type_settings {
     $mapping{_id}{index} = 'not_analyzed' if $self->index_id;
     $mapping{enabled} = 0 if $self->disable_indexing;
 
-    if ( $self->disable_source ) {
-        $mapping{_source}{enabled} = 0;
-    }
-    else {
-        $mapping{_source}{compress} = 1
-            unless $self->disable_source_compression;
-        $mapping{_source}{includes} = $self->source_includes
-            if defined $self->source_includes;
-        $mapping{_source}{excludes} = $self->source_excludes
-            if defined $self->source_excludes;
-    }
+    $mapping{_source}{compress} = 1
+        unless $self->disable_source_compression;
+    $mapping{_source}{includes} = $self->source_includes
+        if defined $self->source_includes;
+    $mapping{_source}{excludes} = $self->source_excludes
+        if defined $self->source_excludes;
 
     $mapping{_all}{enabled}      = 0 if $self->disable_all;
     $mapping{_routing}{required} = 1 if $self->routing_required;
@@ -127,12 +121,11 @@ sub _type_settings {
             $mapping{_ttl}{enabled} = 1;
             $mapping{_ttl}{default} = $self->ttl if $self->ttl;
         }
-
     }
 
     $mapping{_analyzer}{path} = $self->analyzer_path if $self->analyzer_path;
     $mapping{_boost}{path}    = $self->boost_path    if $self->boost_path;
-    $mapping{_id}{path}    = $self->id_path    if $self->id_path;
+    $mapping{_id}{path}       = $self->id_path       if $self->id_path;
     $mapping{_routing}{path}  = $self->routing_path  if $self->routing_path;
     $mapping{_parent}{type}   = $self->parent_type   if $self->parent_type;
 
