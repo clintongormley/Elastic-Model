@@ -9,8 +9,6 @@ use Data::Dump qw(pp);
 use List::MoreUtils qw(uniq);
 use Class::Load qw(load_class);
 
-sub via (&);
-
 Moose::Exporter->setup_import_methods(
     as_is => [ 'build_mapping', 'map_constraint', 'add_mapper' ], );
 
@@ -26,6 +24,7 @@ our %Mappers = (
     'ArrayRef'                                   => \&_type_param_mapping,
     'ScalarRef'                                  => \&_type_param_mapping,
     'HashRef'                                    => \&_hashref_mapping,
+    'Object'                                     => \&_object_mapping,
     'DateTime'                                   => \&_date_mapping,
     'Moose::Meta::TypeConstraint::Class'         => \&_class_mapping,
     'Moose::Meta::TypeConstraint::Enum'          => \&_keyword_mapping,
@@ -57,7 +56,6 @@ our %Allowed_Attrs = (
         'multi'                        => 1,
     },
     integer => {
-        'type'           => 1,
         'index_name'     => 1,
         'store'          => 1,
         'index'          => 1,
@@ -132,46 +130,53 @@ sub build_mapping {
     my $is_esmodel
         = does_role( $attr, 'ESModel::Meta::Attribute::Trait::Field' );
 
-    my ($type);
-    if ($is_esmodel) {
-        $type = $attr->type;
-        if ( my $mapping = $attr->mapping ) {
-            $mapping->{type} ||= $type;
-            croak "Attribute '"
-                . $attr->name
-                . "' has a 'mapping' but no 'type'"
-                unless $mapping->{type};
-            return $mapping;
+    my $return = eval {
+        my ($type);
+        if ($is_esmodel) {
+            $type = $attr->type;
+            if ( my $mapping = $attr->mapping ) {
+                $mapping->{type} ||= $type;
+                die "Attribute has a 'mapping' but no 'type'\n"
+                    unless $mapping->{type};
+                return $mapping;
+            }
         }
-    }
 
-    my %mapping = map_constraint( $attr->type_constraint );
-    $mapping{type} = $type if $type;
-    $type = $mapping{type}
-        or croak "Couldn't find a default mapping for attribute: "
-        . $attr->name;
+        my %mapping = map_constraint( $attr->type_constraint );
+        $mapping{type} = $type if $type;
+        $type = $mapping{type}
+            or die "Couldn't find a default mapping\n" . $attr->name;
 
-    return \%mapping
-        unless does_role( $attr, 'ESModel::Meta::Attribute::Trait::Field' );
+        return \%mapping
+            unless does_role( $attr,
+            'ESModel::Meta::Attribute::Trait::Field' );
 
-    my $allowed = $Allowed_Attrs{$type};
-    for my $key (@All_Keys) {
-        my $val = $attr->$key;
-        next unless defined $val;
-        croak "Attribute '"
-            . $attr->name
-            . "' has type '$type', which doesn't "
-            . "understand '$key'"
-            unless $allowed->{$key};
-        $mapping{$key} = $val;
-    }
+        my $allowed = $Allowed_Attrs{$type};
+        for my $key (@All_Keys) {
+            my $val = $attr->$key;
+            next unless defined $val;
+            die "Attribute has type '$type', which doesn't "
+                . "understand '$key'\n"
+                unless $allowed->{$key};
+            $mapping{$key} = $val;
+        }
 
-    delete $mapping{analyzer}
-        if $mapping{index_analyzer} && $mapping{search_analyzer};
+        delete $mapping{analyzer}
+            if $mapping{index_analyzer} && $mapping{search_analyzer};
 
-    return $mapping{multi}
-        ? _multi_field( $attr, \%mapping )
-        : \%mapping;
+        return $mapping{multi}
+            ? _multi_field( $attr, \%mapping )
+            : \%mapping;
+    };
+
+    croak "While building the mapping for attribute '"
+        . $attr->name
+        . "' in class "
+        . $attr->associated_class->name
+        . ", the following error occurred:\n$@"
+        if $@;
+
+    return $return;
 
 }
 
@@ -186,7 +191,7 @@ sub _multi_field {
     my %mapping
         = ( type => 'multi_field', fields => { $main_name => \%main } );
     for my $name ( keys %$multi ) {
-        croak "Multi-field name '$name' clashes with the attribute name\n"
+        die "Multi-field name '$name' clashes with the attribute name\n"
             if $name eq $main_name;
         my $defn = $multi->{$name};
         $defn->{type} ||= $type;
@@ -198,18 +203,16 @@ sub _multi_field {
 #===================================
 sub add_mapper {
 #===================================
-    my ($class,$sub) = @_;
+    my ( $class, $sub ) = @_;
     $Mappers{$class} = $sub;
 }
 
 #===================================
 sub map_constraint {
 #===================================
-    my $tc = shift || find_type_constraint('Str');
+    my $tc = shift or die "No type constraint provided\n";
 
-#    print STDERR "TC: " . pp( { name => $tc->name, ref => ref $tc } ) . "\n";
     my $name = $tc->name;
-
     if ( my $handler = $Mappers{$name} || $Mappers{ ref $tc } ) {
         return $handler->($tc);
     }
@@ -230,9 +233,16 @@ sub _binary_mapping   { type => 'binary' }
 #===================================
 
 #===================================
-sub _type_param_mapping { map_constraint shift->type_parameter }
-sub _decorated_mapping  { map_constraint shift->__type_constraint }
+sub _decorated_mapping { map_constraint shift->__type_constraint }
 #===================================
+
+#===================================
+sub _type_param_mapping {
+#===================================
+    my $tc = shift;
+    return unless $tc->can('type_parameter');
+    map_constraint $tc->type_parameter;
+}
 
 #===================================
 sub _parameterized_mapping {
@@ -240,11 +250,18 @@ sub _parameterized_mapping {
     my $tc     = shift;
     my $parent = $tc->parent;
 
-#    print STDERR 'PARAM: '. pp( { name => $parent->name, ref => ref $parent } ) . "\n";
     if ( my $handler = $Mappers{ $parent->name } ) {
         return $handler->($tc);
     }
     return map_constraint($parent);
+}
+
+#===================================
+sub _object_mapping {
+#===================================
+    type           => 'object',
+        dynamic    => 1,
+        properties => { __CLASS__ => { type => 'string', index => 'no' } };
 }
 
 #===================================
@@ -280,7 +297,7 @@ sub _class_mapping {
     my $class = $tc->name;
     load_class($class);
 
-    croak "$class is not a Moose class, and no mapper is available"
+    die "$class is not a Moose class, and no mapper is available\n"
         unless $class->isa('Moose::Object');
 
     my $meta = $class->meta;
@@ -291,7 +308,7 @@ sub _class_mapping {
         properties => $meta->mapping('only_properties'),
     ) if does_role( $class, 'ESModel::Role::Type' );
 
-    my %properties;
+    my %properties = ( __CLASS__ => { type => 'string', index => 'no' } );
     for my $attr ( $meta->get_all_attributes ) {
         my $attr_mapping = build_mapping($attr) or next;
         $properties{ $attr->name } = $attr_mapping;
