@@ -26,7 +26,9 @@ sub has_index {
     croak "No index name passed to has_index" unless @indices;
 
     $types ||= with_types($meta);
-    croak "No types could be found for index: " . join( ', ', @indices )
+    croak
+        "No modules which do ESModel::Role::Types could be found for index: "
+        . join( ', ', @indices )
         unless %$types;
 
     $meta->add_index( $_, { types => $types } ) for @indices;
