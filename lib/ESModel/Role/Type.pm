@@ -9,28 +9,13 @@ sub deflate {
     my ( $self, $seen ) = @_;
     $seen ||= {};
     my $meta = $self->meta;
-    my $mi   = Class::MOP::Class->initialize( ref($self) )->get_meta_instance;
-
-    my %hash = ( __CLASS__ => $meta->identifier );
+    my %hash = ( __CLASS__ => $self->meta->identifier );
     for my $attr ( $meta->get_all_attributes ) {
         next if $attr->exclude;
+        next unless $attr->has_value($self) || $attr->has_builder($self);
+        my $reader = $attr->get_read_method or next;
         my $name = $attr->name;
-        my $value;
-        if ( $attr->safe_access ) {
-            next unless $attr->is_initialized($self);
-            $value = $attr->get_value($self);
-        }
-        else {
-            next unless $mi->is_slot_initialized( $self, $name );
-            $value = $mi->get_slot_value( $self, $name );
-        }
-
-        if ( my $deflator = $attr->deflator ) {
-            $hash{$name} = $deflator->( $value, $seen );
-        }
-        else {
-            $hash{$name} = $value;
-        }
+        $hash{$name} = $attr->deflator->( $self->$reader, $seen );
     }
     return \%hash;
 }
@@ -39,28 +24,19 @@ sub deflate {
 sub inflate {
 #===================================
     my $class = shift;
-    my $vals  = shift;
-    $class = delete $vals->{__CLASS__};
+    my %vals  = %{ shift() };
+    $class = delete $vals{__CLASS__} || $class;
 
     my $meta = $class->meta;
-    my $mi   = Class::MOP::Class->initialize($class)->get_meta_instance;
-    my $self = $mi->create_instance;
-
-    for my $attr ( $meta->get_all_attributes ) {
-        my $name = $attr->name;
-        next unless exists $vals->{$name};
-        my $val = $vals->{$name};
-        if ( my $inflator = $attr->inflator ) {
-            $val = $inflator->($val);
-        }
-        if ( $attr->safe_access ) {
-            $self->$name($val);
-        }
-        else {
-            $mi->set_slot_value( $self, $name, $val );
+    for my $name ( keys %vals ) {
+        my $attr = $meta->get_attribute($name);
+        $vals{$name} = $attr->inflator->( $vals{$name} );
+        if ( my $init = $attr->init_arg ) {
+            $vals{$init} = delete $vals{$name};
         }
     }
-    return $self;
+
+    $class->new( \%vals );
 }
 
 1;

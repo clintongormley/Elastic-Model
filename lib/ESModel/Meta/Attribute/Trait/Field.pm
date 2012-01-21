@@ -6,6 +6,7 @@ use ESModel::Types qw(
     FieldType IndexMapping TermVectorMapping MultiFields
     StoreMapping DynamicMapping PathMapping
 );
+use Carp;
 
 use namespace::autoclean;
 
@@ -56,8 +57,36 @@ has 'deflator'    => ( isa => 'Maybe[CodeRef]', is => 'ro', lazy_build => 1 );
 has 'inflator'    => ( isa => 'Maybe[CodeRef]', is => 'ro', lazy_build => 1 );
 
 #===================================
-sub _build_deflator { find_deflator(@_) }
-sub _build_inflator { find_inflator(@_) }
+sub _build_deflator {
 #===================================
+    my $self = shift;
+    my $deflator = eval { find_deflator( $self->type_constraint ) }
+        or croak "No deflator found for attribute '"
+        . $self->name
+        . '" in class '
+        . $self->associated_class->name;
+    if ( $self->should_auto_deref ) {
+        my $old_deflator = $deflator;
+        if ( $self->type_constraint->is_a_type_of('ArrayRef') ) {
+            $deflator = sub { my $seen = pop; $old_deflator->( \@_, $seen ) }
+        }
+        else {
+            $deflator = sub { my $seen = pop; $old_deflator->( {@_}, $seen ) }
+        }
+    }
+    return $deflator;
+}
+
+#===================================
+sub _build_inflator {
+#===================================
+    my $self = shift;
+    my $inflator = eval { find_inflator( $self->type_constraint ) }
+        or croak "No inflator found for attribute '"
+        . $self->name
+        . '" in class '
+        . $self->associated_class->name;
+    return $inflator;
+}
 
 1;

@@ -130,7 +130,7 @@ sub _required_analyzers {
         my $mapping = shift or next;
         my @sub = (
             values %{ $mapping->{fields} || {} },
-            values @{ $mapping->{properties} || {} }
+            values %{ $mapping->{properties} || {} }
         );
 
         push @analyzers, _required_analyzers(@sub),
