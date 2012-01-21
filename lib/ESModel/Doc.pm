@@ -1,46 +1,32 @@
-package ESModel::Type;
+package ESModel::Doc;
 
 use Moose();
 use Moose::Exporter;
 
 Moose::Exporter->setup_import_methods(
     with_meta => [ qw(
-            analyzer_path
-            analyzer
-            boost_path
-            disable_all
-            disable_date_detection
-            disable_indexing
-            disable_numeric_detection
-            disable_source_compression
-            dynamic_date_formats
-            dynamic
-            dynamic_templates
-            enable_size
-            enable_timestamp
-            enable_ttl
-            id_path
-            include_in_all
-            index_analyzer
-            index_id
-            index_index
-            is_type
-            parent_type
-            routing_path
-            routing_required
-            search_analyzer
-            source_excludes
-            source_includes
-            timestamp_format
-            timestamp_path
-            ttl
-            type_settings             )
+            analyzer_path                  include_in_all
+            analyzer                       index_analyzer
+            boost_path                     index_id
+            disable_all                    index_index
+            disable_date_detection         is_type
+            disable_indexing               parent_type
+            disable_numeric_detection      routing_path
+            disable_source_compression     routing_required
+            dynamic_date_formats           search_analyzer
+            dynamic                        source_excludes
+            dynamic_templates              source_includes
+            enable_size                    timestamp_format
+            enable_timestamp               timestamp_path
+            enable_ttl                     ttl
+            id_path                        type_settings
+            )
     ],
     class_metaroles => {
-        class     => ['ESModel::Meta::Class::Type'],
+        class     => ['ESModel::Meta::Class::Doc'],
         attribute => ['ESModel::Meta::Attribute::Trait::Field'],
     },
-    base_class_roles => ['ESModel::Role::Type'],
+    base_class_roles => ['ESModel::Role::Doc'],
 );
 
 #===================================

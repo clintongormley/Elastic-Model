@@ -1,4 +1,4 @@
-package ESModel::Type::Deflator;
+package ESModel::Doc::Deflator;
 
 use Moose;
 use Moose::Exporter;
@@ -241,7 +241,7 @@ sub _deflate_class {
         die "Cannot deflate recursive structures" if $seen->{"$obj"}++;
         $obj->deflate($seen);
         }
-        if does_role( $class, 'ESModel::Role::Type' );
+        if does_role( $class, 'ESModel::Role::Doc' );
 
     sub {
         my ( $obj, $seen ) = @_;

@@ -1,4 +1,4 @@
-package ESModel::Type::Mapper;
+package ESModel::Doc::Mapper;
 
 use Moose;
 use Moose::Exporter;
@@ -306,7 +306,7 @@ sub _class_mapping {
         type       => 'object',
         dynamic    => $meta->dynamic,
         properties => $meta->mapping('only_properties'),
-    ) if does_role( $class, 'ESModel::Role::Type' );
+    ) if does_role( $class, 'ESModel::Role::Doc' );
 
     my %properties = ( __CLASS__ => { type => 'string', index => 'no' } );
     for my $attr ( $meta->get_all_attributes ) {

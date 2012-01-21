@@ -1,8 +1,8 @@
-package ESModel::Meta::Class::Type;
+package ESModel::Meta::Class::Doc;
 
 use Moose::Role;
 use namespace::autoclean;
-use ESModel::Type::Mapper qw(build_mapping);
+use ESModel::Doc::Mapper qw(build_mapping);
 use ESModel::Types qw(DynamicTemplates DynamicMapping);
 use Carp;
 

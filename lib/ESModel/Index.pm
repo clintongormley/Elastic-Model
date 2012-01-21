@@ -7,6 +7,7 @@ has 'model' => (
     does     => 'ESModel::Role::Model',
     is       => 'ro',
     required => 1,
+    weak_ref => 1,
 );
 
 has 'name' => (

@@ -1,4 +1,4 @@
-package ESModel::Role::Type;
+package ESModel::Role::Doc;
 
 use Moose::Role;
 use namespace::autoclean;

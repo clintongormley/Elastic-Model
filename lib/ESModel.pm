@@ -46,7 +46,7 @@ sub with_types {
 
     for my $class (@modules) {
         load_class $class;
-        next unless does_role( $class, 'ESModel::Role::Type' );
+        next unless does_role( $class, 'ESModel::Role::Doc' );
         my $name = $class->meta->type_name or next;
         if ( my $existing = $meta->type($name) ) {
             croak "type_name '$name' of class $class "

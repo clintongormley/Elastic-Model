@@ -1,7 +1,7 @@
 package ESModel::Meta::Attribute::Trait::Field;
 
 use Moose::Role;
-use ESModel::Type::Deflator qw(find_deflator find_inflator);
+use ESModel::Doc::Deflator qw(find_deflator find_inflator);
 use ESModel::Types qw(
     FieldType IndexMapping TermVectorMapping MultiFields
     StoreMapping DynamicMapping PathMapping
