@@ -36,7 +36,7 @@ sub index {
     my $index = $self->_get_index($name);
     unless ($index) {
 
-        my $opts = $self->meta->get_index($name)
+        my $opts = $self->meta->index($name)
             or croak "Unknow index name '$name'";
 
         $index = ESModel::Index->new(
@@ -45,7 +45,7 @@ sub index {
             %$opts
         );
 
-        $self->_cache_index($index);
+        $self->_cache_index($name => $index);
     }
     return $index;
 }

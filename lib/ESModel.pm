@@ -5,6 +5,7 @@ use Moose::Exporter();
 use Class::Load qw(is_class_loaded load_class);
 use Module::Find qw(findallmod);
 use Moose::Util qw(does_role);
+use ESModel::Index();
 use Carp;
 
 use namespace::autoclean;
@@ -47,7 +48,7 @@ sub with_types {
         load_class $class;
         next unless does_role( $class, 'ESModel::Role::Type' );
         my $name = $class->meta->type_name or next;
-        if ( my $existing = $meta->get_type($name) ) {
+        if ( my $existing = $meta->type($name) ) {
             croak "type_name '$name' of class $class "
                 . "clashes with class $existing"
                 unless $existing eq $class;
