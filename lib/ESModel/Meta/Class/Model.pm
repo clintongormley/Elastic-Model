@@ -7,7 +7,6 @@ use Data::Dump qw(pp);
 
 my %attr = (
     index       => 'indices',
-    type        => 'types',
     char_filter => 'char_filters',
     analyzer    => 'analyzers',
     filter      => 'filters',
