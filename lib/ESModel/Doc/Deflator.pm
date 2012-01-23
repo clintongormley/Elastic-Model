@@ -251,7 +251,8 @@ sub _deflate_class {
         my $deflated = $obj->deflate($seen);
         die "deflate() should return a HASH ref"
             unless reftype $deflated eq 'HASH';
-        $deflated->{__CLASS__} ||= ref $obj;
+
+        #        $deflated->{__CLASS__} ||= ref $obj;
         return $deflated;
     };
 }

@@ -309,7 +309,8 @@ sub _class_mapping {
         properties => $meta->mapping('only_properties'),
     ) if does_role( $class, 'ESModel::Role::Doc' );
 
-    my %properties = ( __CLASS__ => { type => 'string', index => 'no' } );
+#    my %properties = ( __CLASS__ => { type => 'string', index => 'no' } );
+    my %properties = ();
     for my $attr ( $meta->get_all_attributes ) {
         my $attr_mapping = build_mapping($attr) or next;
         $properties{ $attr->name } = $attr_mapping;
