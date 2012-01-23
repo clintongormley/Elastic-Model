@@ -4,6 +4,7 @@ use Moose::Role;
 use Carp;
 use ESModel::Types qw(ES);
 use ElasticSearch();
+use ESModel::DocSet();
 use namespace::autoclean;
 
 has 'es' => (
@@ -77,7 +78,16 @@ sub index {
         );
         $self->_cache_index( $name => $index );
     }
+
     return $index;
+}
+
+#===================================
+sub docset {
+#===================================
+    my $self = shift;
+    my %params = ref $_[0] ? %{ shift() } : @_;
+    ESModel::DocSet->new( %params, model => $self );
 }
 
 1;

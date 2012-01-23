@@ -24,7 +24,8 @@ while ( my ( $singular, $plural ) = each %attr ) {
             $singular            => 'get',
             "add_${singular}"    => 'set',
             "remove_${singular}" => 'delete',
-            "has_${singular}"    => 'exists'
+            "has_${singular}"    => 'exists',
+            "all_${plural}"      => 'keys',
         }
     );
 }
