@@ -10,14 +10,23 @@ use Carp;
 
 use namespace::autoclean;
 
-Moose::Exporter->setup_import_methods(
+my ( undef, undef, $init_meta ) = Moose::Exporter->build_import_methods(
+    install         => [qw(import unimport)],
     class_metaroles => { class => ['ESModel::Meta::Class::Model'] },
-    base_class_roles => ['ESModel::Role::Model'],
-    with_meta        => [
+    with_meta       => [
         'has_index', 'with_types', 'analyzer', 'tokenizer',
         'filter',    'char_filter'
     ],
 );
+
+#===================================
+sub init_meta {
+#===================================
+    my $class = shift;
+    my %p     = @_;
+    Moose::Util::ensure_all_roles( $p{for_class}, 'ESModel::Role::Model' );
+    $class->$init_meta(%p);
+}
 
 #===================================
 sub has_index {

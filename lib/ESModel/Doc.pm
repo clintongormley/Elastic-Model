@@ -3,7 +3,8 @@ package ESModel::Doc;
 use Moose();
 use Moose::Exporter;
 
-Moose::Exporter->setup_import_methods(
+my ( undef, undef, $init_meta ) = Moose::Exporter->build_import_methods(
+    install   => [qw(import unimport)],
     with_meta => [ qw(
             analyzer_path                  include_in_all
             analyzer                       index_analyzer
@@ -25,11 +26,17 @@ Moose::Exporter->setup_import_methods(
     class_metaroles => {
         class     => ['ESModel::Meta::Class::Doc'],
         attribute => ['ESModel::Meta::Attribute::Trait::Field'],
-    },
-    base_class_roles => ['ESModel::Role::Doc'],
+    }
 );
 
 #===================================
+sub init_meta {
+#===================================
+    my $class = shift;
+    my %p     = @_;
+    Moose::Util::ensure_all_roles( $p{for_class}, 'ESModel::Role::Doc' );
+    $class->$init_meta(%p);
+}
 sub analyzer_path              { shift->analyzer_path(@_) }
 sub analyzer                   { shift->analyzer(@_) }
 sub boost_path                 { shift->boost_path(@_) }
