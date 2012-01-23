@@ -1,5 +1,6 @@
 package ESModel::Index;
 
+use Carp;
 use Moose;
 use ESModel::Types qw(ES);
 
@@ -55,6 +56,18 @@ sub create {
         index    => $self->name,
         mappings => $mappings,
         settings => \%settings,
+    );
+    return $self;
+}
+
+#===================================
+sub alias_to {
+#===================================
+    my $self    = shift;
+    my @indices = ref $_[0] ? @{ shift() } : @_;
+    my $name    = $self->name;
+    $self->es->aliases( actions =>
+            [ map { +{ add => { alias => $name, index => $_ } } } @indices ]
     );
     return $self;
 }
