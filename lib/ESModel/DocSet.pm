@@ -61,7 +61,7 @@ sub get {
         fields => [ '_routing', '_parent', '_source' ],
         %params
     ) or return;
-
+    return $self->_instantiate_doc($result);
 }
 
 #===================================
