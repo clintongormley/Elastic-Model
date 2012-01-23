@@ -24,6 +24,10 @@ use MooseX::Types -declare => [ qw(
         Binary
         DynamicTemplate
         DynamicTemplates
+        IndexNames
+        TypeNames
+        Timestamp
+        ESDateTime
         )
 ];
 
@@ -152,5 +156,27 @@ subtype DynamicTemplate, as Dict [
 #===================================
 subtype DynamicTemplates, as Map [ Str => DynamicTemplate ];
 #===================================
+
+#===================================
+subtype IndexNames, as ArrayRef [Str],
+#===================================
+    where { @{$_} > 0 },    #
+    message {"At least one index name is required"};
+coerce IndexNames, from Str, via { [$_] };
+
+#===================================
+subtype TypeNames, as ArrayRef [Str];
+#===================================
+coerce TypeNames, from Str, via { [$_] };
+
+#===================================
+class_type ESDateTime, { class => 'DateTime' };
+#===================================
+
+#===================================
+subtype Timestamp, as Num;
+#===================================
+coerce Timestamp, from ESDateTime,
+    via { DateTime->from_epoch( epoch => $_ ) };
 
 1;

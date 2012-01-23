@@ -37,6 +37,7 @@ our %Mappers = (
     'MooseX::Types::Structured::Map'             => \&_hashref_mapping,
     'ESModel::Types::GeoPoint'                   => \&_geopoint_mapping,
     'ESModel::Types::Binary'                     => \&_binary_mapping,
+    'ESModel::Types::Timestamp'                  => \&_date_mapping,
 );
 
 our %Allowed_Attrs = (

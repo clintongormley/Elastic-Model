@@ -35,6 +35,7 @@ our %Deflators = (
     'MooseX::Types::Structured::Map'             => \&_deflate_hashref,
     'ESModel::Types::GeoPoint'                   => \&_deflate_no,
     'ESModel::Types::Binary'                     => \&_deflate_binary,
+    'ESModel::Types::Timestamp'                  => \&_deflate_timestamp,
 );
 
 our %Inflators = (
@@ -59,6 +60,7 @@ our %Inflators = (
     'MooseX::Types::Structured::Map'             => \&_inflate_hashref,
     'ESModel::Types::GeoPoint'                   => \&_inflate_no,
     'ESModel::Types::Binary'                     => \&_inflate_binary,
+    'ESModel::Types::Timestamp'                  => \&_inflate_timestamp,
 );
 
 our %Inline = (
@@ -399,6 +401,18 @@ sub _inflate_datetime {
         @args{ (qw(year month day hour minute second)) } = split /\D/, shift;
         DateTime->new(%args);
     };
+}
+
+#===================================
+sub _deflate_timestamp {
+#===================================
+    sub { int( $_[0] * 1000 + 0.0005 ) };
+}
+
+#===================================
+sub _inflate_timestamp {
+#===================================
+    sub { $_[0] / 1000 };
 }
 
 #===================================
