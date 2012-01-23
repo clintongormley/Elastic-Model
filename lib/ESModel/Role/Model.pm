@@ -58,25 +58,25 @@ sub _update_live_indices {
 #===================================
 sub index {
 #===================================
-    my $self = shift;
-    my $name = shift or croak "No index name passed to index()";
-
-    my $index = $self->_get_index($name);
+    my $self      = shift;
+    my $base_name = shift or croak "No index name passed to index()";
+    my $dest_name = @_ ? shift : $base_name;
+    my $index     = $self->_get_index($dest_name);
     unless ($index) {
-        my $opts = $self->meta->index($name);
+        my $opts = $self->meta->index($base_name);
         unless ($opts) {
-            my $live_index
-                = $self->_live_index($name)
-                || $self->_clear_live_indices && $self->_live_index($name)
-                || croak "Unknown index name '$name'";
+            my $live_index = $self->_live_index($base_name)
+                || $self->_clear_live_indices
+                && $self->_live_index($base_name)
+                || croak "Unknown index name '$base_name'";
             $opts = $self->meta->index($live_index);
         }
         $index = ESModel::Index->new(
-            name  => $name,
+            name  => $dest_name,
             model => $self,
             %$opts
         );
-        $self->_cache_index( $name => $index );
+        $self->_cache_index( $dest_name => $index );
     }
 
     return $index;
