@@ -7,8 +7,11 @@ use ESModel::Types qw(DynamicTemplates DynamicMapping);
 use Carp;
 
 has 'type_name' => ( isa => 'Str', is => 'ro', writer => '_set_type_name' );
-has 'type_settings' =>
-    ( isa => 'HashRef', is => 'rw', default => sub { {} } );
+has 'type_settings' => (
+    isa     => 'HashRef',
+    is      => 'rw',
+    default => sub { {} }
+);
 
 has 'analyzer'             => ( isa => 'Str',           is => 'rw' );
 has 'index_analyzer'       => ( isa => 'Str',           is => 'rw' );
@@ -31,30 +34,19 @@ has 'index_index'                => ( isa => 'Bool', is => 'rw' );
 has 'enable_size'                => ( isa => 'Bool', is => 'rw' );
 has 'disable_indexing'           => ( isa => 'Bool', is => 'rw' );
 
-has 'enable_timestamp' => ( isa => 'Bool', is => 'rw', lazy_build => 1 );
-has 'enable_ttl'       => ( isa => 'Bool', is => 'rw', lazy_build => 1 );
-
-has 'source_includes'  => ( isa => 'ArrayRef[Str]', is => 'rw' );
-has 'source_excludes'  => ( isa => 'ArrayRef[Str]', is => 'rw' );
-has 'analyzer_path'    => ( isa => 'Str',           is => 'rw' );
-has 'boost_path'       => ( isa => 'Str',           is => 'rw' );
-has 'id_path'          => ( isa => 'Str',           is => 'rw' );
-has 'parent_type'      => ( isa => 'Str',           is => 'rw' );
-has 'routing_path'     => ( isa => 'Str',           is => 'rw' );
-has 'timestamp_path'   => ( isa => 'Str',           is => 'rw' );
-has 'timestamp_format' => ( isa => 'Str',           is => 'rw' );
-has 'ttl'              => ( isa => 'Str',           is => 'rw' );
-
-#===================================
-sub _build_enable_timestamp {
-#===================================
-    my $self = shift;
-    return $self->ttl || $self->timestamp_path || $self->timestamp_format;
-}
-
-#===================================
-sub _build_enable_ttl { shift->ttl }
-#===================================
+has 'source_includes' => ( isa => 'ArrayRef[Str]', is => 'rw' );
+has 'source_excludes' => ( isa => 'ArrayRef[Str]', is => 'rw' );
+has 'analyzer_path'   => ( isa => 'Str',           is => 'rw' );
+has 'boost_path'      => ( isa => 'Str',           is => 'rw' );
+has 'id_path'         => ( isa => 'Str',           is => 'rw' );
+has 'parent_type'     => ( isa => 'Str',           is => 'rw' );
+has 'routing_path'    => ( isa => 'Str',           is => 'rw' );
+has 'ttl'             => ( isa => 'Str',           is => 'rw' );
+has 'timestamp_path'  => (
+    isa     => 'Maybe[Str]',
+    is      => 'rw',
+    default => 'timestamp'
+);
 
 #===================================
 sub mapping {
@@ -62,7 +54,8 @@ sub mapping {
     my $self            = shift;
     my $properties_only = $_[0];
 
-    my %properties = ( __CLASS__ => { type => 'string', index => 'no' } );
+   #    my %properties = ( __CLASS__ => { type => 'string', index => 'no' } );
+    my %properties = ();
     for my $attr ( $self->get_all_attributes ) {
         next if $attr->exclude;
         my $attr_mapping = build_mapping($attr) or next;
@@ -108,17 +101,11 @@ sub _type_settings {
     $mapping{_index}{enabled}    = 1 if $self->index_index;
     $mapping{_size}{enabled}     = 1 if $self->enable_size;
 
-    if ( $self->enable_timestamp ) {
-        $mapping{_timestamp}{enabled} = 1;
+    if ( my $path = $self->timestamp_path ) {
+        $mapping{_timestamp} = { enabled => 1, path => $path };
 
-        $mapping{_timestamp}{format} = $self->timestamp_format
-            if $self->timestamp_format;
-        $mapping{_timestamp}{path} = $self->timestamp_path
-            if $self->timestamp_path;
-
-        if ( $self->enable_ttl ) {
-            $mapping{_ttl}{enabled} = 1;
-            $mapping{_ttl}{default} = $self->ttl if $self->ttl;
+        if ( my $ttl = $self->ttl ) {
+            $mapping{_ttl} = { enabled => 1, default => $ttl };
         }
     }
 

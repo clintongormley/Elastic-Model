@@ -6,21 +6,20 @@ use Moose::Exporter;
 my ( undef, undef, $init_meta ) = Moose::Exporter->build_import_methods(
     install   => [qw(import unimport)],
     with_meta => [ qw(
-            analyzer_path                  include_in_all
-            analyzer                       index_analyzer
-            boost_path                     index_id
-            disable_all                    index_index
-            disable_date_detection         is_type
-            disable_indexing               parent_type
-            disable_numeric_detection      routing_path
-            disable_source_compression     routing_required
-            dynamic_date_formats           search_analyzer
-            dynamic                        source_excludes
-            dynamic_templates              source_includes
-            enable_size                    timestamp_format
-            enable_timestamp               timestamp_path
-            enable_ttl                     ttl
+            analyzer_path                  index_analyzer
+            analyzer                       index_id
+            boost_path                     index_index
+            disable_all                    is_type
+            disable_date_detection         parent_type
+            disable_indexing               routing_path
+            disable_numeric_detection      routing_required
+            disable_source_compression     search_analyzer
+            dynamic_date_formats           source_excludes
+            dynamic                        source_includes
+            dynamic_templates              timestamp_path
+            enable_size                    ttl
             id_path                        type_settings
+            include_in_all
             )
     ],
     class_metaroles => {
@@ -37,6 +36,8 @@ sub init_meta {
     Moose::Util::ensure_all_roles( $p{for_class}, 'ESModel::Role::Doc' );
     $class->$init_meta(%p);
 }
+
+#===================================
 sub analyzer_path              { shift->analyzer_path(@_) }
 sub analyzer                   { shift->analyzer(@_) }
 sub boost_path                 { shift->boost_path(@_) }
@@ -49,8 +50,6 @@ sub dynamic_date_formats       { shift->dynamic_date_formats(@_) }
 sub dynamic                    { shift->dynamic(@_) }
 sub dynamic_templates          { shift->dynamic_templates(@_) }
 sub enable_size                { shift->enable_size(1) }
-sub enable_timestamp           { shift->enable_timestamp(1) }
-sub enable_ttl                 { shift->enable_ttl(1) }
 sub id_path                    { shift->id_path(@_) }
 sub include_in_all             { shift->include_in_all(@_) }
 sub index_analyzer             { shift->index_analyzer(@_) }
@@ -63,7 +62,6 @@ sub routing_required           { shift->routing_required(1) }
 sub search_analyzer            { shift->search_analyzer(@_) }
 sub source_excludes            { shift->source_excludes(@_) }
 sub source_includes            { shift->source_includes(@_) }
-sub timestamp_format           { shift->timestamp_format(@_) }
 sub timestamp_path             { shift->timestamp_path(@_) }
 sub ttl                        { shift->ttl(@_) }
 sub type_settings              { shift->type_settings(@_) }
