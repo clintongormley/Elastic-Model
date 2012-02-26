@@ -7,25 +7,12 @@ use ESModel::Trait::Exclude;
 use ESModel::Types qw(Timestamp);
 use Time::HiRes();
 
-
-has is_from_datastore => (
-    isa     => 'Bool',
+has 'metadata' => (
+    isa     => 'ESModel::Doc::Metadata',
     is      => 'ro',
-    writer  => '_set_is_from_datastore',
-    default => 0
+    handles => { id => 'id', type => 'type' }
 );
 
-#has 'id_has_changed' => (
-#    isa     => 'Bool',
-#    is      => 'ro',
-#    writer  => '_set_id_has_changed',
-#    default => 0
-#);
-
-has id => ( isa => 'Str', is => 'rw', trigger => \&_id_changed );
-has source => ( isa => 'ESModel::Source', is => 'rw', lazy_build => 1 );
-has index  => ( isa => 'Str',             is => 'rw', required   => 1, );
-has type   => ( isa => 'Str',             is => 'rw', required   => 1 );
 has timestamp => (
     traits  => ['ESModel::Trait::Field'],
     isa     => Timestamp,
@@ -33,74 +20,24 @@ has timestamp => (
     exclude => 0
 );
 
-has version => ( isa => 'Int', is => 'rw' );
-has routing => ( isa => 'Str', is => 'rw', predicate => 'has_routing' );
-has parent_id => (
-    isa       => 'Str',
-    is        => 'rw',
-    trigger   => sub { shift->clear_parent },
-    predicate => 'has_parent_id',
-);
-
-has parent => (
-    does       => 'Maybe[ESModel::Role::Doc]',
-    is         => 'rw',
-    lazy_build => 1
-);
-
-has _es => ( isa => ES, is => 'ro', lazy => 1, builder => '_build_es' );
+around 'BUILDARGS' => sub {
+    my $orig   = shift;
+    my $class  = shift;
+    my %params = ref $_[0] ? %{ shift() } : @_;
+    $params{metadata} ||= ESModel::Doc::Metadata->new(@_);
+    $class->$orig( \%params );
+};
 
 no Moose::Role;
 
 #===================================
-sub _id_changed {
-#===================================
-    #    my $self = shift;
-    #    return unless @_ == 2;
-    #    $self->id_has_changed(1);
-}
-
-#===================================
-sub _build_es { shift->model->es }
 #===================================
 
 #===================================
-sub _build_source {
 #===================================
     my $self = shift;
-    $self->model->source( index => $self->index, type => $self->type );
-}
 
-#===================================
-sub _build_parent {
-#===================================
-    my $self = shift;
-    return unless $self->has_parent_id;
-    my $parent_source = $self->model->source(
-        index => $self->index,
-        type  => $self->meta->parent_type
-    );
-    $parent_source->get( $self->parent_id );
-}
 
-#===================================
-sub _doc_metadata {
-#===================================
-    my $self   = shift;
-    my %params = (
-        index   => $self->index,
-        type    => $self->type,
-        id      => $self->id,
-        version => $self->version,
-    );
-    $params{routing} = $self->routing   if $self->has_routing;
-    $params{parent}  = $self->parent_id if $self->has_parent_id;
-    return { %params, ref $_[0] ? %{ shift() } : @_ };
-}
-
-#===================================
-sub update_timestamp { shift->timestamp(Time::HiRes::time) }
-#===================================
 
 #===================================
 sub save {
