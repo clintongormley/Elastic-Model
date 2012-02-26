@@ -3,6 +3,7 @@ package ESModel::Results::Scrolled;
 use Carp;
 use Moose;
 with 'ESModel::Role::Results';
+use MooseX::Types::Moose qw(:all);
 
 has '_scroll' => (
     isa    => 'ElasticSearch::ScrolledSearch',
@@ -11,7 +12,7 @@ has '_scroll' => (
 );
 
 has '_virtual_size' => (
-    isa    => 'Int',
+    isa    => Int,
     is     => 'ro',
     writer => '_set_virtual_size',
 );

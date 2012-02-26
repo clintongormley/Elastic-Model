@@ -2,10 +2,11 @@ package ESModel::Role::Iterator;
 
 use Carp;
 use Moose::Role;
+use MooseX::Types::Moose qw(:all);
 use MooseX::Attribute::Chained;
 
 has 'elements' => (
-    isa     => 'ArrayRef',
+    isa     => ArrayRef,
     traits  => ['Array'],
     is      => 'ro',
     writer  => '_set_elements',
@@ -17,20 +18,20 @@ has 'elements' => (
 );
 
 has 'page_size' => (
-    isa     => 'Int',
+    isa     => Int,
     is      => 'rw',
     default => 10
 );
 
 has '_i' => (
-    isa     => 'Int',
+    isa     => Int,
     is      => 'rw',
     default => -1,
 );
 
 has 'wrapper' => (
     traits  => ['Chained'],
-    isa     => 'CodeRef',
+    isa     => CodeRef,
     is      => 'rw',
     lazy    => 1,
     builder => 'as_elements',

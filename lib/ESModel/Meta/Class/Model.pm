@@ -2,6 +2,7 @@ package ESModel::Meta::Class::Model;
 
 use Moose::Role;
 use List::Util ();
+use MooseX::Types::Moose qw(:all);
 use Carp;
 use Data::Dump qw(pp);
 
@@ -17,7 +18,7 @@ while ( my ( $singular, $plural ) = each %attr ) {
     has $plural => (
         is      => 'ro',
         traits  => ['Hash'],
-        isa     => 'HashRef',
+        isa     => HashRef,
         default => sub { {} },
         handles => {
             $singular            => 'get',

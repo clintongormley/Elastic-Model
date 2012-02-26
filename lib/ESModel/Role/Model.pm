@@ -4,6 +4,7 @@ use Moose::Role;
 use Carp;
 use ESModel::Types qw(ES);
 use ElasticSearch();
+use MooseX::Types::Moose qw(:all);
 use ESModel::View();
 use ESModel::Store();
 use namespace::autoclean;
@@ -22,7 +23,7 @@ has 'es' => (
 );
 
 has '_index_cache' => (
-    isa     => 'HashRef',
+    isa     => HashRef,
     traits  => ['Hash'],
     default => sub { {} },
     handles => {
@@ -32,7 +33,7 @@ has '_index_cache' => (
 );
 
 has '_live_indices' => (
-    isa     => 'HashRef',
+    isa     => HashRef,
     is      => 'ro',
     traits  => ['Hash'],
     builder => '_update_live_indices',

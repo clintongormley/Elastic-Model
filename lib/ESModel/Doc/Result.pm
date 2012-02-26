@@ -2,9 +2,10 @@ package ESModel::Doc::Result;
 
 use Moose;
 with 'ESModel::Trait::Model';
+use MooseX::Types::Moose qw(:all);
 
 has 'result' => (
-    isa      => 'HashRef',
+    isa      => HashRef,
     is       => 'ro',
     required => 1,
 );

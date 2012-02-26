@@ -3,9 +3,10 @@ package ESModel::Results;
 use Carp;
 use Moose;
 with 'ESModel::Role::Results';
+use MooseX::Types::Moose qw(:all);
 
 has 'took' => (
-    isa    => 'Num',
+    isa    => Num,
     is     => 'ro',
     writer => '_set_took',
 );

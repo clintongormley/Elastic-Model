@@ -3,21 +3,22 @@ package ESModel::Index;
 use Carp;
 use Moose;
 with 'ESModel::Trait::Model';
+use MooseX::Types::Moose qw(:all);
 
 has 'name' => (
-    isa      => 'Str',
+    isa      => Str,
     is       => 'rw',
     required => 1,
 );
 
 has 'settings' => (
-    isa     => 'HashRef',
+    isa     => HashRef,
     is      => 'rw',
     default => sub { {} },
 );
 
 has 'types' => (
-    isa      => 'HashRef',
+    isa      => HashRef,
     traits   => ['Hash'],
     is       => 'ro',
     required => 1,

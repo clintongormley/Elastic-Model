@@ -3,6 +3,7 @@ package ESModel::View;
 use Moose;
 use Carp;
 use ESModel::Types qw(IndexNames TypeNames SearchType);
+use MooseX::Types::Moose qw(:all);
 use MooseX::Attribute::ChainedClone();
 use ESModel::Results();
 use ESModel::Results::Scrolled();
@@ -28,24 +29,24 @@ has 'type' => (
 
 has 'query' => (
     traits => ['ChainedClone'],
-    isa    => 'HashRef',
+    isa    => HashRef,
     is     => 'rw',
 );
 
 has 'filter' => (
     traits => ['ChainedClone'],
-    isa    => 'HashRef',
+    isa    => HashRef,
     is     => 'rw',
 );
 
 has 'post_filter' => (
     traits => ['ChainedClone'],
-    isa    => 'HashRef',
+    isa    => HashRef,
     is     => 'rw',
 );
 
 has '_builder' => (
-    isa     => 'Object',
+    isa     => Object,
     is      => 'ro',
     lazy    => 1,
     builder => '_build_builder'
@@ -53,87 +54,87 @@ has '_builder' => (
 
 has 'facets' => (
     traits => ['ChainedClone'],
-    isa    => 'HashRef[HashRef]',
+    isa    => HashRef [HashRef],
     is     => 'rw'
 );
 
 has 'fields' => (
     traits  => ['ChainedClone'],
-    isa     => 'ArrayRef[Str]',
+    isa     => ArrayRef [Str],
     is      => 'rw',
     default => sub { ['_source'] },
 );
 
 has 'from' => (
     traits  => ['ChainedClone'],
-    isa     => 'Int',
+    isa     => Int,
     is      => 'rw',
     default => 0,
 );
 has 'size' => (
     traits  => ['ChainedClone'],
-    isa     => 'Int',
+    isa     => Int,
     is      => 'rw',
     default => 10,
 );
 
 has 'sort' => (
     traits => ['ChainedClone'],
-    isa    => 'ArrayRef',
+    isa    => ArrayRef,
     is     => 'rw',
 );
 
 has 'highlight' => (
     traits => ['ChainedClone'],
-    isa    => 'ArrayRef[HashRef]',
+    isa    => ArrayRef [HashRef],
     is     => 'rw',
 );
 
 has 'indices_boost' => (
     traits => ['ChainedClone'],
-    isa    => 'HashRef[Num]',
+    isa    => HashRef [Num],
     is     => 'rw',
 );
 
 has 'min_score' => (
     traits => ['ChainedClone'],
-    isa    => 'Num',
+    isa    => Num,
     is     => 'rw',
 );
 
 has 'preference' => (
     traits => ['ChainedClone'],
-    isa    => 'Str',
+    isa    => Str,
     is     => 'rw',
 );
 
 has 'routing' => (
     traits => ['ChainedClone'],
-    isa    => 'Str',
+    isa    => Str,
     is     => 'rw',
 );
 
 has 'script_fields' => (
     traits => ['ChainedClone'],
-    isa    => 'HashRef',
+    isa    => HashRef,
     is     => 'rw',
 );
 
 has 'timeout' => (
     traits => ['ChainedClone'],
-    isa    => 'Str',
+    isa    => Str,
     is     => 'rw',
 );
 
 has 'track_scores' => (
     traits => ['ChainedClone'],
-    isa    => 'Bool',
+    isa    => Bool,
     is     => 'rw',
 );
 
 has 'search_builder' => (
     traits  => ['ChainedClone'],
-    isa     => 'Object',
+    isa     => Object,
     is      => 'rw',
     lazy    => 1,
     builder => '_build_search_builder',

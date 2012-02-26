@@ -6,41 +6,42 @@ use Moose::Role;
 with 'ESModel::Role::Iterator';
 with 'ESModel::Trait::Model';
 
+use MooseX::Types::Moose qw(:all);
 use ESModel::Doc::Result();
 
 has 'search' => (
-    isa      => 'HashRef',
+    isa      => HashRef,
     is       => 'ro',
     required => 1,
 );
 
 has 'total' => (
-    isa    => 'Int',
+    isa    => Int,
     is     => 'ro',
     writer => '_set_total',
 );
 
 has 'max_score' => (
-    isa    => 'Num',
+    isa    => Num,
     is     => 'ro',
     writer => '_set_max_score',
 );
 
 has 'facets' => (
-    isa    => 'HashRef',
+    isa    => HashRef,
     is     => 'ro',
     writer => '_set_facets',
 );
 
 has '_as_result' => (
-    isa     => 'CodeRef',
+    isa     => CodeRef,
     is      => 'ro',
     lazy    => 1,
     builder => '_as_result_builder'
 );
 
 has '_as_object' => (
-    isa     => 'CodeRef',
+    isa     => CodeRef,
     is      => 'ro',
     lazy    => 1,
     builder => '_as_object_builder'
