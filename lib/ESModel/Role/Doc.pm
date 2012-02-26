@@ -31,41 +31,31 @@ around 'BUILDARGS' => sub {
 no Moose::Role;
 
 #===================================
+sub touch { shift->timestamp( int( Time::HiRes::time * 1000 + 0.5 ) / 1000 ) }
 #===================================
-
-#===================================
-#===================================
-    my $self = shift;
-
-
 
 #===================================
 sub save {
 #===================================
     my $self = shift;
+    my %args = ref $_[0] ? %{ shift() } : @_;
 
-    ## if ID changed, then delete before saving
-    my $action = $self->is_from_datastore ? 'index' : 'create';
-    $self->update_timestamp if $self->meta->timestamp_path;
-    $self->_write( $action, $self->_doc_metadata( data => $self->deflate ) );
+    $self->touch if $self->meta->timestamp_path;
+
+    my $metadata = $self->metadata;
+    my $action = $metadata->from_datastore ? 'index_doc' : 'create_doc';
+
+    my $result = $self->store->$action( $metadata, $self->deflate, \%args );
+    $self->metadata->update_from_datastore($result);
 }
 
 #===================================
 sub delete {
 #===================================
-    my $self = shift;
-    $self->update_timestamp if $self->meta->timestamp_path;
-    $self->_write( 'delete', $self->_doc_metadata );
-}
-
-#===================================
-sub _write {
-#===================================
-    my ( $self, $action, $params ) = @_;
-    my $result = $self->_es->$action($params);
-    $self->$_( $result->{"_$_"} ) for ( 'index', 'type', 'id', 'version' );
-    $self->_set_is_from_datastore(1);
-    return $self;
+    my $self   = shift;
+    my %args   = ref $_[0] ? %{ shift() } : @_;
+    my $result = $self->store->delete_doc( $self->metadata, \%args );
+    $self->metadata->update_from_datastore($result);
 }
 
 #===================================
