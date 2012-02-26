@@ -33,13 +33,18 @@ sub init_meta {
 sub has_index {
 #===================================
     my ( $meta, $name, $types ) = @_;
+
     my @indices = grep {$_} ref $name eq 'ARRAY' ? @$name : $name;
     croak "No index name passed to has_index" unless @indices;
 
     $types ||= with_types($meta);
-    croak "No modules which do ESModel::Role::Doc could be found for index: "
-        . join( ', ', @indices )
-        unless %$types;
+
+    unless (%$types) {
+        croak "No modules which do ESModel::Role::Doc "
+            . "could be found for index: "
+            . join( ', ', @indices )
+
+    }
 
     $meta->add_index( $_, { types => $types } ) for @indices;
 }
@@ -56,13 +61,16 @@ sub with_types {
     for my $class (@modules) {
         load_class $class;
         next unless does_role( $class, 'ESModel::Role::Doc' );
+
         my $name = $class->meta->type_name or next;
         if ( my $existing = $types{$name} ) {
             croak "type_name '$name' of class $class "
                 . "clashes with class $existing"
                 unless $existing eq $class;
         }
+
         $types{ $class->meta->type_name } = $class;
+
     }
     return \%types;
 }
