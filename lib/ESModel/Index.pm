@@ -2,14 +2,7 @@ package ESModel::Index;
 
 use Carp;
 use Moose;
-use ESModel::Types qw(ES);
-
-has 'model' => (
-    does     => 'ESModel::Role::Model',
-    is       => 'ro',
-    required => 1,
-    weak_ref => 1,
-);
+with 'ESModel::Trait::Model';
 
 has 'name' => (
     isa      => 'Str',
@@ -35,14 +28,9 @@ has 'types' => (
     }
 );
 
-has 'es' => (
-    isa     => ES,
-    is      => 'ro',
-    default => sub { shift->model->es }
-);
-
 no Moose;
 
+# create_as ? do we clone?
 #===================================
 sub create {
 #===================================
@@ -52,7 +40,7 @@ sub create {
         %{ $self->settings },
         $self->model->meta->analysis_for_mappings($mappings)
     );
-    $self->es->create_index(
+    $self->model->es->create_index(
         index    => $self->name,
         mappings => $mappings,
         settings => \%settings,
@@ -66,7 +54,7 @@ sub alias_to {
     my $self    = shift;
     my @indices = ref $_[0] ? @{ shift() } : @_;
     my $name    = $self->name;
-    $self->es->aliases( actions =>
+    $self->model->es->aliases( actions =>
             [ map { +{ add => { alias => $name, index => $_ } } } @indices ]
     );
     return $self;
@@ -77,7 +65,7 @@ sub delete {
 #===================================
     my $self = shift;
     my %params = ref $_[0] ? %{ shift() } : @_;
-    $self->es->delete_index( %params, index => $self->name );
+    $self->model->es->delete_index( %params, index => $self->name );
     return $self;
 }
 
@@ -85,14 +73,14 @@ sub delete {
 sub exists {
 #===================================
     my $self = shift;
-    !!$self->es->index_exists( index => $self->name );
+    !!$self->model->es->index_exists( index => $self->name );
 }
 
 #===================================
 sub refresh {
 #===================================
     my $self = shift;
-    $self->es->refresh_index( index => $self->name );
+    $self->model->es->refresh_index( index => $self->name );
     return $self;
 }
 
@@ -102,7 +90,7 @@ sub put_mapping {
     my $self     = shift;
     my $mappings = $self->mappings(@_);
     my $index    = $self->name;
-    my $es       = $self->es;
+    my $es       = $self->model->es;
     for my $type ( keys %$mappings ) {
         $es->put_mapping(
             index   => $index,
@@ -118,7 +106,7 @@ sub delete_mapping {
 #===================================
     my $self  = shift;
     my $index = $self->name;
-    my $es    = $self->es;
+    my $es    = $self->model->es;
     for ( ref $_[0] ? @{ shift() } : @_ ) {
         $es->delete_mapping( index => $index, type => $_ );
     }
@@ -141,7 +129,7 @@ sub update_settings {
 sub open {
 #===================================
     my $self = shift;
-    $self->es->open_index( index => $self->name );
+    $self->model->es->open_index( index => $self->name );
     return $self;
 }
 
@@ -149,7 +137,7 @@ sub open {
 sub close {
 #===================================
     my $self = shift;
-    $self->es->close_index( index => $self->name );
+    $self->model->es->close_index( index => $self->name );
     return $self;
 }
 

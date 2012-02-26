@@ -1,17 +1,12 @@
 package ESModel::Role::Doc;
 
 use Moose::Role;
+
 use namespace::autoclean;
 use ESModel::Trait::Exclude;
-use ESModel::Types qw(ES Timestamp);
+use ESModel::Types qw(Timestamp);
 use Time::HiRes();
 
-has model => (
-    does     => 'ESModel::Role::Model',
-    is       => 'rw',
-    required => 1,
-    weak_ref => 1,
-);
 
 has is_from_datastore => (
     isa     => 'Bool',
