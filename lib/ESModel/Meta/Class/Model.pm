@@ -51,7 +51,7 @@ our %DefaultAnalysis = (
             standard asciifolding length lowercase nGram edgeNGram
             porterStem shingle stop word_delimiter snowball kstem phonetic
             synonym dictionary_decompounder hyphenation_decompounder
-            reverse elision truncate unique
+            reverse elision trim truncate unique
             )
     },
     tokenizer => {
