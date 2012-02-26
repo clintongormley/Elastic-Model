@@ -8,26 +8,27 @@ use MooseX::Types::Moose qw(:all);
 use MooseX::Types::Structured qw (Dict Optional Map);
 
 use MooseX::Types -declare => [ qw(
-        ES
-        CoreFieldType
-        FieldType
-        IndexMapping
-        TermVectorMapping
-        DynamicMapping
-        MultiField
-        MultiFields
-        StoreMapping
-        PathMapping
-        Longitude
-        Latitude
-        GeoPoint
         Binary
+        CoreFieldType
+        DynamicMapping
         DynamicTemplate
         DynamicTemplates
-        IndexNames
-        TypeNames
-        Timestamp
+        ES
         ESDateTime
+        FieldType
+        GeoPoint
+        IndexMapping
+        IndexNames
+        Latitude
+        Longitude
+        MultiField
+        MultiFields
+        PathMapping
+        SearchType
+        StoreMapping
+        TermVectorMapping
+        Timestamp
+        TypeNames
         )
 ];
 
@@ -85,6 +86,14 @@ enum DynamicMapping, (
 enum PathMapping, (
 #===================================
     'just_name', 'full'
+);
+
+#===================================
+enum SearchType, (
+#===================================
+    'query_then_fetch',     'query_and_fetch',
+    'dfs_query_then_fetch', 'dfs_query_and_fetch',
+    'scan',                 'count'
 );
 
 #===================================
