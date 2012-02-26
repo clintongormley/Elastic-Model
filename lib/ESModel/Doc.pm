@@ -24,7 +24,7 @@ my ( undef, undef, $init_meta ) = Moose::Exporter->build_import_methods(
     ],
     class_metaroles => {
         class     => ['ESModel::Meta::Class::Doc'],
-        attribute => ['ESModel::Meta::Attribute::Trait::Field'],
+        attribute => ['ESModel::Trait::Field'],
     }
 );
 

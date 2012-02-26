@@ -2,7 +2,7 @@ package ESModel::Role::Doc;
 
 use Moose::Role;
 use namespace::autoclean;
-use ESModel::Meta::Attribute::Trait::Exclude;
+use ESModel::Trait::Exclude;
 use ESModel::Types qw(ES Timestamp);
 use Time::HiRes();
 
@@ -32,7 +32,7 @@ has source => ( isa => 'ESModel::Source', is => 'rw', lazy_build => 1 );
 has index  => ( isa => 'Str',             is => 'rw', required   => 1, );
 has type   => ( isa => 'Str',             is => 'rw', required   => 1 );
 has timestamp => (
-    traits  => ['ESModel::Meta::Attribute::Trait::Field'],
+    traits  => ['ESModel::Trait::Field'],
     isa     => Timestamp,
     is      => 'rw',
     exclude => 0

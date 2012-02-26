@@ -128,8 +128,7 @@ $Allowed_Attrs{$_} = $Allowed_Attrs{integer}
 sub build_mapping {
 #===================================
     my $attr = shift;
-    my $is_esmodel
-        = does_role( $attr, 'ESModel::Meta::Attribute::Trait::Field' );
+    my $is_esmodel = does_role( $attr, 'ESModel::Trait::Field' );
 
     my $return = eval {
         my ($type);
@@ -149,8 +148,7 @@ sub build_mapping {
             or die "Couldn't find a default mapping\n" . $attr->name;
 
         return \%mapping
-            unless does_role( $attr,
-            'ESModel::Meta::Attribute::Trait::Field' );
+            unless does_role( $attr, 'ESModel::Trait::Field' );
 
         my $allowed = $Allowed_Attrs{$type};
         for my $key (@All_Keys) {
