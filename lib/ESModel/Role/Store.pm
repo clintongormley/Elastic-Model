@@ -9,8 +9,13 @@ use ESModel::Types qw(ES);
 has 'es' => (
     isa      => ES,
     is       => 'ro',
-    required => 1,
+    builder  => '_build_es',
+    lazy => 1,
 );
+
+#===================================
+sub _build_es { shift->model->es }
+#===================================
 
 #===================================
 sub search          { shift->es->search(@_) }
