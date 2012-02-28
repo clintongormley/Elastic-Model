@@ -2,7 +2,7 @@ package ESModel::Index;
 
 use Carp;
 use Moose;
-with 'ESModel::Trait::Model';
+with 'ESModel::Role::ModelAttr';
 use MooseX::Types::Moose qw(:all);
 
 has 'name' => (

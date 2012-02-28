@@ -1,7 +1,7 @@
 package ESModel::Role::Store;
 
 use Moose::Role;
-with 'ESModel::Trait::Model';
+with 'ESModel::Role::ModelAttr';
 
 use namespace::autoclean;
 use ESModel::Types qw(ES);

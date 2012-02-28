@@ -1,6 +1,8 @@
 package ESModel::View;
 
 use Moose;
+with 'ESModel::Role::ModelAttr';
+
 use Carp;
 use ESModel::Types qw(IndexNames TypeNames SearchType);
 use MooseX::Types::Moose qw(:all);
@@ -8,7 +10,6 @@ use MooseX::Attribute::ChainedClone();
 use ESModel::Results();
 use ESModel::Results::Scrolled();
 
-with 'ESModel::Trait::Model';
 
 has 'index' => (
     traits  => ['ChainedClone'],

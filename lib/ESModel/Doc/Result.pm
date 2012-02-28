@@ -1,7 +1,7 @@
 package ESModel::Doc::Result;
 
 use Moose;
-with 'ESModel::Trait::Model';
+with 'ESModel::Role::ModelAttr';
 use MooseX::Types::Moose qw(:all);
 
 has 'result' => (

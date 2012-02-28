@@ -1,6 +1,7 @@
 package ESModel::Role::Doc;
 
 use Moose::Role;
+with 'ESModel::Role::ModelAttr';
 
 use namespace::autoclean;
 use ESModel::Trait::Exclude;

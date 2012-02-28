@@ -1,4 +1,4 @@
-package ESModel::Trait::Model;
+package ESModel::Role::ModelAttr;
 
 use Moose::Role;
 
@@ -13,3 +13,4 @@ has 'model' => (
 );
 
 1;
+

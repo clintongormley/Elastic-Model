@@ -4,7 +4,7 @@ use Carp;
 use Moose::Role;
 
 with 'ESModel::Role::Iterator';
-with 'ESModel::Trait::Model';
+with 'ESModel::Role::ModelAttr';
 
 use MooseX::Types::Moose qw(:all);
 use ESModel::Doc::Result();
