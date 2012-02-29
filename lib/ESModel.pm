@@ -62,14 +62,14 @@ sub with_types {
         load_class $class;
         next unless does_role( $class, 'ESModel::Role::Doc' );
 
-        my $name = $class->meta->type_name or next;
+        my $name = $class->meta->type or next;
         if ( my $existing = $types{$name} ) {
-            croak "type_name '$name' of class $class "
+            croak "type '$name' of class $class "
                 . "clashes with class $existing"
                 unless $existing eq $class;
         }
 
-        $types{ $class->meta->type_name } = $class;
+        $types{ $class->meta->type } = $class;
 
     }
     return \%types;

@@ -7,7 +7,7 @@ use ESModel::Doc::Mapper qw(build_mapping);
 use ESModel::Types qw(DynamicTemplates DynamicMapping);
 use Carp;
 
-has 'type_name' => ( isa => Str, is => 'ro', writer => '_set_type_name' );
+has 'type' => ( isa => Str, is => 'ro', writer => '_set_type' );
 has 'type_settings' => (
     isa     => HashRef,
     is      => 'rw',

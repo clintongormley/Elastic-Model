@@ -55,7 +55,7 @@ sub include_in_all             { shift->include_in_all(@_) }
 sub index_analyzer             { shift->index_analyzer(@_) }
 sub index_id                   { shift->index_id(1) }
 sub index_index                { shift->index_index(1) }
-sub is_type                    { shift->_set_type_name(@_) }
+sub is_type                    { shift->_set_type(@_) }
 sub parent_type                { shift->parent_type(@_) }
 sub routing_path               { shift->routing_path(@_) }
 sub routing_required           { shift->routing_required(1) }
