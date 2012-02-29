@@ -5,11 +5,11 @@ with 'ESModel::Role::ModelAttr';
 
 use namespace::autoclean;
 use ESModel::Trait::Exclude;
-use ESModel::Types qw(Timestamp);
+use ESModel::Types qw(Timestamp UID);
 use Time::HiRes();
 
-has 'metadata' => (
-    isa     => 'ESModel::Doc::Metadata',
+has 'uid' => (
+    isa     => UID,
     is      => 'ro',
     handles => { id => 'id', type => 'type' }
 );
@@ -25,7 +25,8 @@ around 'BUILDARGS' => sub {
     my $orig   = shift;
     my $class  = shift;
     my %params = ref $_[0] ? %{ shift() } : @_;
-    $params{metadata} ||= ESModel::Doc::Metadata->new(@_);
+    $params{uid}
+        ||= ESModel::Doc::UID->new( %params, type => $class->meta->type );
     $class->$orig( \%params );
 };
 
@@ -43,11 +44,11 @@ sub save {
 
     $self->touch if $self->meta->timestamp_path;
 
-    my $metadata = $self->metadata;
-    my $action = $metadata->from_datastore ? 'index_doc' : 'create_doc';
+    my $uid = $self->uid;
+    my $action = $uid->from_datastore ? 'index_doc' : 'create_doc';
 
-    my $result = $self->store->$action( $metadata, $self->deflate, \%args );
-    $self->metadata->update_from_datastore($result);
+    my $result = $self->model->store->$action( $uid, $self->deflate, \%args );
+    $self->uid->update_from_datastore($result);
 }
 
 #===================================
@@ -55,8 +56,8 @@ sub delete {
 #===================================
     my $self   = shift;
     my %args   = ref $_[0] ? %{ shift() } : @_;
-    my $result = $self->store->delete_doc( $self->metadata, \%args );
-    $self->metadata->update_from_datastore($result);
+    my $result = $self->model->store->delete_doc( $self->uid, \%args );
+    $self->uid->update_from_datastore($result);
 }
 
 #===================================

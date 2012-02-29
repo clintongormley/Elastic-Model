@@ -29,6 +29,7 @@ use MooseX::Types -declare => [ qw(
         TermVectorMapping
         Timestamp
         TypeNames
+        UID
         )
 ];
 
@@ -188,4 +189,9 @@ subtype Timestamp, as Num;
 coerce Timestamp, from ESDateTime,
     via { DateTime->from_epoch( epoch => $_ ) };
 
+#===================================
+subtype UID, as 'ESModel::Doc::UID';
+#===================================
+coerce UID, from Str,     via { ESModel::Doc::UID->new_from_string($_) };
+coerce UID, from HashRef, via { ESModel::Doc::UID->new($_) };
 1;

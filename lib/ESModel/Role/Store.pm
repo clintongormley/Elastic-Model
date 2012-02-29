@@ -7,10 +7,10 @@ use namespace::autoclean;
 use ESModel::Types qw(ES);
 
 has 'es' => (
-    isa      => ES,
-    is       => 'ro',
-    builder  => '_build_es',
-    lazy => 1,
+    isa     => ES,
+    is      => 'ro',
+    builder => '_build_es',
+    lazy    => 1,
 );
 
 #===================================
@@ -25,11 +25,11 @@ sub scrolled_search { shift->es->scrolled_search(@_) }
 #===================================
 sub get_doc {
 #===================================
-    my ( $self, $metadata ) = @_;
+    my ( $self, $uid ) = @_;
 
     return $self->es->get(
         fields => [qw(_routing _parent _source)],
-        $metadata->uid_params
+        $uid->as_params
     );
 }
 
@@ -41,10 +41,10 @@ sub index_doc  { shift->_write_doc( 'index',  @_ ) }
 #===================================
 sub _write_doc {
 #===================================
-    my ( $self, $action, $metadata, $data, $args ) = @_;
+    my ( $self, $action, $uid, $data, $args ) = @_;
     return $self->es->$action(
         data => $data,
-        $metadata->uid_version_params,
+        $uid->as_version_params,
         %$args
     );
 }
@@ -52,8 +52,8 @@ sub _write_doc {
 #===================================
 sub delete_doc {
 #===================================
-    my ( $self, $metadata, $args ) = @_;
-    return $self->es->delete( $metadata->uid_version_params, %$args );
+    my ( $self, $uid, $args ) = @_;
+    return $self->es->delete( $uid->as_version_params, %$args );
 }
 
 1;

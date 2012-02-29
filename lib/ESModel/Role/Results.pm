@@ -64,7 +64,9 @@ sub _as_object_builder {
 #===================================
     my $self  = shift;
     my $model = $self->model;
-    sub { @_ > 1 ? $model->inflate_docs(@_) : $model->inflate_doc(@_) };
+    sub {
+        map { $model->inflate_or_get_doc($_) } @_;
+    };
 }
 
 #===================================

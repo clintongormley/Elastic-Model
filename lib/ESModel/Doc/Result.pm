@@ -2,6 +2,7 @@ package ESModel::Doc::Result;
 
 use Moose;
 with 'ESModel::Role::ModelAttr';
+use ESModel::Types qw(UID);
 use MooseX::Types::Moose qw(:all);
 
 has 'result' => (
@@ -10,28 +11,33 @@ has 'result' => (
     required => 1,
 );
 
-has 'metadata' => (
-    isa     => 'ESModel::Doc::Metadata',
+has 'uid' => (
+    isa     => UID,
     is      => 'ro',
     lazy    => 1,
-    builder => '_build_metadata',
+    builder => '_build_uid',
     handles => { map { $_ => $_ } qw(index type id parent) }
 );
 
 no Moose;
 
 #===================================
-sub _build_metadata {
+sub _build_uid {
 #===================================
     my $self = shift;
-    ESModel::Doc::Metadata->new_from_datastore( $self->result );
+    ESModel::Doc::UID->new_from_datastore( $self->result );
 }
 
 #===================================
 sub object {
 #===================================
-    my $self = shift;
-    $self->model->inflate_doc( $self->result );
+    my $self   = shift;
+    my $uid    = $self->uid;
+    my $result = $self->result;
+    if ( $result->{_source} ) {
+        return $self->model->inflate_doc( $uid, $result->{_source} );
+    }
+    $self->model->get_doc($uid);
 }
 
 #===================================

@@ -14,12 +14,19 @@ my %attr = (
     tokenizer   => 'tokenizers',
 );
 
+my %defaults = (
+    analyzer  => { uid => { type => 'custom',  tokenizer => 'uid' } },
+    tokenizer => { uid => { type => 'pattern', pattern   => ';' } }
+);
+
 while ( my ( $singular, $plural ) = each %attr ) {
     has $plural => (
         is      => 'ro',
         traits  => ['Hash'],
         isa     => HashRef,
-        default => sub { {} },
+        default => sub {
+            +{ %{ $defaults{$singular} || {} } };
+        },
         handles => {
             $singular            => 'get',
             "add_${singular}"    => 'set',

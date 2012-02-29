@@ -35,6 +35,7 @@ our %Mappers = (
     'MooseX::Types::Structured::Tuple'           => \&_tuple_mapping,
     'MooseX::Types::Structured::Dict'            => \&_dict_mapping,
     'MooseX::Types::Structured::Map'             => \&_hashref_mapping,
+    'ESModel::Types::UID'                        => \&_uid_mapping,
     'ESModel::Types::GeoPoint'                   => \&_geopoint_mapping,
     'ESModel::Types::Binary'                     => \&_binary_mapping,
     'ESModel::Types::Timestamp'                  => \&_date_mapping,
@@ -319,4 +320,15 @@ sub _class_mapping {
     );
 
 }
+
+#===================================
+sub _uid_mapping {
+#===================================
+    return (
+        type           => 'string',
+        analyzer       => 'uid',
+        include_in_all => 0,
+    );
+}
+
 1;

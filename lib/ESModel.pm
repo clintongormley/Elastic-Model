@@ -6,7 +6,7 @@ use Class::Load qw(is_class_loaded load_class);
 use Module::Find qw(findallmod);
 use Moose::Util qw(does_role);
 use ESModel::Index();
-use ESModel::Doc::Metadata();
+use ESModel::Doc::UID();
 use Carp;
 
 use namespace::autoclean;

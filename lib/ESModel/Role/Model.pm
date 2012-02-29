@@ -44,7 +44,7 @@ has '_live_indices' => (
 );
 
 #===================================
-sub _build_store { ESModel::Store->new( es => shift->es ) }
+sub _build_store { ESModel::Store->new( model => shift() ) }
 sub _build_es { ElasticSearch->new }
 #===================================
 
@@ -121,32 +121,42 @@ sub new_doc {
 #===================================
 sub get_doc {
 #===================================
-    my $self     = shift;
-    my $metadata = blessed $_[0] ? shift : ESModel::Doc::Metadata->new(@_);
-    my $result   = $self->store->get_doc($metadata) or return;
-    $self->inflate_doc($result);
+    my $self   = shift;
+    my $uid    = blessed $_[0] ? shift : ESModel::Doc::UID->new(@_);
+    my $result = $self->store->get_doc($uid) or return;
+    $uid->update_from_datastore($result);
+    $self->inflate_doc( $uid, $result->{_source} );
 }
 
 #===================================
 sub inflate_doc {
 #===================================
-    my ( $self, $result ) = @_;
+    my $self   = shift;
+    my $uid    = shift;
+    my $source = shift;
 
-    my $metadata = ESModel::Doc::Metadata->new_from_datastore($result);
-    my $source   = $result->{_source}
-        or return $self->get_doc($metadata);
-
-    my $index = $self->index( $metadata->index );
-    my $class = $index->class_for_type( $metadata->type );
+    my $index = $self->index( $uid->index );
+    my $class = $index->class_for_type( $uid->type );
 
     return $class->new(
-        model    => $self,
-        metadata => $metadata,
+        model => $self,
+        uid   => $uid,
         %{ $class->inflate($source) }
     );
 }
 
 #===================================
+sub inflate_or_get_doc {
+#===================================
+    my $self   = shift;
+    my $params = shift;
+    my $uid    = ESModel::Doc::UID->new_from_datastore($params);
+    if ( my $source = $params->{_source} ) {
+        return $self->inflate_doc( $uid, $source );
+    }
+    $self->get_doc($uid);
+}
+
 # TODO: inflate_docs
 #===================================
 sub inflate_docs {
