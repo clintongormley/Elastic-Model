@@ -16,7 +16,7 @@ has 'doc_isa' => (
     default => sub {ESDoc},
 );
 
-# TODO: Should this only accept UIDs that are from_datastore?
+# TODO: Should this only accept UIDs that are from_store?
 #===================================
 sub _helper_type {UID}
 #===================================

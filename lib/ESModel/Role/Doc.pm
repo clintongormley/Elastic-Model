@@ -11,7 +11,8 @@ use Time::HiRes();
 has 'uid' => (
     isa     => UID,
     is      => 'ro',
-    handles => { id => 'id', type => 'type' }
+    handles => { id => 'id', type => 'type' },
+    coerce  => 1,
 );
 
 has timestamp => (
@@ -45,10 +46,10 @@ sub save {
     $self->touch if $self->meta->timestamp_path;
 
     my $uid = $self->uid;
-    my $action = $uid->from_datastore ? 'index_doc' : 'create_doc';
+    my $action = $uid->from_store ? 'index_doc' : 'create_doc';
 
     my $result = $self->model->store->$action( $uid, $self->deflate, \%args );
-    $self->uid->update_from_datastore($result);
+    $self->uid->update_from_store($result);
 }
 
 #===================================
@@ -57,7 +58,7 @@ sub delete {
     my $self   = shift;
     my %args   = ref $_[0] ? %{ shift() } : @_;
     my $result = $self->model->store->delete_doc( $self->uid, \%args );
-    $self->uid->update_from_datastore($result);
+    $self->uid->update_from_store($result);
 }
 
 #===================================

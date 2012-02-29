@@ -124,7 +124,7 @@ sub get_doc {
     my $self   = shift;
     my $uid    = blessed $_[0] ? shift : ESModel::Doc::UID->new(@_);
     my $result = $self->store->get_doc($uid) or return;
-    $uid->update_from_datastore($result);
+    $uid->update_from_store($result);
     $self->inflate_doc( $uid, $result->{_source} );
 }
 
@@ -150,7 +150,7 @@ sub inflate_or_get_doc {
 #===================================
     my $self   = shift;
     my $params = shift;
-    my $uid    = ESModel::Doc::UID->new_from_datastore($params);
+    my $uid    = ESModel::Doc::UID->new_from_store($params);
     if ( my $source = $params->{_source} ) {
         return $self->inflate_doc( $uid, $source );
     }
@@ -163,7 +163,7 @@ sub inflate_docs {
 #===================================
     my ( $self, $result ) = @_;
 
-    #    my $uid = ESModel::Doc::UID->new_from_datastore($result);
+    #    my $uid = ESModel::Doc::UID->new_from_store($result);
     #    my $source   = $result->{_source}
     #        or return $self->get_doc( $uid->values );
     #

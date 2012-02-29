@@ -25,7 +25,7 @@ no Moose;
 sub _build_uid {
 #===================================
     my $self = shift;
-    ESModel::Doc::UID->new_from_datastore( $self->result );
+    ESModel::Doc::UID->new_from_store( $self->result );
 }
 
 #===================================
