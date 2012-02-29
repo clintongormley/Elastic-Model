@@ -15,6 +15,8 @@ use MooseX::Types -declare => [ qw(
         DynamicTemplates
         ES
         ESDateTime
+        ESDoc
+        ESTypeConstraint
         FieldType
         GeoPoint
         IndexMapping
@@ -194,4 +196,16 @@ subtype UID, as 'ESModel::Doc::UID';
 #===================================
 coerce UID, from Str,     via { ESModel::Doc::UID->new_from_string($_) };
 coerce UID, from HashRef, via { ESModel::Doc::UID->new($_) };
+
+#===================================
+subtype ESDoc, as RoleName,
+#===================================
+    where { $_->does('ESModel::Role::Doc') };
+
+#===================================
+subtype ESTypeConstraint, as 'Moose::Meta::TypeConstraint';
+#===================================
+coerce ESTypeConstraint, from Str,
+    via { Moose::Util::TypeConstraints::find_type_constraint($_) };
+
 1;
