@@ -41,7 +41,9 @@ sub create {
         %{ $self->settings },
         $self->model->meta->analysis_for_mappings($mappings)
     );
-    $self->model->es->create_index(
+    my $model = $self->model;
+    $model->_clear_live_indices;
+    $model->es->create_index(
         index    => $self->name,
         mappings => $mappings,
         settings => \%settings,
@@ -55,7 +57,9 @@ sub alias_to {
     my $self    = shift;
     my @indices = ref $_[0] ? @{ shift() } : @_;
     my $name    = $self->name;
-    $self->model->es->aliases( actions =>
+    my $model   = $self->model;
+    $model->_clear_live_indices;
+    $model->es->aliases( actions =>
             [ map { +{ add => { alias => $name, index => $_ } } } @indices ]
     );
     return $self;
@@ -64,9 +68,11 @@ sub alias_to {
 #===================================
 sub delete {
 #===================================
-    my $self = shift;
+    my $self   = shift;
     my %params = ref $_[0] ? %{ shift() } : @_;
-    $self->model->es->delete_index( %params, index => $self->name );
+    my $model  = $self->model;
+    $model->_clear_live_indices;
+    $model->es->delete_index( %params, index => $self->name );
     return $self;
 }
 
@@ -129,16 +135,20 @@ sub update_settings {
 #===================================
 sub open {
 #===================================
-    my $self = shift;
-    $self->model->es->open_index( index => $self->name );
+    my $self  = shift;
+    my $model = $self->model;
+    $model->_clear_live_indices;
+    $model->es->open_index( index => $self->name );
     return $self;
 }
 
 #===================================
 sub close {
 #===================================
-    my $self = shift;
-    $self->model->es->close_index( index => $self->name );
+    my $self  = shift;
+    my $model = $self->model;
+    $model->_clear_live_indices;
+    $model->es->close_index( index => $self->name );
     return $self;
 }
 
