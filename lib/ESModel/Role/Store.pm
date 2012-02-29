@@ -56,14 +56,4 @@ sub delete_doc {
     return $self->es->delete( $metadata->uid_version_params, %$args );
 }
 
-# - get_doc
-# - get_docs
-# - create_doc
-# - create_docs
-# - index_doc
-# - index_docs
-# - search
-# - scrolled_search
-# inflate_doc?
-
 1;

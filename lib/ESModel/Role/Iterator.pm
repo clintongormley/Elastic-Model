@@ -200,7 +200,7 @@ sub slice_elements {
     return wantarray ? @slice : \@slice;
 }
 
-#
+# TODO: extra methods for iterator
 #=element C<page()>
 #
 #    %results = $browse->page($page_no)

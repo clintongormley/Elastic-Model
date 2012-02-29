@@ -55,7 +55,6 @@ sub mapping {
     my $self            = shift;
     my $properties_only = $_[0];
 
-   #    my %properties = ( __CLASS__ => { type => 'string', index => 'no' } );
     my %properties = ();
     for my $attr ( $self->get_all_attributes ) {
         next if $attr->exclude;

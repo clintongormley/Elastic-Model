@@ -10,7 +10,6 @@ use MooseX::Attribute::ChainedClone();
 use ESModel::Results();
 use ESModel::Results::Scrolled();
 
-
 has 'index' => (
     traits  => ['ChainedClone'],
     isa     => IndexNames,
@@ -218,7 +217,7 @@ sub search {
     );
 }
 
-# scroll_objects / scroll_results ?
+# TODO: scroll_objects / scroll_results ?
 #===================================
 sub scroll {
 #===================================
@@ -230,7 +229,7 @@ sub scroll {
     );
 }
 
-#scan_objects / scan_results
+# TODO: scan_objects / scan_results
 #===================================
 sub scan {
 #===================================
@@ -252,13 +251,13 @@ sub delete {
     $self->store->delete_by_query( \%args );
 }
 
-# first_object / first_result
+# TODO: first_object / first_result
 #===================================
 sub first { shift->search(@_)->first }
 sub total { shift->size(0)->search(@_)->total }
 
-#sub facets { shift->size(0)->search(@_)->facets }
-#sub page { shift->search->page(@_) }
+# TODO: sub facets { shift->size(0)->search(@_)->facets }
+# TODO: sub page { shift->search->page(@_) }
 #===================================
 
 #===================================
@@ -299,6 +298,7 @@ sub _build_query {
         :      $q;
 }
 
+# TODO: extra methods for View
 #    count
 #    delete
 #    delete( { %qs } )

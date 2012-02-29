@@ -24,8 +24,8 @@ sub BUILD {
     my $scroll = $self->model->store->scrolled_search( $self->search );
     $self->_set_scroll($scroll);
 
-    # handle partial results if some shards failed?
-    #    croak "Search timed out" if $result->{timed_out};
+    # TODO: handle partial results if some shards failed?
+    # TODO: croak "Search timed out" if $result->{timed_out};
 
     $self->_set_total( $scroll->total );
     $self->_set_virtual_size( $scroll->total );
@@ -64,7 +64,7 @@ sub _fetch_until {
     my $scroll   = $self->_scroll;
     my $elements = $self->elements;
     while ( !$scroll->eof && $i >= @{$elements} ) {
-        push @{$elements}, $scroll->drain_buffer;    ### pass max?
+        push @{$elements}, $scroll->drain_buffer;    ### TODO:  pass max?
     }
 }
 

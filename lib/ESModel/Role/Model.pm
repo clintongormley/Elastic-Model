@@ -147,22 +147,24 @@ sub inflate_doc {
 }
 
 #===================================
+# TODO: inflate_docs
+#===================================
 sub inflate_docs {
 #===================================
     my ( $self, $result ) = @_;
 
-#    my $metadata = ESModel::Doc::Metadata->new_from_datastore($result);
-#    my $source   = $result->{_source}
-#        or return $self->get_doc( $metadata->values );
-#
-#    my $class
-#        = $self->index( $metadata->index )->class_for_type( $metadata->type );
-#
-#    return $class->new(
-#        model    => $self,
-#        metadata => $metadata,
-#        %{ $class->inflate($source) }
-#    );
+    #    my $uid = ESModel::Doc::UID->new_from_datastore($result);
+    #    my $source   = $result->{_source}
+    #        or return $self->get_doc( $uid->values );
+    #
+    #    my $class
+    #        = $self->index( $uid->index )->class_for_type( $uid->type );
+    #
+    #    return $class->new(
+    #        model    => $self,
+    #        uid => $uid,
+    #        %{ $class->inflate($source) }
+    #    );
 }
 
 #===================================

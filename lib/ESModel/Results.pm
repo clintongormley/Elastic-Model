@@ -21,7 +21,7 @@ sub BUILD {
     my $self   = shift;
     my $result = $self->model->es->search( $self->search );
 
-    # handle partial results if some shards failed?
+    # TODO: handle partial results if some shards failed?
     croak "Search timed out" if $result->{timed_out};
 
     $self->_set_took( $result->{took} );

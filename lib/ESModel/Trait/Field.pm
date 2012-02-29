@@ -77,7 +77,7 @@ sub _build_deflator {
     return $deflator;
 }
 
-### weak refs?
+### TODO: weak refs?
 #===================================
 sub _build_inflator {
 #===================================
