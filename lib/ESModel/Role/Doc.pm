@@ -87,7 +87,7 @@ sub inflate {
     my $meta = $class->meta;
     for my $name ( keys %vals ) {
         my $attr = $meta->get_attribute($name);
-        $attr->inflator->( $vals{$name} );
+        $vals{$name} = $attr->inflator->( $vals{$name} );
         if ( my $init = $attr->init_arg ) {
             $vals{$init} = delete $vals{$name};
         }
