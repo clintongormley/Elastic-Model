@@ -37,6 +37,14 @@ has 'wrapper' => (
     builder => 'as_elements',
 );
 
+has 'multi_wrapper' => (
+    traits  => ['Chained'],
+    isa     => CodeRef,
+    is      => 'rw',
+    lazy    => 1,
+    builder => 'as_elements',
+);
+
 after 'all_elements' => sub { shift->reset };
 
 no Moose;
@@ -97,8 +105,8 @@ sub current   { $_[0]->wrapper->( $_[0]->current_element ) }
 sub peek_next { $_[0]->wrapper->( $_[0]->peek_next_element ) }
 sub peek_prev { $_[0]->wrapper->( $_[0]->peek_prev_element ) }
 sub pop       { $_[0]->wrapper->( $_[0]->pop_element ) }
-sub all       { $_[0]->wrapper->( $_[0]->all_elements ) }
-sub slice     { $_[0]->wrapper->( $_[0]->slice_elements ) }
+sub all       { $_[0]->multi_wrapper->( $_[0]->all_elements ) }
+sub slice     { $_[0]->multi_wrapper->( $_[0]->slice_elements ) }
 #===================================
 
 #===================================
@@ -272,7 +280,9 @@ sub slice_elements {
 #===================================
 sub as_elements {
 #===================================
-    shift->wrapper( sub {@_} );
+    my $self = shift;
+    $self->wrapper( sub       {@_} );
+    $self->multi_wrapper( sub {@_} );
 }
 
 1;

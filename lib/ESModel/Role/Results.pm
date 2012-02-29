@@ -40,6 +40,13 @@ has '_as_result' => (
     builder => '_as_result_builder'
 );
 
+has '_as_results' => (
+    isa     => CodeRef,
+    is      => 'ro',
+    lazy    => 1,
+    builder => '_as_results_builder'
+);
+
 has '_as_object' => (
     isa     => CodeRef,
     is      => 'ro',
@@ -47,26 +54,49 @@ has '_as_object' => (
     builder => '_as_object_builder'
 );
 
+has '_as_objects' => (
+    isa     => CodeRef,
+    is      => 'ro',
+    lazy    => 1,
+    builder => '_as_objects_builder'
+);
+
 no Moose;
 
 #===================================
 sub _as_result_builder {
 #===================================
-    my $self  = shift;
-    my $model = $self->model;
+    my $self = shift;
+    my $m    = $self->model;
+    sub { ESModel::Doc::Result->new( model => $m, result => $_[0] ) }
+}
+
+#===================================
+sub _as_results_builder {
+#===================================
+    my $self = shift;
+    my $m    = $self->model;
     sub {
-        map { ESModel::Doc::Result->new( model => $model, result => $_ ) } @_;
-    };
+        map { ESModel::Doc::Result->new( model => $m, result => $_ ) } @_;
+        }
 }
 
 #===================================
 sub _as_object_builder {
 #===================================
-    my $self  = shift;
-    my $model = $self->model;
+    my $self = shift;
+    my $m    = $self->model;
+    sub { $m->inflate_or_get_doc( $_[0] ) }
+}
+
+#===================================
+sub _as_objects_builder {
+#===================================
+    my $self = shift;
+    my $m    = $self->model;
     sub {
-        map { $model->inflate_or_get_doc($_) } @_;
-    };
+        map { $m->inflate_or_get_doc($_) } @_;
+        }
 }
 
 #===================================
@@ -74,6 +104,7 @@ sub as_results {
 #===================================
     my $self = shift;
     $self->wrapper( $self->_as_result );
+    $self->multi_wrapper( $self->_as_results );
 }
 
 #===================================
@@ -81,6 +112,7 @@ sub as_objects {
 #===================================
     my $self = shift;
     $self->wrapper( $self->_as_object );
+    $self->multi_wrapper( $self->_as_objects );
 }
 
 #===================================
@@ -92,8 +124,8 @@ sub current_result   { $_[0]->_as_result->( $_[0]->current_element ) }
 sub peek_next_result { $_[0]->_as_result->( $_[0]->peek_next_element ) }
 sub peek_prev_result { $_[0]->_as_result->( $_[0]->peek_prev_element ) }
 sub pop_result       { $_[0]->_as_result->( $_[0]->pop_element ) }
-sub all_results      { $_[0]->_as_result->( $_[0]->all_elements ) }
-sub slice_results    { $_[0]->_as_result->( $_[0]->slice_elements ) }
+sub all_results      { $_[0]->_as_results->( $_[0]->all_elements ) }
+sub slice_results    { $_[0]->_as_results->( $_[0]->slice_elements ) }
 #===================================
 
 #===================================
@@ -104,9 +136,9 @@ sub prev_object      { $_[0]->_as_object->( $_[0]->prev_element ) }
 sub current_object   { $_[0]->_as_object->( $_[0]->current_element ) }
 sub peek_next_object { $_[0]->_as_object->( $_[0]->peek_next_element ) }
 sub peek_prev_object { $_[0]->_as_object->( $_[0]->peek_prev_element ) }
-sub pop_object       { $_[0]->_as_result->( $_[0]->pop_object ) }
-sub all_objects      { $_[0]->_as_object->( $_[0]->all_elements ) }
-sub slice_objects    { $_[0]->_as_result->( $_[0]->slice_elements ) }
+sub pop_object       { $_[0]->_as_object->( $_[0]->pop_element ) }
+sub all_objects      { $_[0]->_as_objects->( $_[0]->all_elements ) }
+sub slice_objects    { $_[0]->_as_objects->( $_[0]->slice_elements ) }
 #===================================
 
 1;
