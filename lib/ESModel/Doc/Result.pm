@@ -41,9 +41,14 @@ sub object {
 }
 
 #===================================
+sub source { shift->result->{_source} }
+sub score  { shift->result->{_score} }
+#===================================
+
+#===================================
 sub fields        { shift->result->{fields}        ||= {} }
 sub script_fields { shift->result->{script_fields} ||= {} }
 sub highlight     { shift->result->{highlight}     ||= {} }
-sub score         { shift->result->{_score} }
 #===================================
+
 1;
