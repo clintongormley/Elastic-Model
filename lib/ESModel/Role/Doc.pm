@@ -5,14 +5,13 @@ with 'ESModel::Role::ModelAttr';
 
 use namespace::autoclean;
 use ESModel::Trait::Exclude;
-use ESModel::Types qw(Timestamp UID);
+use ESModel::Types qw(Timestamp);
 use Time::HiRes();
 
 has 'uid' => (
-    isa     => UID,
+    isa     => 'ESModel::Doc::UID',
     is      => 'ro',
     handles => { id => 'id', type => 'type' },
-    coerce  => 1,
 );
 
 has timestamp => (

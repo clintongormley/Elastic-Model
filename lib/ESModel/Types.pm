@@ -192,8 +192,9 @@ coerce Timestamp, from ESDateTime,
     via { DateTime->from_epoch( epoch => $_ ) };
 
 #===================================
-subtype UID, as 'ESModel::Doc::UID';
+subtype UID, as 'ESModel::Doc::UID',
 #===================================
+    where { $_->from_store }, message {"The UID has not been loaded from the store"};
 coerce UID, from Str,     via { ESModel::Doc::UID->new_from_string($_) };
 coerce UID, from HashRef, via { ESModel::Doc::UID->new($_) };
 
