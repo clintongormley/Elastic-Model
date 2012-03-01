@@ -50,6 +50,7 @@ sub save {
 
     my $result = $self->model->store->$action( $uid, $self->deflate, \%args );
     $self->uid->update_from_store($result);
+    $self;
 }
 
 #===================================
@@ -59,6 +60,7 @@ sub delete {
     my %args   = ref $_[0] ? %{ shift() } : @_;
     my $result = $self->model->store->delete_doc( $self->uid, \%args );
     $self->uid->update_from_store($result);
+    $self;
 }
 
 #===================================
