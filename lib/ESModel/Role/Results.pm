@@ -68,7 +68,7 @@ sub _as_result_builder {
 #===================================
     my $self = shift;
     my $m    = $self->model;
-    sub { ESModel::Doc::Result->new( model => $m, result => $_[0] ) }
+    sub { $_[0] && ESModel::Doc::Result->new( model => $m, result => $_[0] ) }
 }
 
 #===================================
@@ -86,7 +86,7 @@ sub _as_object_builder {
 #===================================
     my $self = shift;
     my $m    = $self->model;
-    sub { $m->inflate_or_get_doc( $_[0] ) }
+    sub { $_[0] && $m->inflate_or_get_doc( $_[0] ) }
 }
 
 #===================================
