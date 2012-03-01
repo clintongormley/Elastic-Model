@@ -100,7 +100,7 @@ sub new_from_string {
 #===================================
     my $class = shift;
     my %params = map { /^(\w+):(.+)?/; $1, _decode($2) } split /;/, shift();
-    $class->new( \%params );
+    $class->new( %params, from_store => 1 );
 }
 
 my %encode = ( ':' => '::', ';' => ':_' );
