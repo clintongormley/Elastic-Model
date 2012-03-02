@@ -16,7 +16,7 @@ has 'uid' => (
     is      => 'ro',
     lazy    => 1,
     builder => '_build_uid',
-    handles => { map { $_ => $_ } qw(index type id parent) }
+    handles => { map { $_ => $_ } qw(index type id routing) }
 );
 
 no Moose;
