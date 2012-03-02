@@ -65,17 +65,27 @@ sub delete {
 #===================================
 sub deflate {
 #===================================
-    my ( $self, $seen ) = @_;
-    $seen ||= {};
+    my ( $self, $orig_seen ) = @_;
+    my $seen = $orig_seen || { refaddr($self) => 1 };
 
     my $meta = $self->meta;
     my %hash;
     for my $attr ( $meta->get_all_attributes ) {
         next if $attr->exclude;
         next unless $attr->has_value($self) || $attr->has_builder($self);
-        my $reader = $attr->get_read_method or next;
-        my $name = $attr->name;
-        $hash{$name} = $attr->deflator->( $self->$reader, $seen );
+
+        my $val = $attr->get_read_method_ref->($self);
+        my $deflated;
+        if ( ref $val ) {
+            my %seen = %$seen;
+            croak "Cannot deflate recursive structures"
+                if $seen{ refaddr $val}++;
+            $deflated = $attr->deflator->( $val, \%seen );
+        }
+        else {
+            $deflated = $attr->deflator->($val);
+        }
+        $hash{ $attr->name } = $deflated;
     }
     return \%hash;
 }

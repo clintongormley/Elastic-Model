@@ -8,7 +8,7 @@ use Carp;
 use Data::Dump qw(pp);
 use List::MoreUtils qw(uniq zip);
 use Class::Load qw(load_class);
-use Scalar::Util qw(reftype);
+use Scalar::Util qw(reftype refaddr);
 
 Moose::Exporter->setup_import_methods(
     as_is => [ 'find_deflator', 'find_inflator' ] );
@@ -145,8 +145,18 @@ sub _deflate_array {
 
     sub {
         my ( $array, $seen ) = @_;
-        die "Cannot deflate recursive structures" if $seen->{"$array"}++;
-        [ map { $content->( $_, $seen ) } @$array ];
+        my @deflated;
+        for (@$array) {
+            if ( ref $_ ) {
+                my %seen = %$seen;
+                die "Cannot deflate recursive structures"
+                    if $seen{ refaddr $_};
+                push @deflated, $content->( $_, \%seen );
+                next;
+            }
+            push @deflated, $content->($_);
+        }
+        return \@deflated;
     };
 }
 
@@ -171,10 +181,19 @@ sub _deflate_hash {
 
     sub {
         my ( $hash, $seen ) = @_;
-        die "Cannot deflate recursive structures" if $seen->{"$hash"}++;
-        {
-            map { $_ => $content->( $hash->{ $_, $seen } ) } keys %$hash
-        };
+        my %deflated;
+        while ( my ( $key, $val ) = each %$hash ) {
+            if ( ref $val ) {
+                my %seen = %$seen;
+                die "Cannot deflate recursive structures"
+                    if $seen{ refaddr $val}++;
+                $deflated{$key} = $content->( $val, \%seen );
+            }
+            else {
+                $deflated{$key} = $content->($val);
+            }
+        }
+        return \%deflated;
     };
 }
 
@@ -214,7 +233,6 @@ sub _deflate_object {
 #===================================
     sub {
         my ( $obj, $seen ) = @_;
-        die "Cannot deflate recursive structures" if $seen->{"$obj"}++;
         my $deflated = $obj->deflate($seen);
         die "deflate() should return a HASH ref"
             unless reftype $deflated eq 'HASH';
@@ -242,14 +260,12 @@ sub _deflate_class {
 
     return sub {
         my ( $obj, $seen ) = @_;
-        die "Cannot deflate recursive structures" if $seen->{"$obj"}++;
         $obj->deflate($seen);
         }
         if does_role( $class, 'ESModel::Role::Doc' );
 
     sub {
         my ( $obj, $seen ) = @_;
-        die "Cannot deflate recursive structures" if $seen->{"$obj"}++;
         my $deflated = $obj->deflate($seen);
         die "deflate() should return a HASH ref"
             unless reftype $deflated eq 'HASH';
@@ -352,12 +368,14 @@ sub _deflate_sub_fields {
     }
     sub {
         my ( $hash, $seen ) = @_;
-        die "Cannot deflate recursive structures" if $seen->{"$hash"}++;
         my %new;
         while ( my ( $k, $v ) = each %$hash ) {
             next unless defined $v;
             if ( my $deflator = $deflators{$k} ) {
-                $v = $deflator->( $v, $seen );
+                my %seen = %$seen;
+                die "Cannot deflate recursive structures"
+                    if $seen{ refaddr $v}++;
+                $v = $deflator->( $v, \%seen );
             }
             $new{$k} = $v;
         }
