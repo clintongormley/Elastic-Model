@@ -33,7 +33,6 @@ our %Deflators = (
     'MooseX::Types::Structured::Tuple'           => \&_deflate_tuple,
     'MooseX::Types::Structured::Dict'            => \&_deflate_dict,
     'MooseX::Types::Structured::Map'             => \&_deflate_hashref,
-    'ESModel::Types::UID'                        => \&_deflate_uid,
     'ESModel::Types::GeoPoint'                   => \&_deflate_no,
     'ESModel::Types::Binary'                     => \&_deflate_binary,
     'ESModel::Types::Timestamp'                  => \&_deflate_timestamp,
@@ -59,7 +58,6 @@ our %Inflators = (
     'MooseX::Types::Structured::Tuple'           => \&_inflate_tuple,
     'MooseX::Types::Structured::Dict'            => \&_inflate_dict,
     'MooseX::Types::Structured::Map'             => \&_inflate_hashref,
-    'ESModel::Types::UID'                        => \&_inflate_uid,
     'ESModel::Types::GeoPoint'                   => \&_inflate_no,
     'ESModel::Types::Binary'                     => \&_inflate_binary,
     'ESModel::Types::Timestamp'                  => \&_inflate_timestamp,
@@ -402,20 +400,6 @@ sub _inflate_sub_fields {
             $new{$k} = $v;
         }
         return \%new;
-    };
-}
-
-#===================================
-sub _deflate_uid {
-#===================================
-    sub { $_[0]->as_string };
-}
-
-#===================================
-sub _inflate_uid {
-#===================================
-    sub {
-        ESModel::Doc::UID->new_from_string(@_);
     };
 }
 

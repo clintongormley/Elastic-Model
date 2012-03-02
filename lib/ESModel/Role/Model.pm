@@ -105,76 +105,46 @@ sub new_doc {
     my $self = shift;
     my %params = ref $_[0] ? %{ shift() } : @_;
 
-    my ( $index, $type ) = delete @params{ 'index', 'type' };
-    croak "A new doc must have a single index and a single type"
-        unless $index && !ref $index && $type && !ref $type;
+    my $uid = ESModel::Doc::UID->new(%params);
 
-    my $class = $self->index($index)->class_for_type($type);
+    my $class = $self->index( $uid->index )->class_for_type( $uid->type );
     return $class->new(
+        %params,
         model => $self,
-        index => $index,
-        type  => $type,
-        %params
+        uid   => $uid,
     );
 }
 
 #===================================
 sub get_doc {
 #===================================
-    my $self   = shift;
-    my $uid    = blessed $_[0] ? shift : ESModel::Doc::UID->new(@_);
-    my $result = $self->store->get_doc($uid) or return;
-    $uid->update_from_store($result);
-    $self->inflate_doc( $uid, $result->{_source} );
-}
+    my $self = shift;
+    my $params
+        = !ref $_[0] ? {@_}
+        : blessed $_[0] ? { uid => shift() }
+        :                 shift;
 
-#===================================
-sub inflate_doc {
-#===================================
-    my $self   = shift;
-    my $uid    = shift;
-    my $source = shift;
+    my $uid    = $params->{uid}     ||= ESModel::Doc::UID->new(@_);
+    my $source = $params->{_source} ||= $self->get_raw_doc($uid)
+        unless $uid->from_store;
 
-    my $index = $self->index( $uid->index );
-    my $class = $index->class_for_type( $uid->type );
-
-    return $class->new(
-        model => $self,
-        uid   => $uid,
-        %{ $class->inflate($source) }
+    my $class = $self->index( $uid->index )->class_for_type( $uid->type );
+    $class->new(
+        model   => $self,
+        uid     => $uid,
+        _source => $source
     );
 }
 
 #===================================
-sub inflate_or_get_doc {
+sub get_raw_doc {
 #===================================
-    my $self   = shift;
-    my $params = shift;
-    my $uid    = ESModel::Doc::UID->new_from_store($params);
-    if ( my $source = $params->{_source} ) {
-        return $self->inflate_doc( $uid, $source );
-    }
-    $self->get_doc($uid);
-}
+    my $self = shift;
+    my $uid  = shift;
 
-# TODO: inflate_docs
-#===================================
-sub inflate_docs {
-#===================================
-    my ( $self, $result ) = @_;
-
-    #    my $uid = ESModel::Doc::UID->new_from_store($result);
-    #    my $source   = $result->{_source}
-    #        or return $self->get_doc( $uid->values );
-    #
-    #    my $class
-    #        = $self->index( $uid->index )->class_for_type( $uid->type );
-    #
-    #    return $class->new(
-    #        model    => $self,
-    #        uid => $uid,
-    #        %{ $class->inflate($source) }
-    #    );
+    my $result = $self->store->get_doc($uid);
+    $uid->update_from_store($result);
+    return $result->{_source};
 }
 
 #===================================

@@ -31,13 +31,12 @@ sub _build_uid {
 #===================================
 sub object {
 #===================================
-    my $self   = shift;
-    my $uid    = $self->uid;
-    my $result = $self->result;
-    if ( $result->{_source} ) {
-        return $self->model->inflate_doc( $uid, $result->{_source} );
-    }
-    $self->model->get_doc($uid);
+    my $self = shift;
+    $self->model->get_doc(
+        uid     => $self->uid,
+        _source => $self->source
+
+    );
 }
 
 #===================================

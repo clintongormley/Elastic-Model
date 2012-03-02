@@ -48,6 +48,39 @@ has 'timestamp_path' => (
     is => 'rw',
     default => 'timestamp'
 );
+has 'required_attrs' => (
+    isa     => 'HashRef',
+    is      => 'ro',
+    default => sub { {} },
+);
+
+#===================================
+around 'add_attribute' => sub {
+#===================================
+    my $orig = shift;
+    my $attr = $orig->(@_);
+
+    my $meta      = $attr->associated_class;
+    my $attr_name = $attr->name;
+
+    $meta->required_attrs->{$attr_name} = $attr->init_arg || $attr_name
+        if $attr->_is_required && !$attr->has_default && !$attr->has_builder;
+
+    unless ( $attr->exclude ) {
+        my %methods;
+        for (qw(get_read_method get_write_method predicate clearer)) {
+            my $name = $attr->$_ or next;
+            $methods{$name}++;
+        }
+        for my $method ( @{ $attr->associated_methods } ) {
+            my $name = $method->name;
+            next unless $methods{$name};
+            $meta->add_before_method_modifier( $name,
+                sub { $_[0]->_inflated || $_[0]->_load_data } );
+        }
+    }
+    return $attr;
+};
 
 #===================================
 sub mapping {

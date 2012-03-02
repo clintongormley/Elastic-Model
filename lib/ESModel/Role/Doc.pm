@@ -5,30 +5,103 @@ with 'ESModel::Role::ModelAttr';
 
 use namespace::autoclean;
 use ESModel::Trait::Exclude;
-use ESModel::Types qw(Timestamp);
+use MooseX::Types::Moose qw(Bool HashRef);
+use ESModel::Types qw(Timestamp UID);
+use Scalar::Util qw(refaddr);
 use Time::HiRes();
+use Carp;
 
+#===================================
 has 'uid' => (
-    isa     => 'ESModel::Doc::UID',
+#===================================
+    isa     => UID,
     is      => 'ro',
-    handles => { id => 'id', type => 'type' },
+    traits  => ['ESModel::Trait::Exclude'],
+    handles => {
+        index   => 'index',
+        id      => 'id',
+        type    => 'type',
+        routing => 'routing'
+    },
 );
 
+#===================================
+has '_inflated' => (
+#===================================
+    isa     => Bool,
+    is      => 'ro',
+    traits  => ['ESModel::Trait::Exclude'],
+    default => 1,
+);
+
+#===================================
+has '_source' => (
+#===================================
+    isa     => HashRef,
+    is      => 'ro',
+    traits  => ['ESModel::Trait::Exclude'],
+    lazy    => 1,
+    builder => '_fetch_source',
+);
+
+#===================================
+sub _fetch_source {
+#===================================
+    my $self = shift;
+    $self->model->get_raw_doc( $self->uid );
+}
+
+#===================================
+around 'BUILDARGS' => sub {
+#===================================
+    my $orig   = shift;
+    my $class  = $_[0];
+    my $params = $orig->(@_);
+
+    my $uid = $params->{uid};
+    if ( $uid and $uid->from_store ) {
+        $params->{_inflated} = 0;
+        delete $params->{_source} unless $params->{_source};
+    }
+    else {
+        my $required = $class->meta->required_attrs;
+        for my $name ( keys %$required ) {
+            croak "Attribute ($name) is required"
+                unless $params->{ $required->{$name} };
+        }
+    }
+    return $params;
+};
+
+#===================================
+sub _load_data {
+#===================================
+    my $self = shift;
+
+    my $uid   = $self->uid;
+    my $model = $self->model;
+
+    # TODO: what if doc deleted?
+    my $source = $self->_source;
+
+    my $new = $self->new(
+        model => $model,
+        uid   => $uid,
+        %{ $self->inflate($source) },
+    );
+
+    %$self = %$new;
+    return;
+}
+
+#===================================
 has timestamp => (
+#===================================
     traits  => ['ESModel::Trait::Field'],
     isa     => Timestamp,
     is      => 'rw',
     exclude => 0
 );
-
-around 'BUILDARGS' => sub {
-    my $orig   = shift;
-    my $class  = shift;
-    my %params = ref $_[0] ? %{ shift() } : @_;
-    $params{uid}
-        ||= ESModel::Doc::UID->new( %params, type => $class->meta->type );
-    $class->$orig( \%params );
-};
 
 no Moose::Role;
 

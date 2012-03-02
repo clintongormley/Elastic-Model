@@ -56,6 +56,14 @@ has 'include_in_root'   => ( isa => Bool, is => 'ro' );
 has 'deflator' => ( isa => Maybe [CodeRef], is => 'ro', lazy_build => 1 );
 has 'inflator' => ( isa => Maybe [CodeRef], is => 'ro', lazy_build => 1 );
 
+has '_is_required' => ( isa => Bool, is => 'ro' );
+
+#===================================
+before '_process_options' => sub {
+#===================================
+    $_[2]->{_is_required} = 1 if delete $_[2]->{required};
+};
+
 #===================================
 sub _build_deflator {
 #===================================

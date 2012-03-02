@@ -16,7 +16,6 @@ use MooseX::Types -declare => [ qw(
         ES
         ESDateTime
         ESDoc
-        ESTypeConstraint
         FieldType
         GeoPoint
         IndexMapping
@@ -192,21 +191,13 @@ coerce Timestamp, from ESDateTime,
     via { DateTime->from_epoch( epoch => $_ ) };
 
 #===================================
-subtype UID, as 'ESModel::Doc::UID',
+class_type UID, { class => 'ESModel::Doc::UID' };
 #===================================
-    where { $_->from_store }, message {"The UID has not been loaded from the store"};
 coerce UID, from Str,     via { ESModel::Doc::UID->new_from_string($_) };
 coerce UID, from HashRef, via { ESModel::Doc::UID->new($_) };
 
 #===================================
-subtype ESDoc, as RoleName,
+role_type ESDoc, { role => 'ESModel::Role::Doc' };
 #===================================
-    where { $_->does('ESModel::Role::Doc') };
-
-#===================================
-subtype ESTypeConstraint, as 'Moose::Meta::TypeConstraint';
-#===================================
-coerce ESTypeConstraint, from Str,
-    via { Moose::Util::TypeConstraints::find_type_constraint($_) };
 
 1;

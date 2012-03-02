@@ -84,9 +84,13 @@ sub _as_results_builder {
 #===================================
 sub _as_object_builder {
 #===================================
-    my $self = shift;
-    my $m    = $self->model;
-    sub { $_[0] && $m->inflate_or_get_doc( $_[0] ) }
+    my $self  = shift;
+    my $model = $self->model;
+    sub {
+        my $raw = shift or return;
+        my $uid = ESModel::Doc::UID->new_from_store($raw);
+        $model->get_doc( uid => $uid, _source => $raw->{_source} );
+    };
 }
 
 #===================================
@@ -95,8 +99,11 @@ sub _as_objects_builder {
     my $self = shift;
     my $m    = $self->model;
     sub {
-        map { $m->inflate_or_get_doc($_) } @_;
-        }
+        map {
+            my $uid = ESModel::Doc::UID->new_from_store($_);
+            $m->get_doc( uid => $uid, _source => $_->{_source} )
+        } @_;
+    };
 }
 
 #===================================
