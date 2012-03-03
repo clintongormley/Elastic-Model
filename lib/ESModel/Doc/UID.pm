@@ -4,12 +4,48 @@ use Moose;
 use MooseX::Types::Moose qw(:all);
 use namespace::autoclean -also => [ '_encode', '_decode' ];
 
-has index => ( is => 'ro', isa => Str, required => 1, writer => '_index' );
-has type => ( is => 'ro', isa => Str, required => 1 );
-has id      => ( is => 'ro', isa => Maybe [Str], writer => '_id' );
-has version => ( is => 'ro', isa => Maybe [Int], writer => '_version' );
-has routing => ( is => 'ro', isa => Maybe [Str] );
-has from_store => ( is => 'ro', isa => Bool, writer => '_from_store' );
+#===================================
+has index => (
+#===================================
+    is       => 'ro',
+    isa      => Str,
+    required => 1,
+    writer   => '_index'
+);
+#===================================
+has type => (
+#===================================
+    is       => 'ro',
+    isa      => Str,
+    required => 1
+);
+#===================================
+has id => (
+#===================================
+    is     => 'ro',
+    isa    => Str,
+    writer => '_id'
+);
+#===================================
+has version => (
+#===================================
+    is     => 'ro',
+    isa    => Int,
+    writer => '_version'
+);
+#===================================
+has routing => (
+#===================================
+    is  => 'ro',
+    isa => Maybe[Str]
+);
+#===================================
+has from_store => (
+#===================================
+    is     => 'ro',
+    isa    => Bool,
+    writer => '_from_store'
+);
 
 no Moose;
 

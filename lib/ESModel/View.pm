@@ -201,9 +201,16 @@ sub create { shift->new_doc(@_)->save }
 sub get {
 #===================================
     my $self = shift;
-    my %params = ref $_[0] ? %{ shift() } : @_ == 1 ? ( id => shift() ) : @_;
-    $params{id} or croak "No 'id' passed to get()";
-    $params{$_} ||= $self->_single($_) for qw(index type);
+    my %params
+        = @_ != 1 ? @_
+        : !ref $_[0]                      ? ( id  => shift() )
+        : $_[0]->isa('ESModel::Doc::UID') ? ( uid => shift() )
+        :                                   %{ shift() };
+
+    unless ( $params{uid} ) {
+        $params{id} or croak "No 'id' passed to get()";
+        $params{$_} ||= $self->_single($_) for qw(index type);
+    }
     $self->model->get_doc(%params);
 }
 

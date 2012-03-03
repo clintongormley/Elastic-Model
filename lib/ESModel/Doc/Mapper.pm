@@ -135,14 +135,13 @@ sub build_mapping {
         if ($is_esmodel) {
             $type = $attr->type;
             if ( my $mapping = $attr->mapping ) {
-                $mapping->{type} ||= $type;
-                die "Attribute has a 'mapping' but no 'type'\n"
-                    unless $mapping->{type};
+                $mapping->{type} ||= $type
+                    || die "Attribute has a 'mapping' but no 'type'\n";
                 return $mapping;
             }
         }
 
-        my %mapping = map_constraint( $attr->type_constraint );
+        my %mapping = map_constraint( $attr->type_constraint, $attr );
         $mapping{type} = $type if $type;
         $type = $mapping{type}
             or die "Couldn't find a default mapping\n" . $attr->name;
@@ -209,14 +208,13 @@ sub add_mapper {
 #===================================
 sub map_constraint {
 #===================================
-    my $tc = shift or die "No type constraint provided\n";
-
+    my ( $tc, $attr ) = @_;
     my $name = $tc->name;
     if ( my $handler = $Mappers{$name} || $Mappers{ ref $tc } ) {
-        return $handler->($tc);
+        return $handler->(@_);
     }
     my $parent = $tc->parent or return;
-    return map_constraint($parent);
+    return map_constraint( $parent, $attr );
 }
 
 #===================================
@@ -246,21 +244,22 @@ sub _type_param_mapping {
 #===================================
 sub _parameterized_mapping {
 #===================================
-    my $tc     = shift;
+    my ( $tc, $attr ) = @_;
     my $parent = $tc->parent;
 
     if ( my $handler = $Mappers{ $parent->name } ) {
-        return $handler->($tc);
+        return $handler->(@_);
     }
-    return map_constraint($parent);
+    return map_constraint( $parent, $attr );
 }
 
 #===================================
 sub _object_mapping {
 #===================================
-    type           => 'object',
+    (   type       => 'object',
         dynamic    => 1,
-        properties => { __CLASS__ => { type => 'string', index => 'no' } };
+        properties => { __CLASS__ => { type => 'string', index => 'no' } }
+    );
 }
 
 #===================================
@@ -292,21 +291,27 @@ sub _sub_fields {
 #===================================
 sub _class_mapping {
 #===================================
-    my $tc    = shift;
+    my ( $tc, $attr ) = @_;
     my $class = $tc->name;
     load_class($class);
 
-    die "$class is not a Moose class, and no mapper is available\n"
+    die "$class is not a Moose class, and no mapping is available\n"
         unless $class->isa('Moose::Object');
 
     my $meta = $class->meta;
 
-    return (
-        type       => 'object',
-        dynamic    => $meta->dynamic,
-        properties => $meta->mapping('only_properties'),
-    ) if does_role( $class, 'ESModel::Role::Doc' );
+    if ( does_role( $class, 'ESModel::Role::Doc' ) ) {
+        my $inc = $attr->include_attrs;
+        push @$inc, 'uid' if $inc;
+        my @exc = grep { $_ ne 'uid' } @{ $attr->exclude_attrs || [] };
+        my %mapping = (
+            type       => 'object',
+            dynamic    => $meta->dynamic,
+            properties => $meta->property_mapping( $inc, \@exc )
+        );
+        return %mapping
 
+    }
     my %properties = ();
     for my $attr ( $meta->get_all_attributes ) {
         my $attr_mapping = build_mapping($attr) or next;

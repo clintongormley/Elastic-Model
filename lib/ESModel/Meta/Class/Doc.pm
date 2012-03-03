@@ -68,7 +68,7 @@ around 'add_attribute' => sub {
 
     unless ( $attr->exclude ) {
         my %methods;
-        for (qw(get_read_method get_write_method predicate clearer)) {
+        for (qw(get_read_method get_write_method  predicate clearer)) {
             my $name = $attr->$_ or next;
             $methods{$name}++;
         }
@@ -82,29 +82,64 @@ around 'add_attribute' => sub {
     return $attr;
 };
 
-#===================================
-sub mapping {
-#===================================
-    my $self            = shift;
-    my $properties_only = $_[0];
+sub _inline_has_value {
+    return ('$_[0]->_inflated || $_[0]->_load_data;', shift->SUPER::_inline_has_value(@_));
+}
 
-    my %properties = ();
-    for my $attr ( $self->get_all_attributes ) {
+#===================================
+around '_process_attribute' => sub {
+#===================================
+    my $orig = shift;
+    my ( $self, $name, @args ) = @_;
+
+    @args = %{$args[0]} if scalar @args == 1 && ref($args[0]) eq 'HASH';
+
+    if (($name || '') =~ /^\+(.*)/) {
+        return $self->_process_inherited_attribute($1, @args);
+    }
+    else {
+        return $self->_process_new_attribute($name, @args);
+    }
+       my $attr = $orig->(@_);
+    $attr;
+};
+
+
+#===================================
+sub property_mapping {
+#===================================
+    my $self = shift;
+    my %inc = map { $_ => 1 } $_[0] ? @{ $_[0] } : $self->get_attribute_list;
+    delete @inc{ @{ $_[1] } } if $_[1];
+
+    my %properties;
+    %properties = (
+        routing => { type => 'string', index => 'no' },
+        map {
+            $_ => {
+                type                         => 'string',
+                index                        => 'not_analyzed',
+                omit_norms                   => 1,
+                omit_term_freq_and_positions => 1
+                }
+            } qw(index type id)
+    ) if $inc{uid};
+
+    for my $name ( keys %inc ) {
+        my $attr = $self->get_attribute($name);
         next if $attr->exclude;
         my $attr_mapping = build_mapping($attr) or next;
         $properties{ $attr->name } = $attr_mapping;
     }
-    return \%properties if $properties_only;
-
-    my $type_settings = $self->_type_settings;
-    return { %$type_settings, properties => \%properties };
+    return \%properties;
 }
 
 #===================================
-sub _type_settings {
+sub root_mapping {
 #===================================
     my $self    = shift;
     my %mapping = %{ $self->type_settings };
+    $mapping{properties} = $self->property_mapping( undef, ['uid'] );
 
     for (
         'analyzer',             'index_analyzer',    'search_analyzer',

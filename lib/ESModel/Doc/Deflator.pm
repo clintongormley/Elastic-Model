@@ -33,6 +33,7 @@ our %Deflators = (
     'MooseX::Types::Structured::Tuple'           => \&_deflate_tuple,
     'MooseX::Types::Structured::Dict'            => \&_deflate_dict,
     'MooseX::Types::Structured::Map'             => \&_deflate_hashref,
+    'ESModel::Types::ESDoc'                      => \&_deflate_esdoc,
     'ESModel::Types::GeoPoint'                   => \&_deflate_no,
     'ESModel::Types::Binary'                     => \&_deflate_binary,
     'ESModel::Types::Timestamp'                  => \&_deflate_timestamp,
@@ -71,13 +72,14 @@ our %Inline = (
 sub find_deflator {
 #===================================
     my $tc = shift || find_type_constraint('Any');
+    my $attr = shift;
 
     my $name = $tc->name;
     if ( my $handler = $Deflators{$name} || $Deflators{ ref $tc } ) {
-        return $handler->($tc);
+        return $handler->( $tc, $attr );
     }
     my $parent = $tc->parent or return;
-    return find_deflator($parent);
+    return find_deflator( $parent, $attr );
 }
 
 #===================================
@@ -137,9 +139,9 @@ sub _inflate_regex {
 #===================================
 sub _deflate_array {
 #===================================
-    my $tc = shift;
-    return _deflate_no unless $tc->can('type_parameter');
-    my $content = find_deflator( $tc->type_parameter );
+    my ( $tc, $attr ) = @_;
+    return _deflate_no() unless $tc->can('type_parameter');
+    my $content = find_deflator( $tc->type_parameter, $attr );
 
     sub {
         my ( $array, $seen ) = @_;
@@ -173,9 +175,9 @@ sub _inflate_array {
 #===================================
 sub _deflate_hash {
 #===================================
-    my $tc = shift;
-    return _deflate_no unless $tc->can('type_parameter');
-    my $content = find_deflator( $tc->type_parameter );
+    my ( $tc, $attr ) = @_;
+    return _deflate_no() unless $tc->can('type_parameter');
+    my $content = find_deflator( $tc->type_parameter, $attr );
 
     sub {
         my ( $hash, $seen ) = @_;
@@ -213,9 +215,9 @@ sub _inflate_hash {
 #===================================
 sub _deflate_maybe {
 #===================================
-    my $tc = shift;
+    my ( $tc, $attr ) = @_;
     return _deflate_no unless $tc->can('type_parameter');
-    find_deflator( $tc->type_parameter );
+    find_deflator( $tc->type_parameter, $attr );
 }
 
 #===================================
@@ -253,14 +255,29 @@ sub _inflate_object {
 #===================================
 sub _deflate_class {
 #===================================
-    my $tc    = shift;
+    my ( $tc, $attr ) = @_;
     my $class = $tc->name;
+    my $meta  = $class->meta;
 
-    return sub {
-        my ( $obj, $seen ) = @_;
-        $obj->deflate($seen);
+    if ( does_role( $class, 'ESModel::Role::Doc' ) ) {
+        my $inc = $attr->include_attrs || [ $meta->get_attribute_list ];
+        my $exc = $attr->exclude_attrs;
+        my %inc;
+        for (@$inc) {
+            my $attr = $meta->get_attribute($_)
+                or die "Class $class does not have attribute $_\n";
+            next if $attr->exclude;
+            $inc{$_} = 1;
         }
-        if does_role( $class, 'ESModel::Role::Doc' );
+        delete @inc{@$exc} if $exc;
+        delete $inc{uid};
+        my @attrs = keys %inc;
+        return sub {
+            my ( $obj, $seen ) = @_;
+            my $hash = $obj->deflate( $seen, \@attrs );
+            return { %$hash, $obj->uid->as_params };
+        };
+    }
 
     sub {
         my ( $obj, $seen ) = @_;
@@ -280,16 +297,16 @@ sub _inflate_class {
 }
 
 #===================================
-sub _deflate_decorated { find_deflator shift->__type_constraint }
-sub _inflate_decorated { find_inflator shift->__type_constraint }
+sub _deflate_decorated { find_deflator( shift->__type_constraint, @_ ) }
+sub _inflate_decorated { find_inflatorshift->__type_constraint }
 #===================================
 
 #===================================
 sub _deflate_type_param {
 #===================================
-    my $tc = shift;
+    my ( $tc, $attr ) = @_;
     return unless $tc->can('type_parameter');
-    find_deflator $tc->type_parameter;
+    find_deflator( $tc->type_parameter, $attr );
 }
 #===================================
 sub _inflate_type_param {
@@ -302,13 +319,13 @@ sub _inflate_type_param {
 #===================================
 sub _deflate_parameterized {
 #===================================
-    my $tc     = shift;
+    my ( $tc, $attr ) = @_;
     my $parent = $tc->parent;
 
     if ( my $handler = $Deflators{ $parent->name } ) {
-        return $handler->($tc);
+        return $handler->( $tc, $attr );
     }
-    return find_deflator($parent);
+    return find_deflator( $parent, $attr );
 }
 
 #===================================
@@ -324,16 +341,18 @@ sub _inflate_parameterized {
 }
 
 #===================================
-sub _deflate_dict { _deflate_sub_fields( @{ shift->type_constraints } ) }
+sub _deflate_dict { _deflate_sub_fields( @{ shift->type_constraints }, @_ ) }
 sub _inflate_dict { _inflate__sub_fields( @{ shift->type_constraints } ) }
 #===================================
 
 #===================================
 sub _deflate_tuple {
 #===================================
-    my $i        = 0;
-    my @tcs      = @{ shift->type_constraints };
-    my $deflator = _deflate_sub_fields( map { $i++ => $_ } @tcs );
+    my ( $tc, $attr ) = @_;
+    my $i   = 0;
+    my @tcs = @{ $tc->type_constraints };
+    my $deflator
+        = _deflate_sub_fields( map { $i++ => $_ } @tcs );    ###### pass $attr
     return sub {
         my ( $array, $seen ) = @_;
         my %hash;
@@ -360,6 +379,7 @@ sub _deflate_sub_fields {
     my %dict = @_;
     my %deflators;
 
+    #### attr
     for my $key ( keys %dict ) {
         my $tc = find_type_constraint $dict{$key};
         $deflators{$key} = find_deflator $tc ;
@@ -385,6 +405,8 @@ sub _deflate_sub_fields {
 sub _inflate_sub_fields {
 #===================================
     my %dict = @_;
+
+    #### attr
     my %inflators;
     for my $key ( keys %dict ) {
         my $tc = find_type_constraint $dict{$key};

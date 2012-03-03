@@ -125,8 +125,10 @@ sub get_doc {
         :                 shift;
 
     my $uid    = $params->{uid}     ||= ESModel::Doc::UID->new(@_);
-    my $source = $params->{_source} ||= $self->get_raw_doc($uid)
-        unless $uid->from_store;
+    my $source = $params->{_source};
+    unless($source || $uid->from_store) {
+        $source = $self->get_raw_doc($uid)
+    }
 
     my $class = $self->index( $uid->index )->class_for_type( $uid->type );
     $class->new(

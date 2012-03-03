@@ -28,10 +28,9 @@ has 'uid' => (
 #===================================
 has '_inflated' => (
 #===================================
-    isa     => Bool,
-    is      => 'ro',
-    traits  => ['ESModel::Trait::Exclude'],
-    default => 1,
+    isa    => Bool,
+    is     => 'ro',
+    traits => ['ESModel::Trait::Exclude'],
 );
 
 #===================================
@@ -60,10 +59,10 @@ around 'BUILDARGS' => sub {
 
     my $uid = $params->{uid};
     if ( $uid and $uid->from_store ) {
-        $params->{_inflated} = 0;
         delete $params->{_source} unless $params->{_source};
     }
     else {
+        $params->{_inflated} = 1;
         my $required = $class->meta->required_attrs;
         for my $name ( keys %$required ) {
             croak "Attribute ($name) is required"
@@ -88,6 +87,7 @@ sub _load_data {
         model => $model,
         uid   => $uid,
         %{ $self->inflate($source) },
+        _inflated =>1,
     );
 
     %$self = %$new;
@@ -138,12 +138,16 @@ sub delete {
 #===================================
 sub deflate {
 #===================================
-    my ( $self, $orig_seen ) = @_;
+    my ( $self, $orig_seen, $attrs ) = @_;
+    $self->_load_data unless $self->_inflated;
     my $seen = $orig_seen || { refaddr($self) => 1 };
 
-    my $meta = $self->meta;
     my %hash;
-    for my $attr ( $meta->get_all_attributes ) {
+    my $meta = $self->meta;
+    $attrs ||= [ $meta->get_attribute_list ];
+
+    for (@$attrs) {
+        my $attr = $meta->get_attribute($_);
         next if $attr->exclude;
         next unless $attr->has_value($self) || $attr->has_builder($self);
 
@@ -158,7 +162,7 @@ sub deflate {
         else {
             $deflated = $attr->deflator->($val);
         }
-        $hash{ $attr->name } = $deflated;
+        $hash{$_} = $deflated;
     }
     return \%hash;
 }

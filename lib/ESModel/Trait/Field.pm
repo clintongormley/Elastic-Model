@@ -32,6 +32,7 @@ has 'search_analyzer'              => ( isa => Str,  is => 'ro' );
 has 'omit_norms'                   => ( isa => Bool, is => 'ro' );
 has 'omit_term_freq_and_positions' => ( isa => Bool, is => 'ro' );
 has 'term_vector' => ( isa => TermVectorMapping, is => 'ro' );
+sub omit_tfp { shift->omit_term_freq_and_positions(@_) }
 
 # dates
 has 'format'         => ( isa => Str, is => 'ro' );
@@ -46,7 +47,7 @@ has 'geohash_precision' => ( isa => Int,  is => 'ro' );
 has 'enabled' => ( isa => Bool,           is => 'ro' );
 has 'dynamic' => ( isa => DynamicMapping, is => 'ro' );
 has 'path'    => ( isa => PathMapping,    is => 'ro' );
-has '_properties' => ( isa => HashRef [Str], is => 'ro' );
+has 'properties' => ( isa => HashRef [Str], is => 'ro' );
 
 # nested
 has 'include_in_parent' => ( isa => Bool, is => 'ro' );
@@ -56,7 +57,26 @@ has 'include_in_root'   => ( isa => Bool, is => 'ro' );
 has 'deflator' => ( isa => Maybe [CodeRef], is => 'ro', lazy_build => 1 );
 has 'inflator' => ( isa => Maybe [CodeRef], is => 'ro', lazy_build => 1 );
 
+# meta
 has '_is_required' => ( isa => Bool, is => 'ro' );
+
+# esdocs
+has 'include_attrs' => ( isa => ArrayRef [Str], is => 'ro' );
+has 'exclude_attrs' => ( isa => ArrayRef [Str], is => 'ro' );
+has 'deflate_attrs' => (
+    isa => ArrayRef [Str],
+    is => 'ro',
+    writer   => 'set_deflate_attrs',
+    init_arg => undef
+);
+
+has '_wrapped_methods' => (
+    isa     => HashRef,
+    traits  => ['Hash'],
+    handles => { method_wrapped => 'accessor' },
+    is      => 'ro',
+    default => sub { {} }
+);
 
 #===================================
 before '_process_options' => sub {
@@ -68,10 +88,10 @@ before '_process_options' => sub {
 sub _build_deflator {
 #===================================
     my $self = shift;
-    my $deflator = eval { find_deflator( $self->type_constraint ) }
+    my $deflator = eval { find_deflator( $self->type_constraint, $self ) }
         or croak "No deflator found for attribute '"
         . $self->name
-        . '" in class '
+        . "' in class "
         . $self->associated_class->name;
     if ( $self->should_auto_deref ) {
         my $old_deflator = $deflator;
