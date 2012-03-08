@@ -135,53 +135,5 @@ sub delete {
     $self;
 }
 
-#===================================
-sub deflate {
-#===================================
-    my ( $self, $orig_seen, $attrs ) = @_;
-    $self->_load_data unless $self->_inflated;
-    my $seen = $orig_seen || { refaddr($self) => 1 };
-
-    my %hash;
-    my $meta = $self->meta;
-    $attrs ||= [ $meta->get_attribute_list ];
-
-    for (@$attrs) {
-        my $attr = $meta->get_attribute($_);
-        next if $attr->exclude;
-        next unless $attr->has_value($self) || $attr->has_builder($self);
-
-        my $val = $attr->get_read_method_ref->($self);
-        my $deflated;
-        if ( ref $val ) {
-            my %seen = %$seen;
-            croak "Cannot deflate recursive structures"
-                if $seen{ refaddr $val}++;
-            $deflated = $attr->deflator->( $val, \%seen );
-        }
-        else {
-            $deflated = $attr->deflator->($val);
-        }
-        $hash{$_} = $deflated;
-    }
-    return \%hash;
-}
-
-#===================================
-sub inflate {
-#===================================
-    my $class = shift;
-    my %vals  = %{ shift() };
-
-    my $meta = $class->meta;
-    for my $name ( keys %vals ) {
-        my $attr = $meta->get_attribute($name);
-        $vals{$name} = $attr->inflator->( $vals{$name} );
-        if ( my $init = $attr->init_arg ) {
-            $vals{$init} = delete $vals{$name};
-        }
-    }
-    return \%vals;
-}
 
 1;

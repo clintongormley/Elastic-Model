@@ -6,6 +6,7 @@ use ElasticSearch();
 
 use MooseX::Types::Moose qw(:all);
 use MooseX::Types::Structured qw (Dict Optional Map);
+use namespace::autoclean;
 
 use MooseX::Types -declare => [ qw(
         Binary

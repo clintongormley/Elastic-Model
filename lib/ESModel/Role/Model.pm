@@ -4,25 +4,60 @@ use Moose::Role;
 use Carp;
 use ESModel::Types qw(ES);
 use ElasticSearch();
+use Moose::Util qw(does_role);
 use MooseX::Types::Moose qw(:all);
 use ESModel::View();
 use ESModel::Store();
+use Scalar::Util qw(blessed);
+
 use namespace::autoclean;
 
+#===================================
+has 'type_map' => (
+#===================================
+    isa     => 'Str',
+    is      => 'ro',
+    lazy    => 1,
+    default => 'ESModel::TypeMap::Default'
+);
+
+#===================================
+has 'deflators' => (
+#===================================
+    isa     => 'HashRef',
+    is      => 'ro',
+    default => sub { {} }
+);
+
+#===================================
+has 'inflators' => (
+#===================================
+    isa     => 'HashRef',
+    is      => 'ro',
+    default => sub { {} }
+);
+
+#===================================
 has 'store' => (
-    does       => 'ESModel::Role::Store',
-    is         => 'ro',
-    lazy_build => '_build_store'
+#===================================
+    does    => 'ESModel::Role::Store',
+    is      => 'ro',
+    lazy    => 1,
+    builder => '_build_store'
 );
 
+#===================================
 has 'es' => (
-    isa        => ES,
-    is         => 'ro',
-    coerce     => 1,
-    lazy_build => 1
+#===================================
+    isa     => ES,
+    is      => 'ro',
+    lazy    => 1,
+    builder => '_build_es'
 );
 
+#===================================
 has '_index_cache' => (
+#===================================
     isa     => HashRef,
     traits  => ['Hash'],
     default => sub { {} },
@@ -32,7 +67,9 @@ has '_index_cache' => (
     },
 );
 
+#===================================
 has '_live_indices' => (
+#===================================
     isa     => HashRef,
     is      => 'ro',
     traits  => ['Hash'],
@@ -47,6 +84,13 @@ has '_live_indices' => (
 sub _build_store { ESModel::Store->new( model => shift() ) }
 sub _build_es { ElasticSearch->new }
 #===================================
+
+#===================================
+sub BUILD {
+#===================================
+    my $self = shift;
+    Class::MOP::load_class( $self->type_map );
+}
 
 #===================================
 sub _update_live_indices {
@@ -124,10 +168,10 @@ sub get_doc {
         : blessed $_[0] ? { uid => shift() }
         :                 shift;
 
-    my $uid    = $params->{uid}     ||= ESModel::Doc::UID->new(@_);
+    my $uid = $params->{uid} ||= ESModel::Doc::UID->new(@_);
     my $source = $params->{_source};
-    unless($source || $uid->from_store) {
-        $source = $self->get_raw_doc($uid)
+    unless ( $source || $uid->from_store ) {
+        $source = $self->get_raw_doc($uid);
     }
 
     my $class = $self->index( $uid->index )->class_for_type( $uid->type );
@@ -152,5 +196,109 @@ sub get_raw_doc {
 #===================================
 sub search { shift->store->search(@_) }
 #===================================
+
+#===================================
+sub deflate_object {
+#===================================
+    my $self   = shift;
+    my $object = shift or die "No object passed to deflate()";
+    my $class  = blessed $object or die "deflate() can only deflate objects";
+    $self->deflator_for_class($class)->($object);
+}
+
+#===================================
+sub deflator_for_class {
+#===================================
+    my $self  = shift;
+    my $class = shift;
+    return $self->deflators->{$class} ||= do {
+        die "Class $class is not an ESModel class."
+            unless does_role( $class, 'ESModel::Role::Doc' );
+        $self->type_map->class_deflator($class);
+
+    };
+}
+
+#===================================
+sub inflate_object {
+#===================================
+    my $self  = shift;
+    my $class = shift or die "No class passed to inflate()";
+    my $hash  = shift or die "No hash pashed to inflate()";
+    $self->inflator_for_class($class)->($hash);
+}
+
+#===================================
+sub inflator_for_class {
+#===================================
+    my $self  = shift;
+    my $class = shift;
+    return $self->inflators->{$class} ||= do {
+        die "Class $class is not an ESModel class."
+            unless does_role( $class, 'ESModel::Role::Doc' );
+        $self->type_map->class_inflator($class);
+
+    };
+}
+
+#===================================
+sub map_class {
+#===================================
+    my $self  = shift;
+    my $class = shift;
+    die "Class $class is not an ESModel class."
+        unless does_role( $class, 'ESModel::Role::Doc' );
+
+    my $meta    = $class->meta;
+    my %mapping = ( $self->type_map->class_mapping($class),
+        %{ $meta->type_settings } );
+    delete $mapping{type};
+
+    for (
+        'analyzer',             'index_analyzer',    'search_analyzer',
+        'dynamic_date_formats', 'dynamic_templates', 'date_detection',
+        'numeric_detection'
+        )
+    {
+        my $val = $meta->$_;
+        next unless defined $val;
+        $mapping{$_} = $val;
+    }
+
+    $mapping{include_in_all} = 0 unless $meta->include_in_all;
+
+    $mapping{_id}{index} = 'not_analyzed' if $meta->index_id;
+    $mapping{enabled} = 0
+        if $meta->disable_indexing
+    ;    ### WHAT TO DO HERE? EXCLUDE ATTRS? WHAT ABOUT UID
+
+    $mapping{_source}{compress} = 1
+        unless $meta->disable_source_compression;
+    $mapping{_source}{includes} = $meta->source_includes
+        if defined $meta->source_includes;
+    $mapping{_source}{excludes} = $meta->source_excludes
+        if defined $meta->source_excludes;
+
+    $mapping{_all}{enabled}      = 0 if $meta->disable_all;
+    $mapping{_routing}{required} = 1 if $meta->routing_required;
+    $mapping{_index}{enabled}    = 1 if $meta->index_index;
+    $mapping{_size}{enabled}     = 1 if $meta->enable_size;
+
+    if ( my $path = $meta->timestamp_path ) {
+        $mapping{_timestamp} = { enabled => 1, path => $path };
+
+        if ( my $ttl = $meta->ttl ) {
+            $mapping{_ttl} = { enabled => 1, default => $ttl };
+        }
+    }
+
+    $mapping{_analyzer}{path} = $meta->analyzer_path if $meta->analyzer_path;
+    $mapping{_boost}{path}    = $meta->boost_path    if $meta->boost_path;
+    $mapping{_id}{path}       = $meta->id_path       if $meta->id_path;
+    $mapping{_routing}{path}  = $meta->routing_path  if $meta->routing_path;
+    $mapping{_parent}{type}   = $meta->parent_type   if $meta->parent_type;
+
+    return \%mapping;
+}
 
 1;

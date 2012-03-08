@@ -2,7 +2,6 @@ package ESModel::Trait::Field;
 
 use Moose::Role;
 use MooseX::Types::Moose qw(:all);
-use ESModel::Doc::Deflator qw(find_deflator find_inflator);
 use ESModel::Types qw(
     FieldType IndexMapping TermVectorMapping MultiFields
     StoreMapping DynamicMapping PathMapping
@@ -44,7 +43,7 @@ has 'lat_lon'           => ( isa => Bool, is => 'ro' );
 has 'geohash_precision' => ( isa => Int,  is => 'ro' );
 
 # object
-has 'enabled' => ( isa => Bool,           is => 'ro' );
+has 'enabled' => ( isa => Bool,           is => 'ro' , predicate=>'has_enabled');
 has 'dynamic' => ( isa => DynamicMapping, is => 'ro' );
 has 'path'    => ( isa => PathMapping,    is => 'ro' );
 has 'properties' => ( isa => HashRef [Str], is => 'ro' );
@@ -84,38 +83,5 @@ before '_process_options' => sub {
     $_[2]->{_is_required} = 1 if delete $_[2]->{required};
 };
 
-#===================================
-sub _build_deflator {
-#===================================
-    my $self = shift;
-    my $deflator = eval { find_deflator( $self->type_constraint, $self ) }
-        or croak "No deflator found for attribute '"
-        . $self->name
-        . "' in class "
-        . $self->associated_class->name;
-    if ( $self->should_auto_deref ) {
-        my $old_deflator = $deflator;
-        if ( $self->type_constraint->is_a_type_of('ArrayRef') ) {
-            $deflator = sub { my $seen = pop; $old_deflator->( \@_, $seen ) }
-        }
-        else {
-            $deflator = sub { my $seen = pop; $old_deflator->( {@_}, $seen ) }
-        }
-    }
-    return $deflator;
-}
-
-### TODO: weak refs?
-#===================================
-sub _build_inflator {
-#===================================
-    my $self = shift;
-    my $inflator = eval { find_inflator( $self->type_constraint ) }
-        or croak "No inflator found for attribute '"
-        . $self->name
-        . '" in class '
-        . $self->associated_class->name;
-    return $inflator;
-}
 
 1;
