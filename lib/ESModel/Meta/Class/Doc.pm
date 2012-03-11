@@ -60,4 +60,58 @@ has 'required_attrs' => (
     default => sub { {} },
 );
 
+#===================================
+sub root_class_mapping {
+#===================================
+    my $self    = shift;
+    my $class   = $self->name;
+    my %mapping = %{ $self->type_settings };
+
+    for (
+        'analyzer',             'index_analyzer',    'search_analyzer',
+        'dynamic_date_formats', 'dynamic_templates', 'date_detection',
+        'numeric_detection'
+        )
+    {
+        my $val = $self->$_;
+        next unless defined $val;
+        $mapping{$_} = $val;
+    }
+
+    $mapping{include_in_all} = 0 unless $self->include_in_all;
+
+    $mapping{_id}{index} = 'not_analyzed' if $self->index_id;
+    $mapping{enabled} = 0
+        if $self->disable_indexing
+    ;    ### WHAT TO DO HERE? EXCLUDE ATTRS? WHAT ABOUT UID
+
+    $mapping{_source}{compress} = 1
+        unless $self->disable_source_compression;
+    $mapping{_source}{includes} = $self->source_includes
+        if defined $self->source_includes;
+    $mapping{_source}{excludes} = $self->source_excludes
+        if defined $self->source_excludes;
+
+    $mapping{_all}{enabled}      = 0 if $self->disable_all;
+    $mapping{_routing}{required} = 1 if $self->routing_required;
+    $mapping{_index}{enabled}    = 1 if $self->index_index;
+    $mapping{_size}{enabled}     = 1 if $self->enable_size;
+
+    if ( my $path = $self->timestamp_path ) {
+        $mapping{_timestamp} = { enabled => 1, path => $path };
+
+        if ( my $ttl = $self->ttl ) {
+            $mapping{_ttl} = { enabled => 1, default => $ttl };
+        }
+    }
+
+    $mapping{_analyzer}{path} = $self->analyzer_path if $self->analyzer_path;
+    $mapping{_boost}{path}    = $self->boost_path    if $self->boost_path;
+    $mapping{_id}{path}       = $self->id_path       if $self->id_path;
+    $mapping{_routing}{path}  = $self->routing_path  if $self->routing_path;
+    $mapping{_parent}{type}   = $self->parent_type   if $self->parent_type;
+
+    return \%mapping;
+}
+
 1;
