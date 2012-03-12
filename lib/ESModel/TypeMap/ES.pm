@@ -9,13 +9,13 @@ has_type 'ESModel::Types::UID',
     sub {
         die "Cannot deflate UID as it not stored\n"
             unless $_[0]->from_store;
-        { $_[0]->as_params };
+        $_[0]->as_params;
         }
     },
 
     inflate_via {
     sub {
-        ESModel::Doc::UID->new( from_store => 1, @{ $_[0] } );
+        ESModel::UID->new( from_store => 1, @{ $_[0] } );
         }
     },
 

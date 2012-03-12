@@ -192,10 +192,10 @@ coerce Timestamp, from ESDateTime,
     via { DateTime->from_epoch( epoch => $_ ) };
 
 #===================================
-class_type UID, { class => 'ESModel::Doc::UID' };
+class_type UID, { class => 'ESModel::UID' };
 #===================================
-coerce UID, from Str,     via { ESModel::Doc::UID->new_from_string($_) };
-coerce UID, from HashRef, via { ESModel::Doc::UID->new($_) };
+coerce UID, from Str,     via { ESModel::UID->new_from_string($_) };
+coerce UID, from HashRef, via { ESModel::UID->new($_) };
 
 #===================================
 role_type ESDoc, { role => 'ESModel::Role::Doc' };

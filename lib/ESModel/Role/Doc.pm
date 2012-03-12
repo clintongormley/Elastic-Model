@@ -62,27 +62,34 @@ sub _inflate_doc {
 }
 
 #===================================
-around 'BUILDARGS' => sub {
+sub _new_stub {
 #===================================
-    my $orig   = shift;
-    my $class  = $_[0];
-    my $params = $orig->(@_);
+    my $class = shift;
+    my %params = ref $_[0] ? %{ shift() } : @_;
 
-    my $uid = $params->{uid};
-    if ( $uid and $uid->from_store ) {
-        delete $params->{_source} unless $params->{_source};
-        $params->{_can_inflate} = 1;
+    my $meta = $class->meta;
+    my $self = $meta->get_meta_instance->create_instance;
+
+    my ( $uid, $model, $source ) = @params{ 'uid', 'model', '_source' };
+    croak "Invalid UID"
+        unless $uid && $uid->isa('ESModel::UID') && $uid->from_store;
+
+    $meta->find_attribute_by_name('uid')->set_raw_value( $self, $uid );
+
+    croak "Invalid model"
+        unless $model && $model->does('ESModel::Role::Model');
+
+    $meta->find_attribute_by_name('model')->set_raw_value( $self, $model );
+
+    if ( defined $source ) {
+        croak "Invalid _source" unless ref $source eq 'HASH';
+        $meta->find_attribute_by_name('_source')
+            ->set_raw_value( $self, $source );
     }
-    else {
-        $params->{_can_inflate} = 0;
-        my $required = $class->meta->required_attrs;
-        for my $name ( keys %$required ) {
-            croak "Attribute ($name) is required"
-                unless defined $params->{ $required->{$name} };
-        }
-    }
-    return $params;
-};
+
+    $self->_can_inflate(1);
+    return $self;
+}
 
 #===================================
 has timestamp => (
@@ -106,17 +113,14 @@ sub save {
     my %args = ref $_[0] ? %{ shift() } : @_;
 
     $self->touch if $self->meta->timestamp_path;
-    $self->model->save_doc($self);
+    $self->model->save_doc( $self, \%args );
 }
 
 #===================================
 sub delete {
 #===================================
-    my $self   = shift;
-    my %args   = ref $_[0] ? %{ shift() } : @_;
-    my $result = $self->model->store->delete_doc( $self->uid, \%args );
-    $self->uid->update_from_store($result);
-    $self;
+    my $self = shift;
+    $self->model->delete_doc( $self, @_ );
 }
 
 1;

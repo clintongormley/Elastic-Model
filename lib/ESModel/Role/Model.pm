@@ -150,7 +150,7 @@ sub new_doc {
     my $self = shift;
     my %params = ref $_[0] ? %{ shift() } : @_;
 
-    my $uid = ESModel::Doc::UID->new(%params);
+    my $uid = ESModel::UID->new(%params);
 
     my $class = $self->index( $uid->index )->class_for_type( $uid->type );
     return $class->new(
@@ -169,14 +169,14 @@ sub get_doc {
         : blessed $_[0] ? { uid => shift() }
         :                 shift;
 
-    my $uid = $params->{uid} ||= ESModel::Doc::UID->new(@_);
+    my $uid = $params->{uid} ||= ESModel::UID->new(@_);
     my $source = $params->{_source};
     unless ( $source || $uid->from_store ) {
         $source = $self->get_raw_doc($uid);
     }
 
     my $class = $self->index( $uid->index )->class_for_type( $uid->type );
-    $class->new(
+    $class->_new_stub(
         model   => $self,
         uid     => $uid,
         _source => $source
@@ -204,6 +204,18 @@ sub save_doc {
     my $action = $uid->from_store ? 'index_doc' : 'create_doc';
     my $data   = $self->deflate_object($doc);
     my $result = $self->store->$action( $uid, $data, \%args );
+    $uid->update_from_store($result);
+    return $doc;
+}
+
+#===================================
+sub delete_doc {
+#===================================
+    my $self   = shift;
+    my $doc    = shift;
+    my %args   = ref $_[0] ? %{ shift() } : @_;
+    my $uid    = $doc->uid;
+    my $result = $self->store->delete_doc( $doc->uid, \%args );
     $uid->update_from_store($result);
     return $doc;
 }
@@ -241,7 +253,7 @@ sub inflate_object {
     my $self   = shift;
     my $object = shift or die "No object passed to inflate()";
     my $hash   = shift or die "No hash pashed to inflate()";
-    $self->inflator_for_class( blessed $object)->( $object, $hash );
+    $self->inflator_for_class( blessed $object)->( $object, $hash, $self );
 }
 
 #===================================

@@ -203,9 +203,9 @@ sub get {
     my $self = shift;
     my %params
         = @_ != 1 ? @_
-        : !ref $_[0]                      ? ( id  => shift() )
-        : $_[0]->isa('ESModel::Doc::UID') ? ( uid => shift() )
-        :                                   %{ shift() };
+        : !ref $_[0]                 ? ( id  => shift() )
+        : $_[0]->isa('ESModel::UID') ? ( uid => shift() )
+        :                              %{ shift() };
 
     unless ( $params{uid} ) {
         $params{id} or croak "No 'id' passed to get()";

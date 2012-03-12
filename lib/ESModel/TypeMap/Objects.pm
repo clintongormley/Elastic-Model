@@ -3,6 +3,7 @@ package ESModel::TypeMap::Objects;
 use ESModel::TypeMap::Base qw(:all);
 use Scalar::Util qw(reftype);
 use Moose::Util qw(does_role);
+use ESModel::Ref();
 
 #===================================
 has_type 'Moose::Meta::TypeConstraint::Class',
@@ -75,9 +76,31 @@ sub _deflate_class {
 #===================================
 sub _inflate_class {
 #===================================
-    my $tc    = shift;
+    my ( $tc, $attr, $map ) = @_;
     my $class = $tc->name;
-    return sub { $class->inflate(@_) };
+    if ( $class->does('ESModel::Role::Doc') ) {
+        return sub {
+            my ( $val, $model ) = @_;
+            my %uid_vals = ( %{ $val->{uid} }, from_store => 1 );
+            ESModel::Ref->new(
+                uid   => ESModel::UID->new(%uid_vals),
+                model => $model
+            );
+        };
+    }
+    if ( my $handler = $map->inflators->{$class} ) {
+        return $handler->(@_);
+    }
+
+    die "Class $class is not a Moose class and no inflator is defined."
+        unless $class->isa('Moose::Object');
+
+    my $inflator = $map->class_inflator($class);
+    return sub {
+        my ( $hash, $model ) = @_;
+        my $obj = $class->meta->get_meta_instance->create_instance;
+        $inflator->( $obj, $hash, $model );
+    };
 
     # TODO: decide what to do with non-ES classes
     # TODO: inflate objects as references
@@ -125,7 +148,7 @@ sub _class_attrs {
         );
 
         delete @attrs{@$exc} if $exc;
-        # if $meta->type ?
+
         if ( my $uid = $meta->find_attribute_by_name('uid') ) {
             $attrs{uid} = $uid;
         }

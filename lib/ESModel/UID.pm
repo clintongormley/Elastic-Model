@@ -1,4 +1,4 @@
-package ESModel::Doc::UID;
+package ESModel::UID;
 
 use Moose;
 use MooseX::Types::Moose qw(:all);
@@ -37,7 +37,7 @@ has version => (
 has routing => (
 #===================================
     is  => 'ro',
-    isa => Maybe[Str]
+    isa => Maybe [Str]
 );
 #===================================
 has from_store => (
@@ -84,7 +84,7 @@ sub as_params {
         $vals{$_} = $val if defined $val;
         next unless defined $val;
     }
-    return %vals;
+    return \%vals;
 }
 
 #===================================
@@ -97,7 +97,7 @@ sub as_version_params {
         $vals{$_} = $val if defined $val;
         next unless defined $val;
     }
-    return %vals;
+    return \%vals;
 }
 
 #===================================

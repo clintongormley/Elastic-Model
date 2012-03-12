@@ -6,7 +6,7 @@ use Class::Load qw(is_class_loaded load_class);
 use Module::Find qw(findallmod);
 use Moose::Util qw(does_role);
 use ESModel::Index();
-use ESModel::Doc::UID();
+use ESModel::UID();
 use Carp;
 
 use namespace::autoclean;
@@ -40,8 +40,7 @@ sub has_index {
     $types ||= with_types($meta);
 
     unless (%$types) {
-        croak "No types could be found for index: "
-            . join( ', ', @indices )
+        croak "No types could be found for index: " . join( ', ', @indices )
 
     }
 

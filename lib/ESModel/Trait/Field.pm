@@ -43,7 +43,7 @@ has 'lat_lon'           => ( isa => Bool, is => 'ro' );
 has 'geohash_precision' => ( isa => Int,  is => 'ro' );
 
 # object
-has 'enabled' => ( isa => Bool,           is => 'ro' , predicate=>'has_enabled');
+has 'enabled' => ( isa => Bool, is => 'ro', predicate => 'has_enabled' );
 has 'dynamic' => ( isa => DynamicMapping, is => 'ro' );
 has 'path'    => ( isa => PathMapping,    is => 'ro' );
 has 'properties' => ( isa => HashRef [Str], is => 'ro' );
@@ -55,9 +55,6 @@ has 'include_in_root'   => ( isa => Bool, is => 'ro' );
 # deflation
 has 'deflator' => ( isa => CodeRef, is => 'ro' );
 has 'inflator' => ( isa => CodeRef, is => 'ro' );
-
-# meta
-has '_is_required' => ( isa => Bool, is => 'ro' );
 
 # esdocs
 has 'include_attrs' => ( isa => ArrayRef [Str], is => 'ro' );
@@ -76,13 +73,5 @@ has '_wrapped_methods' => (
     is      => 'ro',
     default => sub { {} }
 );
-
-#===================================
-before '_process_options' => sub {
-#===================================
-    $_[2]->{_is_required} = 1 if delete $_[2]->{required};
-    # builder? # default?
-};
-
 
 1;

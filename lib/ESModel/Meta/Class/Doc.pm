@@ -83,27 +83,6 @@ has 'timestamp_path' => (
 );
 
 #===================================
-has 'required_attrs' => (
-#===================================
-    isa     => 'HashRef',
-    is      => 'ro',
-    lazy    => 1,
-    builder => '_build_required_attrs'
-);
-
-#===================================
-sub _build_required_attrs {
-#===================================
-    my $self = shift;
-    my %attrs;
-    for my $attr ( $self->get_all_attributes ) {
-        next unless $attr->can('_is_required') && $attr->_is_required;
-        $attrs{ $attr->name } = $attr->init_arg;
-    }
-    return \%attrs;
-}
-
-#===================================
 sub root_class_mapping {
 #===================================
     my $self    = shift;
