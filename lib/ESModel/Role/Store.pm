@@ -26,7 +26,6 @@ sub scrolled_search { shift->es->scrolled_search(@_) }
 sub get_doc {
 #===================================
     my ( $self, $uid ) = @_;
-
     return $self->es->get(
         fields => [qw(_routing _parent _source)],
         $uid->as_params

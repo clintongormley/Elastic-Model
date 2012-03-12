@@ -75,17 +75,7 @@ has_type 'HashRef',
 #===================================
     deflate_via { _flate_hash( 'deflator', @_ ) },
     inflate_via { _flate_hash( 'inflator', @_ ) },
-
-    map_via {
-    my %props = _content_handler( 'mapper', @_ );
-    return (
-        type       => 'object',
-        dynamic    => 'strict',
-        properties => \%props
-    ) if %props;
-
-    return ( type => 'object', enabled => 0 );
-    };
+    map_via { type => 'object', enabled => 0 };
 
 #===================================
 has_type 'Maybe',
@@ -123,7 +113,8 @@ sub _flate_array {
 #===================================
     my $content = _content_handler(@_) or return;
     sub {
-        [ map { $content->($_) } @{ $_[0] } ];
+        my ( $array, $model ) = @_;
+        [ map { $content->( $_, $model ) } @$array ];
     };
 }
 
@@ -133,7 +124,8 @@ sub _flate_hash {
     my $content = _content_handler(@_) or return;
     sub {
         {
-            map { $content->($_) } %{ $_[0] }
+            my ( $hash, $model ) = @_;
+            map { $content->( $_, $model ) } %$hash
         };
     };
 }
@@ -143,7 +135,8 @@ sub _flate_maybe {
 #===================================
     my $content = _content_handler(@_) or return;
     sub {
-        return defined $_[0] ? $content->( $_[0] ) : undef;
+        my ( $val, $model ) = @_;
+        return defined $val ? $content->( $val, $model ) : undef;
     };
 }
 

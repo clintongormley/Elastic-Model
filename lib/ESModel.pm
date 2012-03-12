@@ -11,7 +11,7 @@ use Carp;
 
 use namespace::autoclean;
 
-my ( undef, undef, $init_meta ) = Moose::Exporter->build_import_methods(
+my $init_meta = Moose::Exporter->build_import_methods(
     install         => [qw(import unimport)],
     class_metaroles => { class => ['ESModel::Meta::Class::Model'] },
     with_meta       => [
@@ -40,8 +40,7 @@ sub has_index {
     $types ||= with_types($meta);
 
     unless (%$types) {
-        croak "No modules which do ESModel::Role::Doc "
-            . "could be found for index: "
+        croak "No types could be found for index: "
             . join( ', ', @indices )
 
     }

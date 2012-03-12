@@ -14,10 +14,11 @@ use Carp;
 #===================================
 has 'uid' => (
 #===================================
-    isa     => UID,
-    is      => 'ro',
-    traits  => ['ESModel::Trait::Exclude'],
-    handles => {
+    isa      => UID,
+    is       => 'ro',
+    required => 1,
+    traits   => ['ESModel::Trait::Exclude'],
+    handles  => {
         index   => 'index',
         id      => 'id',
         type    => 'type',
@@ -26,11 +27,12 @@ has 'uid' => (
 );
 
 #===================================
-has '_inflated' => (
+has '_can_inflate' => (
 #===================================
-    isa    => Bool,
-    is     => 'ro',
-    traits => ['ESModel::Trait::Exclude'],
+    isa     => Bool,
+    is      => 'rw',
+    default => 0,
+    traits  => ['ESModel::Trait::Exclude'],
 );
 
 #===================================
@@ -40,14 +42,23 @@ has '_source' => (
     is      => 'ro',
     traits  => ['ESModel::Trait::Exclude'],
     lazy    => 1,
-    builder => '_fetch_source',
+    builder => '_get_source',
 );
 
 #===================================
-sub _fetch_source {
+sub _get_source {
 #===================================
     my $self = shift;
     $self->model->get_raw_doc( $self->uid );
+}
+
+#===================================
+sub _inflate_doc {
+#===================================
+    my $self   = shift;
+    my $source = $self->_source;
+    $self->_can_inflate(0);
+    $self->model->inflate_object( $self, $source );
 }
 
 #===================================
@@ -60,39 +71,18 @@ around 'BUILDARGS' => sub {
     my $uid = $params->{uid};
     if ( $uid and $uid->from_store ) {
         delete $params->{_source} unless $params->{_source};
+        $params->{_can_inflate} = 1;
     }
     else {
-        $params->{_inflated} = 1;
+        $params->{_can_inflate} = 0;
         my $required = $class->meta->required_attrs;
         for my $name ( keys %$required ) {
             croak "Attribute ($name) is required"
-                unless $params->{ $required->{$name} };
+                unless defined $params->{ $required->{$name} };
         }
     }
     return $params;
 };
-
-#===================================
-sub _load_data {
-#===================================
-    my $self = shift;
-
-    my $uid   = $self->uid;
-    my $model = $self->model;
-
-    # TODO: what if doc deleted?
-    my $source = $self->_source;
-
-    my $new = $self->new(
-        model => $model,
-        uid   => $uid,
-        %{ $self->inflate($source) },
-        _inflated =>1,
-    );
-
-    %$self = %$new;
-    return;
-}
 
 #===================================
 has timestamp => (
@@ -116,13 +106,7 @@ sub save {
     my %args = ref $_[0] ? %{ shift() } : @_;
 
     $self->touch if $self->meta->timestamp_path;
-
-    my $uid = $self->uid;
-    my $action = $uid->from_store ? 'index_doc' : 'create_doc';
-
-    my $result = $self->model->store->$action( $uid, $self->deflate, \%args );
-    $self->uid->update_from_store($result);
-    $self;
+    $self->model->save_doc($self);
 }
 
 #===================================
@@ -134,6 +118,5 @@ sub delete {
     $self->uid->update_from_store($result);
     $self;
 }
-
 
 1;

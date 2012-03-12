@@ -3,8 +3,8 @@ package ESModel::Doc;
 use Moose();
 use Moose::Exporter;
 
-my ( undef, undef, $init_meta ) = Moose::Exporter->build_import_methods(
-    install   => [qw(import unimport)],
+my $init_meta = Moose::Exporter->build_import_methods(
+    install   => [qw(import unimport init_meta)],
     with_meta => [ qw(
             analyzer_path                  index_analyzer
             analyzer                       index_id
@@ -25,6 +25,7 @@ my ( undef, undef, $init_meta ) = Moose::Exporter->build_import_methods(
     class_metaroles => {
         class     => ['ESModel::Meta::Class::Doc'],
         attribute => ['ESModel::Trait::Field'],
+        instance  => ['ESModel::Meta::Instance']
     }
 );
 

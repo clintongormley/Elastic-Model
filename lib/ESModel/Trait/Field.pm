@@ -53,8 +53,8 @@ has 'include_in_parent' => ( isa => Bool, is => 'ro' );
 has 'include_in_root'   => ( isa => Bool, is => 'ro' );
 
 # deflation
-has 'deflator' => ( isa => Maybe [CodeRef], is => 'ro', lazy_build => 1 );
-has 'inflator' => ( isa => Maybe [CodeRef], is => 'ro', lazy_build => 1 );
+has 'deflator' => ( isa => CodeRef, is => 'ro' );
+has 'inflator' => ( isa => CodeRef, is => 'ro' );
 
 # meta
 has '_is_required' => ( isa => Bool, is => 'ro' );
@@ -81,6 +81,7 @@ has '_wrapped_methods' => (
 before '_process_options' => sub {
 #===================================
     $_[2]->{_is_required} = 1 if delete $_[2]->{required};
+    # builder? # default?
 };
 
 

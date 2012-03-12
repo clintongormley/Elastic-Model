@@ -6,11 +6,17 @@ use ESModel::TypeMap::Base qw(:all);
 has_type 'ESModel::Types::UID',
 #===================================
     deflate_via {
-    sub { $_[0]->as_params }
+    sub {
+        die "Cannot deflate UID as it not stored\n"
+            unless $_[0]->from_store;
+        { $_[0]->as_params };
+        }
     },
 
     inflate_via {
-    sub { }    #TODO: inflate UID
+    sub {
+        ESModel::Doc::UID->new( from_store => 1, @{ $_[0] } );
+        }
     },
 
     map_via {
@@ -24,7 +30,13 @@ has_type 'ESModel::Types::UID',
     } qw(index type id routing);
 
     $props{routing}{index} = 'no';
-    return ( type => 'object', properties => \%props, dynamic => 'strict' );
+
+    return (
+        type       => 'object',
+        dynamic    => 'strict',
+        properties => \%props
+    );
+
     };
 
 #===================================

@@ -125,7 +125,10 @@ sub _class_attrs {
         );
 
         delete @attrs{@$exc} if $exc;
-        $attrs{uid} = $meta->find_attribute_by_name('uid');
+        # if $meta->type ?
+        if ( my $uid = $meta->find_attribute_by_name('uid') ) {
+            $attrs{uid} = $uid;
+        }
     }
     else {
         %attrs = map { $_->name => $_ } $meta->get_all_attributes;

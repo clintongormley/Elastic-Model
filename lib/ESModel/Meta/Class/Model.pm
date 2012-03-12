@@ -104,7 +104,7 @@ sub analysis_for_mappings {
                     || $self->is_default( 'analyzer', $name );
             $analyzers{$name} = $self->analyzer($name)
                 or die
-                "Unknown analyzer '$$name ' required by type '$type' in class "
+                "Unknown analyzer '$name ' required by type '$type' in class "
                 . $self->class_for_type($type);
         }
     }

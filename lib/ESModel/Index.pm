@@ -160,8 +160,8 @@ sub mappings {
         = @_ == 0   ? $self->all_types
         : ref $_[0] ? @{ shift() }
         :             @_;
-    return { map { $_ => $self->class_for_type($_)->meta->root_mapping }
-            @types };
+    my $model = $self->model;
+    +{ map { $_ => $model->map_class( $self->class_for_type($_) ) } @types };
 }
 
 1;

@@ -59,6 +59,7 @@ has 'es' => (
 has '_index_cache' => (
 #===================================
     isa     => HashRef,
+    is      => 'bare',
     traits  => ['Hash'],
     default => sub { {} },
     handles => {
@@ -71,7 +72,7 @@ has '_index_cache' => (
 has '_live_indices' => (
 #===================================
     isa     => HashRef,
-    is      => 'ro',
+    is      => 'bare',
     traits  => ['Hash'],
     builder => '_update_live_indices',
     clearer => '_clear_live_indices',
@@ -194,6 +195,20 @@ sub get_raw_doc {
 }
 
 #===================================
+sub save_doc {
+#===================================
+    my $self   = shift;
+    my $doc    = shift;
+    my %args   = ref $_[0] ? %{ shift() } : @_;
+    my $uid    = $doc->uid;
+    my $action = $uid->from_store ? 'index_doc' : 'create_doc';
+    my $data   = $self->deflate_object($doc);
+    my $result = $self->store->$action( $uid, $data, \%args );
+    $uid->update_from_store($result);
+    return $doc;
+}
+
+#===================================
 sub search { shift->store->search(@_) }
 #===================================
 
@@ -202,8 +217,9 @@ sub deflate_object {
 #===================================
     my $self   = shift;
     my $object = shift or die "No object passed to deflate()";
-    my $class  = blessed $object or die "deflate() can only deflate objects";
-    $self->deflator_for_class($class)->($object);
+    my $class  = blessed $object
+        or die "deflate() can only deflate objects";
+    $self->deflator_for_class($class)->( $object, $self );
 }
 
 #===================================
@@ -222,10 +238,10 @@ sub deflator_for_class {
 #===================================
 sub inflate_object {
 #===================================
-    my $self  = shift;
-    my $class = shift or die "No class passed to inflate()";
-    my $hash  = shift or die "No hash pashed to inflate()";
-    $self->inflator_for_class($class)->($hash);
+    my $self   = shift;
+    my $object = shift or die "No object passed to inflate()";
+    my $hash   = shift or die "No hash pashed to inflate()";
+    $self->inflator_for_class( blessed $object)->( $object, $hash );
 }
 
 #===================================

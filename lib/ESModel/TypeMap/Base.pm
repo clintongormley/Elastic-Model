@@ -7,6 +7,7 @@ use Sub::Exporter qw(build_exporter);
 use Class::MOP();
 use List::MoreUtils qw(uniq);
 use Moose::Util qw(does_role);
+use Scalar::Util qw(blessed);
 use namespace::autoclean;
 
 sub deflate_via (&) { deflator => $_[0] }
@@ -71,7 +72,8 @@ sub find_mapper {
     my ( $map, $attr ) = @_;
     my $mapping = $attr->mapping if $attr->can('mapping');
     return $mapping if $mapping && %$mapping;
-    my %mapping = eval { $map->find( 'mapper', @_ ) };
+    my %mapping
+        = eval { $map->find( 'mapper', $attr->type_constraint, $attr ); };
     die _type_error( 'mapper', $_[1], $@ )
         unless %mapping;
     return %mapping;
@@ -120,9 +122,9 @@ sub class_deflator {
     my %deflators = map { $_ => $map->find_deflator( $attrs->{$_} ) }
         keys %$attrs;
 
-    # TODO: make sure ESDocs have UID, and make them a reference
+    my $has_uid = $class->can('uid');
     return sub {
-        my ($obj) = @_;
+        my ( $obj, $model, $root ) = @_;
         my %hash;
         my $meta = $obj->meta;
         for ( keys %deflators ) {
@@ -133,7 +135,10 @@ sub class_deflator {
                 $obj->$reader;
             }
             my $val = $attr->get_raw_value($obj);
-            $hash{$_} = $deflators{$_}->($val);
+            eval { $hash{$_} = $deflators{$_}->( $val, $model ); 1 } and next;
+            die "Error deflating attribute ($_) in class "
+                . blessed($obj) . ":\n  "
+                . ( $@ || 'Unknown error' );
         }
         return \%hash;
     };
@@ -153,12 +158,10 @@ sub class_inflator {
         keys %$attrs;
 
     return sub {
-        my ($hash) = @_;
-        my $meta   = $class->meta;
-        my $obj    = $meta->get_meta_instance->create_instance;
+        my ( $obj, $hash, $model ) = @_;
         for ( keys %$hash ) {
             my $attr = $attrs->{$_} or next;
-            my $val = $inflators{$_}->( $hash->{$_} );
+            my $val = $inflators{$_}->( $hash->{$_}, $model );
             $attr->set_raw_value( $obj, $val );
         }
         return $obj;
@@ -264,9 +267,11 @@ sub class_mapping {
     my %props = map { $_ => $map->attribute_mapping( $attrs->{$_} ) }
         keys %$attrs;
 
+    my $meta = $class->meta;
+    my $dynamic = $meta->can('dynamic') && $meta->dynamic || 'strict';
     return (
         type       => 'object',
-        dynamic    => 'strict',
+        dynamic    => $dynamic,
         properties => \%props
     );
 }

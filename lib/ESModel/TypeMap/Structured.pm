@@ -43,10 +43,10 @@ sub _deflate_tuple {
     my $deflator = _flate_dict( 'deflator', $dict, @_, );
 
     return sub {
-        my $array = shift;
+        my ( $array, $model ) = @_;
         my %hash;
         @hash{ 0 .. $#{$array} } = @$array;
-        $deflator->( \%hash );
+        $deflator->( \%hash, $model );
     };
 }
 
@@ -86,8 +86,8 @@ sub _flate_dict {
         $flators{$key} = $map->find( $type, $tc, $attr );
     }
     sub {
-        my $hash = shift;
-        +{ map { $_ => $flators{$_}->( $hash->{$_} ) } keys %$hash };
+        my ( $hash, $model ) = @_;
+        +{ map { $_ => $flators{$_}->( $hash->{$_}, $model ) } keys %$hash };
     };
 }
 
@@ -96,9 +96,9 @@ sub _flate_map {
 #===================================
     my $content = _content_handler(@_) or return;
     sub {
-        my $hash = shift;
+        my ( $hash, $model ) = @_;
         {
-            map { $_ => $content->( $hash->{$_} ) } %$hash
+            map { $_ => $content->( $hash->{$_}, $model ) } %$hash
         };
     };
 }
@@ -108,7 +108,8 @@ sub _flate_optional {
 #===================================
     my $content = _content_handler(@_) or return;
     sub {
-        return defined $_[0] ? $content->( $_[0] ) : undef;
+        my ( $val, $model ) = @_;
+        return defined $val ? $content->( $val, $model ) : undef;
     };
 }
 
