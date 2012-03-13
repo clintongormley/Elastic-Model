@@ -4,6 +4,7 @@ use Carp;
 use Moose::Role;
 use MooseX::Types::Moose qw(:all);
 use MooseX::Attribute::Chained;
+use namespace::autoclean;
 
 has 'elements' => (
     isa     => ArrayRef,

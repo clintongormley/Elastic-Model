@@ -3,7 +3,7 @@ package ESModel::TypeMap::Objects;
 use ESModel::TypeMap::Base qw(:all);
 use Scalar::Util qw(reftype);
 use Moose::Util qw(does_role);
-use ESModel::Ref();
+use namespace::autoclean;
 
 #===================================
 has_type 'Moose::Meta::TypeConstraint::Class',
@@ -66,7 +66,7 @@ sub _deflate_class {
     die "Class $class is not a Moose class and no deflator is defined."
         unless $class->isa('Moose::Object');
 
-    my $attrs = _class_attrs( $class, $attr );
+    my $attrs = _class_attrs( $map, $class, $attr );
 
     # TODO: make sure ESDocs have UID, and make them a reference
 
@@ -78,28 +78,25 @@ sub _inflate_class {
 #===================================
     my ( $tc, $attr, $map ) = @_;
     my $class = $tc->name;
-    if ( $class->does('ESModel::Role::Doc') ) {
-        return sub {
-            my ( $val, $model ) = @_;
-            my %uid_vals = ( %{ $val->{uid} }, from_store => 1 );
-            ESModel::Ref->new(
-                uid   => ESModel::UID->new(%uid_vals),
-                model => $model
-            );
-        };
-    }
-    if ( my $handler = $map->inflators->{$class} ) {
-        return $handler->(@_);
-    }
+
+    my $custom = $map->inflators->{$class};
 
     die "Class $class is not a Moose class and no inflator is defined."
-        unless $class->isa('Moose::Object');
+        unless $custom || $class->isa('Moose::Object');
 
-    my $inflator = $map->class_inflator($class);
+    my $attr_inflator;
+
     return sub {
         my ( $hash, $model ) = @_;
+        return $model->get_doc_ref( $hash->{uid} )
+            if $hash->{uid} && $model->class_wrapper($class);
+
+        return $custom->(@_) if $custom;
+
+        $attr_inflator ||= $map->class_inflator($class);
+
         my $obj = $class->meta->get_meta_instance->create_instance;
-        $inflator->( $obj, $hash, $model );
+        $attr_inflator->( $obj, $hash, $model );
     };
 
     # TODO: decide what to do with non-ES classes
@@ -122,40 +119,40 @@ sub _map_class {
     return ( type => 'object', enabled => 0 )
         if $attr->has_enabled && !$attr->enabled;
 
-    my $attrs = _class_attrs( $class, $attr );
+    my $attrs = _class_attrs( $map, $class, $attr );
     return $map->class_mapping( $class, $attrs );
 }
 
 #===================================
 sub _class_attrs {
 #===================================
-    my ( $class, $attr ) = @_;
-
+    my ( $map, $class, $attr ) = @_;
     my $meta = $class->meta;
+
+    return { map { $_->name => $_ } $meta->get_all_attributes }
+        unless does_role( $meta, 'ESModel::Meta::Class::DocType' );
+
     my %attrs;
 
-    if ( does_role( $class, 'ESModel::Role::Doc' ) ) {
-        my $inc = $attr->include_attrs;
-        my $exc = $attr->exclude_attrs;
+    my $wrapper = $map->model->class_wrapper($class);
+    my $wrapper_meta = $wrapper ? $wrapper->meta : $meta;
 
-        %attrs = map { $_->name => $_ } grep { !$_->exclude } (
-            $inc
-            ? map {
-                $meta->find_attribute_by_name($_)
-                    or die "Unknown attribute ($_) in class $class"
-                } @$inc
-            : $meta->get_all_attributes
-        );
+    my $inc = $attr->include_attrs;
+    my $exc = $attr->exclude_attrs;
 
-        delete @attrs{@$exc} if $exc;
+    my @inc_attr = $inc
+        ? map {
+        $wrapper_meta->find_attribute_by_name($_)
+            or die "Unknown attribute ($_) in class $class"
+        } @$inc
+        : $meta->get_all_attributes;
 
-        if ( my $uid = $meta->find_attribute_by_name('uid') ) {
-            $attrs{uid} = $uid;
-        }
-    }
-    else {
-        %attrs = map { $_->name => $_ } $meta->get_all_attributes;
-    }
+    %attrs = map { $_->name => $_ } grep { !$_->exclude } @inc_attr;
+    delete @attrs{@$exc} if $exc;
+
+    $attrs{uid} = $wrapper_meta->find_attribute_by_name('uid')
+        if $wrapper;
+
     return \%attrs;
 }
 

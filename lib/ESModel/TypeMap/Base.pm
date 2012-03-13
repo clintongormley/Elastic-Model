@@ -124,7 +124,7 @@ sub class_deflator {
 
     my $has_uid = $class->can('uid');
     return sub {
-        my ( $obj, $model, $root ) = @_;
+        my ( $obj, $model ) = @_;
         my %hash;
         my $meta = $obj->meta;
         for ( keys %deflators ) {
@@ -259,11 +259,20 @@ sub class_mapping {
 #===================================
     my ( $map, $class, $attrs ) = @_;
 
-    if ( my $handler = $map->mappers->{$class} ) {
-        return $handler->(@_);
-    }
+    #    if ( my $handler = $map->mappers->{$class} ) {
+    #        return $handler->(@_);
+    #    }
 
-    $attrs ||= $map->indexable_attrs($class);
+    my ($wrapper);
+    if ( does_role( $class, 'ESModel::Role::Doc' ) ) {
+        $wrapper = $class;
+        $class   = $wrapper->meta->original_class;
+    }
+    else {
+        $wrapper = $map->model->class_wrapper($class);
+    }
+    $attrs ||= $map->indexable_attrs( $wrapper || $class );
+
     my %props = map { $_ => $map->attribute_mapping( $attrs->{$_} ) }
         keys %$attrs;
 
@@ -348,11 +357,13 @@ sub indexable_attrs {
 sub type_map {
 #===================================
     my $class = shift;
+    $class = $class->meta->original_class
+        if $class->can('meta') && $class->meta->can('original_class');
 
     # return a reference to the storage in ourself
     {
         no strict 'refs';
-        return \%{ $class . '::__ES_TYPE_map' };
+        return \%{ $class . '::__ES_TYPE_MAP' };
     }
 }
 

@@ -4,35 +4,38 @@ use Moose::Role;
 use Carp;
 use ESModel::Types qw(ES);
 use ElasticSearch();
+use Class::Load qw(load_class);
 use Moose::Util qw(does_role);
 use MooseX::Types::Moose qw(:all);
-use ESModel::View();
-use ESModel::Store();
+use ESModel::UID();
 use Scalar::Util qw(blessed);
 
 use namespace::autoclean;
 
-#===================================
-has 'type_map' => (
-#===================================
-    isa     => 'Str',
-    is      => 'ro',
-    lazy    => 1,
-    default => 'ESModel::TypeMap::Default'
+our %Default_Class = (
+    type_map               => 'ESModel::TypeMap::Default',
+    doc_ref_class          => 'ESModel::DocRef',
+    index_class            => 'ESModel::Index',
+    store_class            => 'ESModel::Store',
+    view_class             => 'ESModel::View',
+    results_class          => 'ESModel::Results',
+    scrolled_results_class => 'ESModel::Results::Scrolled',
+    result_class           => 'ESModel::Result',
 );
 
 #===================================
-has 'deflators' => (
+has $_ => (
 #===================================
-    isa     => 'HashRef',
+    isa     => Str,
     is      => 'ro',
-    default => sub { {} }
-);
+    default => $Default_Class{$_},
+    writer  => "_set_$_"
+) for keys %Default_Class;
 
 #===================================
-has 'inflators' => (
+has [ 'deflators', 'inflators' ] => (
 #===================================
-    isa     => 'HashRef',
+    isa     => HashRef,
     is      => 'ro',
     default => sub { {} }
 );
@@ -53,6 +56,17 @@ has 'es' => (
     is      => 'ro',
     lazy    => 1,
     builder => '_build_es'
+);
+
+#===================================
+has 'class_wrappers' => (
+#===================================
+    is      => 'ro',
+    isa     => HashRef,
+    traits  => ['Hash'],
+    lazy    => 1,
+    builder => '_build_class_wrappers',
+    handles => { class_wrapper => 'get' }
 );
 
 #===================================
@@ -82,15 +96,98 @@ has '_live_indices' => (
 );
 
 #===================================
-sub _build_store { ESModel::Store->new( model => shift() ) }
-sub _build_es { ElasticSearch->new }
-#===================================
-
-#===================================
 sub BUILD {
 #===================================
     my $self = shift;
-    Class::MOP::load_class( $self->type_map );
+    for ( keys %Default_Class ) {
+        my $class = $self->wrap_class( $self->$_ );
+        my $set   = "_set_$_";
+        $self->$set($class);
+    }
+    $self->class_wrappers;
+}
+
+#===================================
+sub _build_store { $_[0]->store_class->new( es => $_[0]->es ) }
+sub _build_es { ElasticSearch->new }
+sub _build_type_map { $_[0]->wrap_class( $_[0]->type_map_class )->name }
+sub _build_doc_ref  { $_[0]->wrap_class( $_[0]->doc_ref_class )->name }
+#===================================
+
+#===================================
+sub _build_class_wrappers {
+#===================================
+    my $self    = shift;
+    my $indices = $self->meta->indices;
+    my %classes;
+    for my $types ( values %$indices ) {
+        $classes{$_} = $self->wrap_doc_class($_) for values %$types;
+    }
+    \%classes;
+}
+
+#===================================
+sub wrap_doc_class {
+#===================================
+    my $self  = shift;
+    my $class = shift;
+
+    load_class($class);
+
+    $class->meta->make_mutable;
+
+    my $orig_meta = Moose::Util::MetaRole::apply_metaroles(
+        for             => $class,
+        class_metaroles => {
+            instance  => ['ESModel::Meta::Instance'],
+            attribute => ['ESModel::Trait::Field'],
+        }
+    );
+
+    my $meta = Moose::Meta::Class->create_anon_class(
+        superclasses => [$class],
+        roles        => ['ESModel::Role::Doc'],
+        weaken       => 0,
+    );
+
+    $meta = Moose::Util::MetaRole::apply_metaroles(
+        for             => $meta,
+        class_metaroles => {
+            class => [ 'ESModel::Meta::Class', 'ESModel::Meta::Class::Doc' ],
+            instance => ['ESModel::Meta::Instance'],
+        }
+    );
+
+    $meta->_set_original_class($class);
+    $meta->_set_model($self);
+    $meta->make_immutable;
+    $orig_meta->make_immutable;
+    return $meta->name;
+}
+
+#===================================
+sub wrap_class {
+#===================================
+    my $self  = shift;
+    my $class = shift;
+
+    load_class($class);
+
+    my $meta = Moose::Meta::Class->create_anon_class(
+        superclasses => [$class],
+        weaken       => 0,
+    );
+
+    $meta = Moose::Util::MetaRole::apply_metaroles(
+        for             => $meta,
+        class_metaroles => { class => ['ESModel::Meta::Class'], }
+    );
+
+    $meta->_set_original_class($class);
+    $meta->_set_model($self);
+    $meta->add_method( model => sub { shift->meta->model } );
+    $meta->make_immutable;
+    return $meta->name;
 }
 
 #===================================
@@ -117,18 +214,19 @@ sub index {
     my $dest_name = @_ ? shift : $base_name;
     my $index     = $self->_get_index($dest_name);
     unless ($index) {
-        my $opts = $self->meta->index($base_name);
-        unless ($opts) {
+        my $types = $self->meta->index($base_name);
+        unless ($types) {
             my $live_index = $self->_live_index($base_name)
                 || $self->_clear_live_indices
                 && $self->_live_index($base_name)
                 || croak "Unknown index name '$base_name'";
-            $opts = $self->meta->index($live_index);
+            $types = $self->meta->index($live_index);
         }
-        $index = ESModel::Index->new(
+        my %classes
+            = map { $_ => $self->class_wrapper( $types->{$_} ) } keys %$types;
+        $index = $self->index_class->new(
             name  => $dest_name,
-            model => $self,
-            %$opts
+            types => \%classes
         );
         $self->_cache_index( $dest_name => $index );
     }
@@ -137,12 +235,8 @@ sub index {
 }
 
 #===================================
-sub view {
+sub view { shift->view_class->new(@_) }
 #===================================
-    my $self = shift;
-    my %params = ref $_[0] ? %{ shift() } : @_;
-    ESModel::View->new( %params, model => $self );
-}
 
 #===================================
 sub new_doc {
@@ -153,11 +247,7 @@ sub new_doc {
     my $uid = ESModel::UID->new(%params);
 
     my $class = $self->index( $uid->index )->class_for_type( $uid->type );
-    return $class->new(
-        %params,
-        model => $self,
-        uid   => $uid,
-    );
+    return $class->new( %params, uid => $uid, );
 }
 
 #===================================
@@ -176,8 +266,7 @@ sub get_doc {
     }
 
     my $class = $self->index( $uid->index )->class_for_type( $uid->type );
-    $class->_new_stub(
-        model   => $self,
+    $class->meta->new_stub(
         uid     => $uid,
         _source => $source
     );
@@ -192,6 +281,14 @@ sub get_raw_doc {
     my $result = $self->store->get_doc($uid);
     $uid->update_from_store($result);
     return $result->{_source};
+}
+
+#===================================
+sub get_doc_ref {
+#===================================
+    my $self = shift;
+    my %vals = ( %{ shift() }, from_store => 1 );
+    $self->doc_ref_class->new( uid => ESModel::UID->new( \%vals ) );
 }
 
 #===================================
@@ -243,7 +340,6 @@ sub deflator_for_class {
         die "Class $class is not an ESModel class."
             unless does_role( $class, 'ESModel::Role::Doc' );
         $self->type_map->class_deflator($class);
-
     };
 }
 
@@ -265,7 +361,6 @@ sub inflator_for_class {
         die "Class $class is not an ESModel class."
             unless does_role( $class, 'ESModel::Role::Doc' );
         $self->type_map->class_inflator($class);
-
     };
 }
 
@@ -277,11 +372,11 @@ sub map_class {
     die "Class $class is not an ESModel class."
         unless does_role( $class, 'ESModel::Role::Doc' );
 
-    my $meta    = $class->meta;
-    my %mapping = (
-        $self->type_map->class_mapping($class),
-        %{ $meta->root_class_mapping }
-    );
+    my $meta         = $class->meta->original_class->meta;
+    my %root_mapping = %{ $meta->root_class_mapping }
+        if $meta->can('root_class_mapping');
+
+    my %mapping = ( $self->type_map->class_mapping($class), %root_mapping );
     return \%mapping;
 }
 

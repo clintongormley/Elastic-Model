@@ -5,6 +5,7 @@ use List::Util ();
 use MooseX::Types::Moose qw(:all);
 use Carp;
 use Data::Dump qw(pp);
+use namespace::autoclean;
 
 my %attr = (
     index       => 'indices',
@@ -105,7 +106,7 @@ sub analysis_for_mappings {
             $analyzers{$name} = $self->analyzer($name)
                 or die
                 "Unknown analyzer '$name ' required by type '$type' in class "
-                . $self->class_for_type($type);
+                . $self->class_for_type($type);    ## TODO: wrong method
         }
     }
     return unless %analyzers;

@@ -1,6 +1,7 @@
 package ESModel::TypeMap::Moose;
 
 use ESModel::TypeMap::Base qw(:all);
+use namespace::autoclean;
 
 #===================================
 has_type 'Any',

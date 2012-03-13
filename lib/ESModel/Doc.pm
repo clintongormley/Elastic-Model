@@ -2,8 +2,9 @@ package ESModel::Doc;
 
 use Moose();
 use Moose::Exporter;
+use namespace::autoclean;
 
-my $init_meta = Moose::Exporter->build_import_methods(
+Moose::Exporter->build_import_methods(
     install   => [qw(import unimport init_meta)],
     with_meta => [ qw(
             analyzer_path                  index_analyzer
@@ -23,20 +24,10 @@ my $init_meta = Moose::Exporter->build_import_methods(
             )
     ],
     class_metaroles => {
-        class     => ['ESModel::Meta::Class::Doc'],
+        class     => ['ESModel::Meta::Class::DocType'],
         attribute => ['ESModel::Trait::Field'],
-        instance  => ['ESModel::Meta::Instance']
     }
 );
-
-#===================================
-sub init_meta {
-#===================================
-    my $class = shift;
-    my %p     = @_;
-    Moose::Util::ensure_all_roles( $p{for_class}, 'ESModel::Role::Doc' );
-    $class->$init_meta(%p);
-}
 
 #===================================
 sub analyzer_path              { shift->analyzer_path(@_) }

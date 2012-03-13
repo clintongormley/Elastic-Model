@@ -5,6 +5,8 @@ use Moose;
 with 'ESModel::Role::Results';
 use MooseX::Types::Moose qw(:all);
 
+use namespace::autoclean;
+
 has 'took' => (
     isa    => Num,
     is     => 'ro',

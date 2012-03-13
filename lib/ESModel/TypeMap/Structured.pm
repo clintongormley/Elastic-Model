@@ -1,6 +1,7 @@
 package ESModel::TypeMap::Structured;
 
 use ESModel::TypeMap::Base qw(:all);
+use namespace::autoclean;
 
 #===================================
 has_type 'MooseX::Types::Structured::Optional',

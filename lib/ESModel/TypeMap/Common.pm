@@ -1,6 +1,7 @@
 package ESModel::TypeMap::Common;
 
 use ESModel::TypeMap::Base qw(:all);
+use namespace::autoclean;
 
 #===================================
 has_type 'DateTime',

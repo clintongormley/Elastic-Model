@@ -4,10 +4,9 @@ use Carp;
 use Moose::Role;
 
 with 'ESModel::Role::Iterator';
-with 'ESModel::Role::ModelAttr';
 
 use MooseX::Types::Moose qw(:all);
-use ESModel::Doc::Result();
+use namespace::autoclean;
 
 has 'search' => (
     isa      => HashRef,
@@ -66,18 +65,18 @@ no Moose;
 #===================================
 sub _as_result_builder {
 #===================================
-    my $self = shift;
-    my $m    = $self->model;
-    sub { $_[0] && ESModel::Doc::Result->new( model => $m, result => $_[0] ) }
+    my $self         = shift;
+    my $result_class = $self->model->result_class;
+    sub { $_[0] && $result_class->new( result => $_[0] ) }
 }
 
 #===================================
 sub _as_results_builder {
 #===================================
-    my $self = shift;
-    my $m    = $self->model;
+    my $self         = shift;
+    my $result_class = $self->model->result_class;
     sub {
-        map { ESModel::Doc::Result->new( model => $m, result => $_ ) } @_;
+        map { $result_class->new( result => $_ ) } @_;
         }
 }
 

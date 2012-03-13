@@ -1,14 +1,13 @@
 package ESModel::View;
 
 use Moose;
-with 'ESModel::Role::ModelAttr';
 
 use Carp;
 use ESModel::Types qw(IndexNames TypeNames SearchType);
 use MooseX::Types::Moose qw(:all);
 use MooseX::Attribute::ChainedClone();
-use ESModel::Results();
-use ESModel::Results::Scrolled();
+
+use namespace::autoclean;
 
 has 'index' => (
     traits  => ['ChainedClone'],
@@ -218,10 +217,7 @@ sub get {
 sub search {
 #===================================
     my $self = shift;
-    return ESModel::Results->new(
-        model  => $self->model,
-        search => $self->_build_search
-    );
+    $self->model->results_class->new( search => $self->_build_search );
 }
 
 # TODO: scroll_objects / scroll_results ?
@@ -230,10 +226,7 @@ sub scroll {
 #===================================
     my $self = shift;
     my $search = $self->_build_search( scroll => shift() || '1m', @_ );
-    return ESModel::Results::Scrolled->new(
-        model  => $self->model,
-        search => $search,
-    );
+    return $self->model->scrolled_results_class->new( search => $search, );
 }
 
 # TODO: scan_objects / scan_results

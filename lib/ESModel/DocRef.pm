@@ -1,8 +1,8 @@
-package ESModel::Ref;
+package ESModel::DocRef;
 
 use Moose;
-with 'ESModel::Role::ModelAttr';
 use ESModel::Types qw(UID);
+use namespace::autoclean;
 
 #===================================
 has 'uid' => (

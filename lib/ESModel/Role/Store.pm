@@ -1,21 +1,17 @@
 package ESModel::Role::Store;
 
 use Moose::Role;
-with 'ESModel::Role::ModelAttr';
 
-use namespace::autoclean;
 use ESModel::Types qw(ES);
+use namespace::autoclean;
 
+#===================================
 has 'es' => (
-    isa     => ES,
-    is      => 'ro',
-    builder => '_build_es',
-    lazy    => 1,
+#===================================
+    isa      => ES,
+    is       => 'ro',
+    required => 1,
 );
-
-#===================================
-sub _build_es { shift->model->es }
-#===================================
 
 #===================================
 sub search          { shift->es->search(@_) }

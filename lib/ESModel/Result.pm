@@ -1,9 +1,11 @@
-package ESModel::Doc::Result;
+package ESModel::Result;
 
 use Moose;
-with 'ESModel::Role::ModelAttr';
+
 use ESModel::Types qw(UID);
 use MooseX::Types::Moose qw(:all);
+
+use namespace::autoclean;
 
 has 'result' => (
     isa      => HashRef,

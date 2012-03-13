@@ -5,13 +5,19 @@ use Moose;
 with 'ESModel::Role::Results';
 use MooseX::Types::Moose qw(:all);
 
+use namespace::autoclean;
+
+#===================================
 has '_scroll' => (
+#===================================
     isa    => 'ElasticSearch::ScrolledSearch',
     is     => 'ro',
     writer => '_set_scroll',
 );
 
+#===================================
 has '_virtual_size' => (
+#===================================
     isa    => Int,
     is     => 'ro',
     writer => '_set_virtual_size',
