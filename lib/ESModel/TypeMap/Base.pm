@@ -163,6 +163,8 @@ sub class_inflator {
             my $attr = $attrs->{$_} or next;
             my $val = $inflators{$_}->( $hash->{$_}, $model );
             $attr->set_raw_value( $obj, $val );
+            $attr->_weaken_value($obj) if $attr->is_weak_ref;
+            # TODO: what about non ES objects?
         }
         return $obj;
     };

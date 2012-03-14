@@ -14,7 +14,6 @@ use namespace::autoclean;
 
 our %Default_Class = (
     type_map               => 'ESModel::TypeMap::Default',
-    doc_ref_class          => 'ESModel::DocRef',
     index_class            => 'ESModel::Index',
     store_class            => 'ESModel::Store',
     view_class             => 'ESModel::View',
@@ -110,8 +109,6 @@ sub BUILD {
 #===================================
 sub _build_store { $_[0]->store_class->new( es => $_[0]->es ) }
 sub _build_es { ElasticSearch->new }
-sub _build_type_map { $_[0]->wrap_class( $_[0]->type_map_class )->name }
-sub _build_doc_ref  { $_[0]->wrap_class( $_[0]->doc_ref_class )->name }
 #===================================
 
 #===================================
@@ -281,14 +278,6 @@ sub get_raw_doc {
     my $result = $self->store->get_doc($uid);
     $uid->update_from_store($result);
     return $result->{_source};
-}
-
-#===================================
-sub get_doc_ref {
-#===================================
-    my $self = shift;
-    my %vals = ( %{ shift() }, from_store => 1 );
-    $self->doc_ref_class->new( uid => ESModel::UID->new( \%vals ) );
 }
 
 #===================================

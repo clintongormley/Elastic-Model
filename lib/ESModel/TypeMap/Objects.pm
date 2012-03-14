@@ -18,10 +18,10 @@ has_type 'Moose::Meta::TypeConstraint::Role',
     deflate_via {undef}, inflate_via {undef};
 
 #===================================
-has_type 'Object',
+has_type 'Object',    ### TODO: Completely broken, needs rewriting
 #===================================
-    deflate_via {    ## TODO: Object deflator/inflator
-    sub {            ## Moose class?
+    deflate_via {     ## TODO: Object deflator/inflator
+    sub {             ## Moose class?
         my $obj = shift;
         my $ref = ref $obj;
 
@@ -88,7 +88,7 @@ sub _inflate_class {
 
     return sub {
         my ( $hash, $model ) = @_;
-        return $model->get_doc_ref( $hash->{uid} )
+        return $model->get_doc( %{ $hash->{uid} }, from_store => 1 )
             if $hash->{uid} && $model->class_wrapper($class);
 
         return $custom->(@_) if $custom;
