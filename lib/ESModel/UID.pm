@@ -69,7 +69,15 @@ sub update_from_store {
 #===================================
     my $self   = shift;
     my $params = shift;
-    $self->$_( $params->{$_} ) for qw(_index _id _version);
+    if ( $params->{_index} ) {
+        $self->$_( $params->{$_} ) for qw(_index _id _version);
+    }
+    else {
+        for (qw(index id version)) {
+            my $method = "_$_";
+            $self->$method( $params->{$_} );
+        }
+    }
     $self->_from_store(1);
     $self;
 }

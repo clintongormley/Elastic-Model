@@ -42,6 +42,7 @@ has '_source' => (
     traits  => ['ESModel::Trait::Exclude'],
     lazy    => 1,
     builder => '_get_source',
+    writer => '_overwrite_source',
 );
 
 #===================================

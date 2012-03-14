@@ -17,6 +17,7 @@ our %Default_Class = (
     index_class            => 'ESModel::Index',
     store_class            => 'ESModel::Store',
     view_class             => 'ESModel::View',
+    scope_class            => 'ESModel::Scope',
     results_class          => 'ESModel::Results',
     scrolled_results_class => 'ESModel::Results::Scrolled',
     result_class           => 'ESModel::Result',
@@ -95,6 +96,16 @@ has '_live_indices' => (
 );
 
 #===================================
+has 'current_scope' => (
+#===================================
+    is       => 'rw',
+    isa      => 'ESModel::Scope',
+    lazy     => 1,
+    weak_ref => 1,
+    builder  => '_die_no_scope'
+);
+
+#===================================
 sub BUILD {
 #===================================
     my $self = shift;
@@ -109,6 +120,7 @@ sub BUILD {
 #===================================
 sub _build_store { $_[0]->store_class->new( es => $_[0]->es ) }
 sub _build_es { ElasticSearch->new }
+sub _die_no_scope { croak "There is no current_scope" }
 #===================================
 
 #===================================
@@ -236,6 +248,13 @@ sub view { shift->view_class->new(@_) }
 #===================================
 
 #===================================
+sub new_scope {
+#===================================
+    my $self = shift;
+    $self->current_scope( $self->scope_class->new );
+}
+
+#===================================
 sub new_doc {
 #===================================
     my $self = shift;
@@ -256,17 +275,21 @@ sub get_doc {
         : blessed $_[0] ? { uid => shift() }
         :                 shift;
 
-    my $uid = $params->{uid} ||= ESModel::UID->new(@_);
-    my $source = $params->{_source};
-    unless ( $source || $uid->from_store ) {
-        $source = $self->get_raw_doc($uid);
-    }
+    my $scope  = $self->current_scope;
+    my $uid    = $params->{uid} ||= ESModel::UID->new($params);
+    my $object = $scope->get_object($uid) unless $params->{_source};
+    unless ($object) {
+        my $source = $params->{_source};
+        $source = $self->get_raw_doc($uid) unless $source || $uid->from_store;
 
-    my $class = $self->index( $uid->index )->class_for_type( $uid->type );
-    $class->meta->new_stub(
-        uid     => $uid,
-        _source => $source
-    );
+        my $class = $self->index( $uid->index )->class_for_type( $uid->type );
+        $object = $class->meta->new_stub(
+            uid     => $uid,
+            _source => $source
+        );
+        $object = $scope->store_object($object);
+    }
+    $object;
 }
 
 #===================================
@@ -291,7 +314,7 @@ sub save_doc {
     my $data   = $self->deflate_object($doc);
     my $result = $self->store->$action( $uid, $data, \%args );
     $uid->update_from_store($result);
-    return $doc;
+    return $self->scope->store_object($doc);
 }
 
 #===================================
