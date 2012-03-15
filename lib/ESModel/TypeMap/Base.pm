@@ -48,9 +48,7 @@ sub import {
 sub find_deflator {
 #===================================
     my ( $map, $attr ) = @_;
-    my $deflator = $attr->deflator if $attr->can('deflator');
-    return
-           $deflator
+    $attr->can('deflator') && $attr->deflator
         || eval { $map->find( 'deflator', $attr->type_constraint, $attr ) }
         || die _type_error( 'deflator', $attr, $@ );
 }
@@ -59,9 +57,7 @@ sub find_deflator {
 sub find_inflator {
 #===================================
     my ( $map, $attr ) = @_;
-    my $inflator = $attr->inflator if $attr->can('inflator');
-    return
-           $inflator
+    $attr->can('inflator') && $attr->deflator
         || eval { $map->find( 'inflator', $attr->type_constraint, $attr ) }
         || die _type_error( 'inflator', $attr, $@ );
 }
@@ -70,7 +66,8 @@ sub find_inflator {
 sub find_mapper {
 #===================================
     my ( $map, $attr ) = @_;
-    my $mapping = $attr->mapping if $attr->can('mapping');
+    my $mapping;
+    $mapping = $attr->mapping if $attr->can('mapping');
     return $mapping if $mapping && %$mapping;
     my %mapping
         = eval { $map->find( 'mapper', $attr->type_constraint, $attr ); };
@@ -164,6 +161,7 @@ sub class_inflator {
             my $val = $inflators{$_}->( $hash->{$_}, $model );
             $attr->set_raw_value( $obj, $val );
             $attr->_weaken_value($obj) if $attr->is_weak_ref;
+
             # TODO: what about non ES objects?
         }
         return $obj;
@@ -271,7 +269,7 @@ sub class_mapping {
         $class   = $wrapper->meta->original_class;
     }
     else {
-        $wrapper = $map->model->class_wrapper($class);
+        $wrapper = $map->model->class_for($class);
     }
     $attrs ||= $map->indexable_attrs( $wrapper || $class );
 

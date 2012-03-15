@@ -24,7 +24,7 @@ sub get_doc {
     my ( $self, $uid ) = @_;
     return $self->es->get(
         fields => [qw(_routing _parent _source)],
-        %{ $uid->as_params }
+        %{ $uid->read_params }
     );
 }
 
@@ -39,7 +39,7 @@ sub _write_doc {
     my ( $self, $action, $uid, $data, $args ) = @_;
     return $self->es->$action(
         data => $data,
-        %{ $uid->as_version_params },
+        %{ $uid->write_params },
         %$args
     );
 }
@@ -48,7 +48,7 @@ sub _write_doc {
 sub delete_doc {
 #===================================
     my ( $self, $uid, $args ) = @_;
-    return $self->es->delete( %{ $uid->as_version_params }, %$args );
+    return $self->es->delete( %{ $uid->write_params }, %$args );
 }
 
 1;

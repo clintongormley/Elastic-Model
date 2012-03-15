@@ -8,9 +8,9 @@ has_type 'ESModel::Types::UID',
 #===================================
     deflate_via {
     sub {
-        die "Cannot deflate UID as it not stored\n"
+        die "Cannot deflate UID as it not saved\n"
             unless $_[0]->from_store;
-        $_[0]->as_params;
+        $_[0]->read_params;
         }
     },
 

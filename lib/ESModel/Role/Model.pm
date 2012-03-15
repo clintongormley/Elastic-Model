@@ -14,7 +14,7 @@ use namespace::autoclean;
 
 our %Default_Class = (
     type_map               => 'ESModel::TypeMap::Default',
-    index_class            => 'ESModel::Index',
+    domain_class           => 'ESModel::Domain',
     store_class            => 'ESModel::Store',
     view_class             => 'ESModel::View',
     scope_class            => 'ESModel::Scope',
@@ -66,33 +66,31 @@ has 'class_wrappers' => (
     traits  => ['Hash'],
     lazy    => 1,
     builder => '_build_class_wrappers',
-    handles => { class_wrapper => 'get' }
+    handles => {
+        class_for   => 'get',
+        knows_class => 'exists'
+    }
 );
 
 #===================================
-has '_index_cache' => (
+has '_domain_cache' => (
 #===================================
     isa     => HashRef,
     is      => 'bare',
     traits  => ['Hash'],
     default => sub { {} },
     handles => {
-        _get_index   => 'get',
-        _cache_index => 'set',
+        _get_domain   => 'get',
+        _cache_domain => 'set',
     },
 );
 
 #===================================
-has '_live_indices' => (
+has '_index_domains' => (
 #===================================
+    is      => 'ro',
     isa     => HashRef,
-    is      => 'bare',
-    traits  => ['Hash'],
-    builder => '_update_live_indices',
-    clearer => '_clear_live_indices',
-    lazy    => 1,
-    handles => { _live_index => 'get', },
-
+    default => sub { {} },
 );
 
 #===================================
@@ -127,12 +125,39 @@ sub _die_no_scope { croak "There is no current_scope" }
 sub _build_class_wrappers {
 #===================================
     my $self    = shift;
-    my $indices = $self->meta->indices;
+    my $domains = $self->meta->domains;
     my %classes;
-    for my $types ( values %$indices ) {
+    for my $types ( values %$domains ) {
         $classes{$_} = $self->wrap_doc_class($_) for values %$types;
     }
     \%classes;
+}
+
+#===================================
+sub domain_for_index {
+#===================================
+    my $self = shift;
+    my $index = shift or croak "No (index) passed to domain_for_index";
+    my $domain;
+    $domain = $self->_index_domains->{$index} and return $domain;
+    $domain = $self->meta->domain($index)     and return $index;
+
+    my $aliases = $self->es->get_aliases( index => $index )->{$index}{aliases}
+        or croak "Unknown index ($index)";
+
+    my $domains = $self->meta->domains;
+    $domain = '';
+
+    for ( keys %$aliases ) {
+        if ( $domains->{$_} ) {
+            croak "Index ($index) currently points to more than one domain"
+                if $domain;
+            $domain = $_;
+        }
+    }
+    croak "No domain found for index ($index)" unless $domain;
+    $self->_index_domains->{$index} = $domain;
+    return $domain;
 }
 
 #===================================
@@ -200,47 +225,29 @@ sub wrap_class {
 }
 
 #===================================
-sub _update_live_indices {
+sub domain {
 #===================================
-    my $self    = shift;
-    my $meta    = $self->meta;
-    my $indices = $self->es->get_aliases( index => [ $meta->all_indices ] )
-        ->{indices};
+    my $self   = shift;
+    my $name   = shift or croak "No domain name passed to domain()";
+    my $domain = $self->_get_domain($name);
 
-    my %live;
-    while ( my ( $name, $aliases ) = each %$indices ) {
-        ( $live{$name} ) = grep { $self->index($_) }
-            grep { $meta->has_index($_) } @$aliases;
-    }
-    \%live;
-}
+    unless ($domain) {
 
-#===================================
-sub index {
-#===================================
-    my $self      = shift;
-    my $base_name = shift or croak "No index name passed to index()";
-    my $dest_name = @_ ? shift : $base_name;
-    my $index     = $self->_get_index($dest_name);
-    unless ($index) {
-        my $types = $self->meta->index($base_name);
-        unless ($types) {
-            my $live_index = $self->_live_index($base_name)
-                || $self->_clear_live_indices
-                && $self->_live_index($base_name)
-                || croak "Unknown index name '$base_name'";
-            $types = $self->meta->index($live_index);
-        }
+        my $types = $self->meta->domain($name)
+            or croak "Unknown domain name ($name)";
+
         my %classes
-            = map { $_ => $self->class_wrapper( $types->{$_} ) } keys %$types;
-        $index = $self->index_class->new(
-            name  => $dest_name,
+            = map { $_ => $self->class_for( $types->{$_} ) } keys %$types;
+
+        $domain = $self->domain_class->new(
+            name  => $name,
             types => \%classes
         );
-        $self->_cache_index( $dest_name => $index );
+
+        $self->_cache_domain( $name => $domain );
     }
 
-    return $index;
+    return $domain;
 }
 
 #===================================
@@ -255,39 +262,25 @@ sub new_scope {
 }
 
 #===================================
-sub new_doc {
-#===================================
-    my $self = shift;
-    my %params = ref $_[0] ? %{ shift() } : @_;
-
-    my $uid = ESModel::UID->new(%params);
-
-    my $class = $self->index( $uid->index )->class_for_type( $uid->type );
-    return $class->new( %params, uid => $uid, );
-}
-
-#===================================
 sub get_doc {
 #===================================
-    my $self = shift;
-    my $params
-        = !ref $_[0] ? {@_}
-        : blessed $_[0] ? { uid => shift() }
-        :                 shift;
+    my ( $self, $uid, $source ) = @_;
+    croak "No UID passed to get_doc()" unless $uid;
 
+    my $domain = $self->domain_for_index( $uid->index );
     my $scope  = $self->current_scope;
-    my $uid    = $params->{uid} ||= ESModel::UID->new($params);
-    my $object = $scope->get_object($uid) unless $params->{_source};
-    unless ($object) {
-        my $source = $params->{_source};
-        $source = $self->get_raw_doc($uid) unless $source || $uid->from_store;
 
-        my $class = $self->index( $uid->index )->class_for_type( $uid->type );
+    my $object;
+    $object = $scope->get_object( $domain, $uid ) unless $source;
+
+    unless ($object) {
+        $source ||= $self->get_raw_doc($uid) unless $uid->from_store;
+        my $class = $self->domain($domain)->class_for_type( $uid->type );
         $object = $class->meta->new_stub(
             uid     => $uid,
             _source => $source
         );
-        $object = $scope->store_object($object);
+        $object = $scope->store_object( $domain, $object );
     }
     $object;
 }
@@ -310,11 +303,12 @@ sub save_doc {
     my $doc    = shift;
     my %args   = ref $_[0] ? %{ shift() } : @_;
     my $uid    = $doc->uid;
+    my $domain = $self->domain_for_index( $uid->index );
     my $action = $uid->from_store ? 'index_doc' : 'create_doc';
     my $data   = $self->deflate_object($doc);
     my $result = $self->store->$action( $uid, $data, \%args );
     $uid->update_from_store($result);
-    return $self->scope->store_object($doc);
+    return $self->current_scope->store_object( $domain, $doc );
 }
 
 #===================================
@@ -324,9 +318,10 @@ sub delete_doc {
     my $doc    = shift;
     my %args   = ref $_[0] ? %{ shift() } : @_;
     my $uid    = $doc->uid;
+    my $domain = $self->domain_for_index( $uid->index );
     my $result = $self->store->delete_doc( $doc->uid, \%args );
     $uid->update_from_store($result);
-    return $doc;
+    return $self->current_scope->delete_object( $domain, $doc );
 }
 
 #===================================

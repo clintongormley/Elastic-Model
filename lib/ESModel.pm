@@ -8,10 +8,7 @@ use namespace::autoclean;
 my $init_meta = Moose::Exporter->build_import_methods(
     install         => [qw(import unimport)],
     class_metaroles => { class => ['ESModel::Meta::Class::Model'] },
-    with_meta       => [
-        'has_index', 'analyzer', 'tokenizer',
-        'filter',    'char_filter'
-    ],
+    with_meta       => [qw(has_domain analyzer tokenizer filter char_filter)],
 );
 
 #===================================
@@ -24,19 +21,16 @@ sub init_meta {
 }
 
 #===================================
-sub has_index {
+sub has_domain {
 #===================================
-    my $meta = shift;
-    my $name = shift;
+    my $meta   = shift;
+    my $name   = shift or croak "No domain name passed to has_domain";
     my $types = ref $_[0] ? shift : {@_};
 
-    my @indices = grep {$_} ref $name eq 'ARRAY' ? @$name : $name;
-    croak "No index name passed to has_index" unless @indices;
-
-    croak "No types specified for index: " . join( ', ', @indices )
+    croak "No types specified for domain $name"
         unless %$types;
 
-    $meta->add_index( $_ => $types ) for @indices;
+    $meta->add_domain( $name => $types );
 }
 
 #===================================

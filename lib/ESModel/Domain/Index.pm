@@ -1,4 +1,4 @@
-package ESModel::Index;
+package ESModel::Domain::Index;
 
 use Carp;
 use Moose;
@@ -15,30 +15,16 @@ has 'name' => (
 );
 
 #===================================
-has 'settings' => (
+has 'domain' => (
 #===================================
-    isa     => HashRef,
-    is      => 'rw',
-    default => sub { {} },
-);
-
-#===================================
-has 'types' => (
-#===================================
-    isa      => HashRef,
-    traits   => ['Hash'],
+    isa      => 'ESModel::Domain',
     is       => 'ro',
     required => 1,
-    handles  => {
-        class_for_type => 'get',
-        has_type       => 'exists',
-        all_types      => 'keys',
-    }
+    handles  => [ 'mappings', 'settings', 'model', 'es' ]
 );
 
 no Moose;
 
-# TODO: create_as ? do we clone?
 #===================================
 sub create {
 #===================================
@@ -48,7 +34,6 @@ sub create {
         %{ $self->settings },
         $self->model->meta->analysis_for_mappings($mappings)
     );
-    $self->model->_clear_live_indices;
     $self->es->create_index(
         index    => $self->name,
         mappings => $mappings,
@@ -58,32 +43,10 @@ sub create {
 }
 
 #===================================
-sub alias_to {
-#===================================
-    my $self = shift;
-    my %indices = map { $_ => 1 } ref $_[0] ? @{ shift() } : @_;
-
-    my $es      = $self->es;
-    my $name    = $self->name;
-    my $current = $es->get_aliases( index => $name )->{aliases}{$name};
-    my @remove  = grep { !$indices{$_} } @$current if $current;
-
-    my @actions
-        = map { +{ add => { alias => $name, index => $_ } } } keys %indices;
-    push @actions,
-        map { +{ remove => { alias => $name, index => $_ } } } @remove;
-    $es->aliases( actions => \@actions );
-
-    $self->model->_clear_live_indices;
-    return $self;
-}
-
-#===================================
 sub delete {
 #===================================
     my $self = shift;
     my %params = ref $_[0] ? %{ shift() } : @_;
-    $self->model->_clear_live_indices;
     $self->es->delete_index( %params, index => $self->name );
     return $self;
 }
@@ -121,6 +84,16 @@ sub put_mapping {
 }
 
 #===================================
+sub get_mapping {
+#===================================
+    my $self  = shift;
+    my $types = ref $_[0] ? shift : [@_];
+    my $index = $self->name;
+    my $es    = $self->es;
+    return $self->es->mapping( index => $index, type => $types )->{$index};
+}
+
+#===================================
 sub delete_mapping {
 #===================================
     my $self  = shift;
@@ -148,7 +121,6 @@ sub update_settings {
 sub open {
 #===================================
     my $self = shift;
-    $self->model->_clear_live_indices;
     $self->es->open_index( index => $self->name );
     return $self;
 }
@@ -157,25 +129,8 @@ sub open {
 sub close {
 #===================================
     my $self = shift;
-    $self->model->_clear_live_indices;
     $self->es->close_index( index => $self->name );
     return $self;
 }
-
-#===================================
-sub mappings {
-#===================================
-    my $self = shift;
-    my @types
-        = @_ == 0   ? $self->all_types
-        : ref $_[0] ? @{ shift() }
-        :             @_;
-    my $model = $self->model;
-    +{ map { $_ => $model->map_class( $self->class_for_type($_) ) } @types };
-}
-
-#===================================
-sub es { shift->model->es }
-#===================================
 
 1;

@@ -88,8 +88,10 @@ sub _inflate_class {
 
     return sub {
         my ( $hash, $model ) = @_;
-        return $model->get_doc( %{ $hash->{uid} }, from_store => 1 )
-            if $hash->{uid} && $model->class_wrapper($class);
+        if ( $hash->{uid} && $model->knows_class($class) ) {
+            my $uid = ESModel::UID->new( %{ $hash->{uid} }, from_store => 1 );
+            return $model->get_doc($uid);
+        }
 
         return $custom->(@_) if $custom;
 
@@ -134,7 +136,7 @@ sub _class_attrs {
 
     my %attrs;
 
-    my $wrapper = $map->model->class_wrapper($class);
+    my $wrapper = $map->model->class_for($class);
     my $wrapper_meta = $wrapper ? $wrapper->meta : $meta;
 
     my $inc = $attr->include_attrs;

@@ -15,9 +15,8 @@ has '_objects' => (
 #===================================
 sub get_object {
 #===================================
-    my $self = shift;
-    my $uid  = shift;
-    my $existing = $self->_objects->{ $uid->as_string } or return;
+    my ($self,$domain,$uid) = @_;
+    my $existing = $self->_objects->{$domain}{ $uid->cache_key } or return;
     return if $uid->version && $uid->version > $existing->uid->version;
     return $existing;
 }
@@ -25,17 +24,16 @@ sub get_object {
 #===================================
 sub store_object {
 #===================================
-    my $self   = shift;
-    my $object = shift;
+    my ($self,$domain,$object) = @_;
     my $uid    = $object->uid;
-    if ( my $existing = $self->_objects->{$uid->as_string} ) {
+    if ( my $existing = $self->_objects->{$domain} { $uid->cache_key } ) {
         return $existing if $existing->uid->version >= $uid->version;
         $existing->_overwrite_source( $object->_source );
         $existing->_can_inflate(1);
-        $existing->uid->update_from_store( $uid->as_version_params );
+        $existing->uid->update_from_uid($uid);
         return $existing;
     }
-    $self->_objects->{ $uid->as_string } = $object;
+    $self->_objects->{$domain}{ $uid->cache_key } = $object;
 }
 
 1;

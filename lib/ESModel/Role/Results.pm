@@ -77,7 +77,7 @@ sub _as_results_builder {
     my $result_class = $self->model->result_class;
     sub {
         map { $result_class->new( result => $_ ) } @_;
-        }
+    };
 }
 
 #===================================

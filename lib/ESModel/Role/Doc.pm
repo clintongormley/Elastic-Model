@@ -18,7 +18,6 @@ has 'uid' => (
     required => 1,
     traits   => ['ESModel::Trait::Exclude'],
     handles  => {
-        index   => 'index',
         id      => 'id',
         type    => 'type',
         routing => 'routing'
@@ -42,7 +41,7 @@ has '_source' => (
     traits  => ['ESModel::Trait::Exclude'],
     lazy    => 1,
     builder => '_get_source',
-    writer => '_overwrite_source',
+    writer  => '_overwrite_source',
 );
 
 #===================================

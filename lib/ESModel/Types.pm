@@ -173,7 +173,7 @@ subtype DynamicTemplates, as Map [ Str => DynamicTemplate ];
 subtype IndexNames, as ArrayRef [Str],
 #===================================
     where { @{$_} > 0 },    #
-    message {"At least one index name is required"};
+    message {"At least one domain name is required"};
 coerce IndexNames, from Str, via { [$_] };
 
 #===================================

@@ -7,45 +7,35 @@ use Carp;
 use Data::Dump qw(pp);
 use namespace::autoclean;
 
-my %attr = (
-    index       => 'indices',
-    char_filter => 'char_filters',
-    analyzer    => 'analyzers',
-    filter      => 'filters',
-    tokenizer   => 'tokenizers',
-);
-
 my %defaults = (
     analyzer  => {},
     tokenizer => {},
 );
 
-while ( my ( $singular, $plural ) = each %attr ) {
-    my %default = %{ $defaults{$singular} || {} };
-    has $plural => (
+for my $k (qw(domain char_filter analyzer filter tokenizer)) {
+    my %default = %{ $defaults{$k} || {} };
+    has "${k}s" => (
         is      => 'ro',
         traits  => ['Hash'],
         isa     => HashRef,
         default => sub { \%default },
         handles => {
-            $singular            => 'get',
-            "add_${singular}"    => 'set',
-            "remove_${singular}" => 'delete',
-            "has_${singular}"    => 'exists',
-            "all_${plural}"      => 'keys',
+            $k          => 'get',
+            "add_${k}"  => 'set',
+            "has_${k}"  => 'exists',
+            "all_${k}s" => 'keys',
         }
     );
-}
+    next if $k eq 'domain';
 
-for my $key (qw(analyzer tokenizer filter char_filter )) {
-    before "add_$key" => sub {
+    before "add_$k" => sub {
         my $class = shift;
         my %params = ref $_[0] ? { shift() } : @_;
         for my $defn ( values %params ) {
             my $type = $defn->{type} || 'custom';
-            return if $type eq 'custom' and $key eq 'analyzer';
-            croak "Unknown type '$type' in $key:\n" . pp( \%params ) . "\n"
-                unless $class->is_default( $key, $type );
+            return if $type eq 'custom' and $k eq 'analyzer';
+            croak "Unknown type '$type' in $k:\n" . pp( \%params ) . "\n"
+                unless $class->is_default( $k, $type );
         }
     };
 }

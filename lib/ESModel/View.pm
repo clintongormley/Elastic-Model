@@ -9,12 +9,12 @@ use MooseX::Attribute::ChainedClone();
 
 use namespace::autoclean;
 
-has 'index' => (
+has 'domain' => (
     traits  => ['ChainedClone'],
     isa     => IndexNames,
     is      => 'rw',
     lazy    => 1,
-    builder => '_build_index_names',
+    builder => '_build_domain_names',
     coerce  => 1,
 );
 
@@ -144,6 +144,10 @@ sub _build_search_builder { shift->model->es->builder }
 #===================================
 
 #===================================
+sub index { shift ->domain(@_)}
+#===================================
+
+#===================================
 sub queryb {
 #===================================
     my $self = shift;
@@ -167,51 +171,8 @@ sub post_filterb {
 no Moose;
 
 #===================================
-sub _build_index_names { [ shift->model->meta->all_indices ] }
+sub _build_domain_names { [ shift->model->meta->all_domains] }
 #===================================
-
-#===================================
-sub _single {
-#===================================
-    my ( $self,  $name )   = @_;
-    my ( $first, $second ) = @{ $self->$name };
-    if ( defined $second ) {
-        my ($method) = ( caller(1) )[3];
-        $method =~ s/.+:://;
-        croak "$method() can only be called on a View with a single $name";
-    }
-    return $first;
-}
-
-#===================================
-sub new_doc {
-#===================================
-    my $self = shift;
-    my %params = ref $_[0] ? %{ shift() } : @_;
-    $params{$_} ||= $self->_single($_) for qw(index type);
-    $self->model->new_doc( \%params );
-}
-
-#===================================
-sub create { shift->new_doc(@_)->save }
-#===================================
-
-#===================================
-sub get {
-#===================================
-    my $self = shift;
-    my %params
-        = @_ != 1 ? @_
-        : !ref $_[0]                 ? ( id  => shift() )
-        : $_[0]->isa('ESModel::UID') ? ( uid => shift() )
-        :                              %{ shift() };
-
-    unless ( $params{uid} ) {
-        $params{id} or croak "No 'id' passed to get()";
-        $params{$_} ||= $self->_single($_) for qw(index type);
-    }
-    $self->model->get_doc(%params);
-}
 
 #===================================
 sub search {

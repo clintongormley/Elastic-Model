@@ -2,7 +2,7 @@ package ESModel::UID;
 
 use Moose;
 use MooseX::Types::Moose qw(:all);
-use namespace::autoclean -also => [ '_encode', '_decode' ];
+use namespace::autoclean;
 
 #===================================
 has index => (
@@ -12,6 +12,7 @@ has index => (
     required => 1,
     writer   => '_index'
 );
+
 #===================================
 has type => (
 #===================================
@@ -19,6 +20,7 @@ has type => (
     isa      => Str,
     required => 1
 );
+
 #===================================
 has id => (
 #===================================
@@ -26,6 +28,7 @@ has id => (
     isa    => Str,
     writer => '_id'
 );
+
 #===================================
 has version => (
 #===================================
@@ -33,12 +36,14 @@ has version => (
     isa    => Int,
     writer => '_version'
 );
+
 #===================================
 has routing => (
 #===================================
     is  => 'ro',
-    isa => Maybe [Str]
+    isa => Str,
 );
+
 #===================================
 has from_store => (
 #===================================
@@ -47,10 +52,17 @@ has from_store => (
     writer => '_from_store'
 );
 
-no Moose;
+#===================================
+has cache_key => (
+#===================================
+    is      => 'ro',
+    isa     => Str,
+    lazy    => 1,
+    builder => '_build_cache_key',
+    clearer => '_clear_cache_key',
+);
 
-our @UID_attrs = qw(index type id routing);
-our @UID_version_attrs = ( @UID_attrs, 'version' );
+no Moose;
 
 #===================================
 sub new_from_store {
@@ -69,97 +81,53 @@ sub update_from_store {
 #===================================
     my $self   = shift;
     my $params = shift;
-    if ( $params->{_index} ) {
-        $self->$_( $params->{$_} ) for qw(_index _id _version);
-    }
-    else {
-        for (qw(index id version)) {
-            my $method = "_$_";
-            $self->$method( $params->{$_} );
-        }
-    }
+    $self->$_( $params->{$_} ) for qw(_index _id _version);
     $self->_from_store(1);
+    $self->_clear_cache_key;
     $self;
 }
 
 #===================================
-sub as_params {
+sub update_from_uid {
+#===================================
+    my $self = shift;
+    my $uid  = shift;
+    $self->$_( $uid->$_ ) for qw( index routing version );
+    $self->_from_store(1);
+    $self->_clear_cache_key;
+    $self;
+}
+
+#===================================
+sub read_params  { shift->_params(qw(index type id routing)) }
+sub write_params { shift->_params(qw(index type id routing version)) }
+#===================================
+
+#===================================
+sub _params {
 #===================================
     my $self = shift;
     my %vals;
-    for (@UID_attrs) {
+    for (@_) {
         my $val = $self->$_ or next;
-        $vals{$_} = $val if defined $val;
-        next unless defined $val;
+        $vals{$_} = $val;
     }
     return \%vals;
-}
-
-#===================================
-sub as_version_params {
-#===================================
-    my $self = shift;
-    my %vals;
-    for (@UID_version_attrs) {
-        my $val = $self->$_ or next;
-        $vals{$_} = $val if defined $val;
-        next unless defined $val;
-    }
-    return \%vals;
-}
-
-#===================================
-sub as_string {
-#===================================
-    my $self = shift;
-    my $id = $self->id or return undef;
-    no warnings 'uninitialized';
-    return join ";", map {
-        my $val = $self->$_;
-        defined $val ? "$_:" . _encode($val) : ()
-    } @UID_attrs;
-}
-
-#===================================
-sub as_version_string {
-#===================================
-    my $self = shift;
-    my $id = $self->id or return undef;
-    no warnings 'uninitialized';
-    return join ";", map {
-        my $val = $self->$_;
-        defined $val ? "$_:" . _encode($val) : ()
-    } @UID_version_attrs;
-}
-
-#===================================
-sub new_from_string {
-#===================================
-    my $class = shift;
-    my %params = map { /^(\w+):(.+)?/; $1, _decode($2) } split /;/, shift();
-    $class->new( %params, from_store => 1 );
 }
 
 my %encode = ( ':' => '::', ';' => ':_' );
-my %decode = ( ':' => ':',  '_' => ';' );
 #===================================
-sub _encode {
+sub _build_cache_key {
 #===================================
-    my $val = shift;
-    if ($val) {
-        $val =~ s/([:;])/$encode{$1}/ge;
-    }
-    return $val;
-}
-
-#===================================
-sub _decode {
-#===================================
-    my $val = shift;
-    if ($val) {
-        $val =~ s/:([:_])/$decode{$1}/ge;
-    }
-    return $val;
+    my $self = shift;
+    my $id = $self->id or return undef;
+    return join ";", map {
+        if ( my $val = $self->$_ )
+        {
+            $val =~ s/([:;])/$encode{$1}/ge;
+            "$_:$val";
+        }
+    } qw(type id);
 }
 
 1;
