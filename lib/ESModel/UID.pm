@@ -115,19 +115,11 @@ sub _params {
     return \%vals;
 }
 
-my %encode = ( ':' => '::', ';' => ':_' );
 #===================================
 sub _build_cache_key {
 #===================================
     my $self = shift;
-    my $id = $self->id or return undef;
-    return join ";", map {
-        if ( my $val = $self->$_ )
-        {
-            $val =~ s/([:;])/$encode{$1}/ge;
-            "$_:$val";
-        }
-    } qw(type id);
+    return join ";", map { s/;/;;/g; $_ } map { $self->$_ } qw(type id);
 }
 
 1;
