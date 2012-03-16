@@ -187,28 +187,18 @@ sub wrap_doc_class {
 
     load_class($class);
 
-    my $orig_meta = $class->meta;
-    $orig_meta->make_mutable;
+    croak "Class ($class) does not do ESModel::Role::Doc. "
+        . "Please add : use ESModel::Doc;\n\n"
+        unless Moose::Util::does_role( $class, 'ESModel::Role::Doc' );
 
-    my $new_meta = Moose::Util::MetaRole::apply_metaroles(
-        for             => $class,
-        class_metaroles => {
-            instance  => ['ESModel::Meta::Instance'],
-            attribute => ['ESModel::Trait::Field'],
-        }
-    );
-
-    my $meta = Moose::Meta::Class->create(
-        $self->meta->wrapped_class_name($class),
-        superclasses => [$class],
-        roles        => ['ESModel::Role::Doc'],
-        weaken       => 0,
-    );
+    my $new_class = $self->meta->wrapped_class_name($class);
+    my $meta      = Moose::Meta::Class->create(
+        $new_class => superclasses => [$class] );
 
     $meta = Moose::Util::MetaRole::apply_metaroles(
         for             => $meta,
         class_metaroles => {
-            class => [ 'ESModel::Meta::Class', 'ESModel::Meta::Class::Doc' ],
+            class => [ 'ESModel::Meta::Class::Doc', 'ESModel::Meta::Class' ],
             instance => ['ESModel::Meta::Instance'],
         }
     );
@@ -216,16 +206,7 @@ sub wrap_doc_class {
     $meta->_set_original_class($class);
     $meta->_set_model($self);
     $meta->make_immutable;
-    $new_meta->make_immutable;
 
-    if ( does_role( $orig_meta, 'ESModel::Meta::Class::DocType' ) ) {
-        my $meta_meta = $orig_meta->meta;
-        for my $name ( $meta_meta->get_attribute_list ) {
-            my $attr = $meta_meta->get_attribute($name);
-            next unless $attr->has_value($orig_meta);
-            $meta->$name( $orig_meta->$name );
-        }
-    }
     return $meta->name;
 }
 
@@ -394,6 +375,7 @@ sub deflator_for_class {
 #===================================
     my $self  = shift;
     my $class = shift;
+    $class = $self->class_for($class) || $class;
     return $self->deflators->{$class} ||= do {
         die "Class $class is not an ESModel class."
             unless does_role( $class, 'ESModel::Role::Doc' );
@@ -415,6 +397,7 @@ sub inflator_for_class {
 #===================================
     my $self  = shift;
     my $class = shift;
+    $class = $self->class_for($class) || $class;
     return $self->inflators->{$class} ||= do {
         die "Class $class is not an ESModel class."
             unless does_role( $class, 'ESModel::Role::Doc' );
@@ -427,6 +410,7 @@ sub map_class {
 #===================================
     my $self  = shift;
     my $class = shift;
+    $class = $self->class_for($class) || $class;
     die "Class $class is not an ESModel class."
         unless does_role( $class, 'ESModel::Role::Doc' );
 

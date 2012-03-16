@@ -5,8 +5,12 @@ use Moose::Exporter;
 use namespace::autoclean;
 
 Moose::Exporter->build_import_methods(
-    install         => [qw(import unimport init_meta)],
-    class_metaroles => { attribute => ['ESModel::Trait::Field'] },
+    install          => [qw(import unimport init_meta)],
+    base_class_roles => ['ESModel::Role::Doc'],
+    class_metaroles  => {
+        instance  => ['ESModel::Meta::Instance'],
+        attribute => ['ESModel::Trait::Field'],
+    }
 );
 
 1;

@@ -7,14 +7,6 @@ use ESModel::Types qw(DynamicTemplates DynamicMapping);
 use namespace::autoclean;
 
 #===================================
-has 'type' => (
-#===================================
-    isa    => Str,
-    is     => 'ro',
-    writer => '_set_type'
-);
-
-#===================================
 has 'type_settings' => (
 #===================================
     isa     => HashRef,

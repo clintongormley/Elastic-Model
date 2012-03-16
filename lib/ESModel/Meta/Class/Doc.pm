@@ -1,6 +1,8 @@
 package ESModel::Meta::Class::Doc;
 
 use Moose::Role;
+with 'ESModel::Meta::Class';
+
 use Carp;
 use namespace::autoclean;
 
