@@ -43,6 +43,35 @@ sub create {
 }
 
 #===================================
+sub alias_to {
+#===================================
+    my $self = shift;
+    my @args = ref $_[0] ? @{ shift() } : @_;
+
+    my $name = $self->name;
+    my $es   = $self->es;
+
+    my %indices = map { $_ => { remove => { index => $_, alias => $name } } }
+        keys %{ $es->get_aliases( index => $name ) };
+
+    while (@args) {
+        my $index  = shift @args;
+        my %params = (
+            ref $args[0] ? %{ shift @args } : (),
+            index => $index,
+            alias => $name
+        );
+        if ( my $filter = delete $params{filterb} ) {
+            $params{filter} = $es->builder->filter($filter)->{filter};
+        }
+        $indices{$index} = { add => \%params };
+    }
+
+    $es->aliases( actions => [ values %indices ] );
+    return $self;
+}
+
+#===================================
 sub delete {
 #===================================
     my $self = shift;

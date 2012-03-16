@@ -131,27 +131,6 @@ sub index {
 }
 
 #===================================
-sub alias_to {
-#===================================
-    my $self    = shift;
-    my $indices = ref $_[0] ? shift() : [@_];
-    my %indices = map { $_ => 1 } ref $_[0] ? @{ shift() } : @_;
-
-    my $es      = $self->es;
-    my $name    = $self->name;
-    my $current = $es->get_aliases( index => $name )->{aliases}{$name};
-    my @remove;
-    @remove = grep { !$indices{$_} } @$current if $current;
-
-    my @actions
-        = map { +{ add => { alias => $name, index => $_ } } } keys %indices;
-    push @actions,
-        map { +{ remove => { alias => $name, index => $_ } } } @remove;
-    $es->aliases( actions => \@actions );
-    return $self;
-}
-
-#===================================
 sub mappings {
 #===================================
     my $self = shift;
