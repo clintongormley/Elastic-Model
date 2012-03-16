@@ -88,7 +88,7 @@ sub _as_object_builder {
     sub {
         my $raw = shift or return;
         my $uid = ESModel::UID->new_from_store($raw);
-        $model->get_doc( uid => $uid, _source => $raw->{_source} );
+        $model->get_doc( $uid, $raw->{_source} );
     };
 }
 
@@ -100,7 +100,7 @@ sub _as_objects_builder {
     sub {
         map {
             my $uid = ESModel::UID->new_from_store($_);
-            $m->get_doc( uid => $uid, _source => $_->{_source} )
+            $m->get_doc( $uid, $_->{_source} )
         } @_;
     };
 }

@@ -33,11 +33,7 @@ sub _build_uid {
 sub object {
 #===================================
     my $self = shift;
-    $self->model->get_doc(
-        uid     => $self->uid,
-        _source => $self->source
-
-    );
+    $self->model->get_doc( $self->uid, $self->source );
 }
 
 #===================================
