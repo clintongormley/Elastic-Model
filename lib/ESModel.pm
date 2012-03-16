@@ -25,12 +25,13 @@ sub has_domain {
 #===================================
     my $meta   = shift;
     my $name   = shift or croak "No domain name passed to has_domain";
-    my $types = ref $_[0] ? shift : {@_};
+    my $params = ref $_[0] ? shift : {@_};
 
+    my $types = $params->{types};
     croak "No types specified for domain $name"
-        unless %$types;
+        unless $types && %$types;
 
-    $meta->add_domain( $name => $types );
+    $meta->add_domain( $name => $params );
 }
 
 #===================================

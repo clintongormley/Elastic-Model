@@ -10,13 +10,13 @@ use MooseX::Attribute::ChainedClone();
 use namespace::autoclean;
 
 #===================================
-has 'domain' => (
+has 'index' => (
 #===================================
     traits  => ['ChainedClone'],
     isa     => IndexNames,
     is      => 'rw',
     lazy    => 1,
-    builder => '_build_domain_names',
+    builder => '_build_index_names',
     coerce  => 1,
 );
 
@@ -185,10 +185,6 @@ sub _build_search_builder { shift->model->es->builder }
 #===================================
 
 #===================================
-sub index { shift->domain(@_) }
-#===================================
-
-#===================================
 sub queryb {
 #===================================
     my $self = shift;
@@ -212,7 +208,7 @@ sub post_filterb {
 no Moose;
 
 #===================================
-sub _build_domain_names { [ shift->model->meta->all_domains ] }
+sub _build_index_names { [ shift->model->meta->all_domains ] }
 #===================================
 
 #===================================

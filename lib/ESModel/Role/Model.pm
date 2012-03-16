@@ -61,13 +61,13 @@ has 'es' => (
 );
 
 #===================================
-has 'class_wrappers' => (
+has 'doc_class_wrappers' => (
 #===================================
     is      => 'ro',
     isa     => HashRef,
     traits  => ['Hash'],
     lazy    => 1,
-    builder => '_build_class_wrappers',
+    builder => '_build_doc_class_wrappers',
     handles => {
         class_for   => 'get',
         knows_class => 'exists'
@@ -92,7 +92,9 @@ has '_index_domains' => (
 #===================================
     is      => 'ro',
     isa     => HashRef,
-    default => sub { {} },
+    lazy    => 1,
+    builder => '_build_index_domains',
+    clearer => '_clear_index_domains',
 );
 
 #===================================
@@ -114,7 +116,7 @@ sub BUILD {
         my $set   = "_set_$_";
         $self->$set($class);
     }
-    $self->class_wrappers;
+    $self->doc_class_wrappers;
 }
 
 #===================================
@@ -124,12 +126,12 @@ sub _die_no_scope { croak "There is no current_scope" }
 #===================================
 
 #===================================
-sub _build_class_wrappers {
+sub _build_doc_class_wrappers {
 #===================================
     my $self    = shift;
     my $domains = $self->meta->domains;
     my %classes;
-    for my $types ( values %$domains ) {
+    for my $types ( map { $_->{types} } values %$domains ) {
         for ( values %$types ) {
             $classes{$_} ||= $self->wrap_doc_class($_);
         }
@@ -138,30 +140,43 @@ sub _build_class_wrappers {
 }
 
 #===================================
-sub domain_for_index {
+sub _build_index_domains {
 #===================================
-    my $self = shift;
-    my $index = shift or croak "No (index) passed to domain_for_index";
-    my $domain;
-    $domain = $self->_index_domains->{$index} and return $domain;
-    $domain = $self->meta->domain($index)     and return $index;
-
-    my $aliases = $self->es->get_aliases( index => $index )->{$index}{aliases}
-        or croak "Unknown index ($index)";
-
+    my $self    = shift;
     my $domains = $self->meta->domains;
-    $domain = '';
 
-    for ( keys %$aliases ) {
-        if ( $domains->{$_} ) {
-            croak "Index ($index) currently points to more than one domain"
-                if $domain;
-            $domain = $_;
+    my %indices;
+    for my $domain ( keys %$domains ) {
+
+        my @names = (
+            $domain,
+            @{ $domains->{$domain}{archive_indices} || [] },
+            @{ $domains->{$domain}{sub_domains} || [] }
+        );
+
+        my $aliases = $self->es->get_aliases( index => \@names );
+        push @names, keys %$aliases;
+
+        for (@names) {
+            croak "Cannot map index ($_) to domain ($domain). "
+                . "It is already mapped to domain ($indices{$_})"
+                if $indices{$_} && $indices{$_} ne $domain;
+            $indices{$_} = $domain;
         }
     }
-    croak "No domain found for index ($index)" unless $domain;
-    $self->_index_domains->{$index} = $domain;
-    return $domain;
+    \%indices;
+}
+
+#===================================
+sub domain_for_index {
+#===================================
+    my $self   = shift;
+    my $index  = shift or croak "No (index) passed to domain_for_index";
+    my $domain = $self->_index_domains->{$index};
+    return $domain if $domain;
+    $self->_clear_index_domains;
+    $self->_index_domains->{$index}
+        or croak "No domain found for index ($index). ";
 }
 
 #===================================
@@ -242,21 +257,38 @@ sub domain {
 
     unless ($domain) {
 
-        my $types = $self->meta->domain($name)
-            or croak "Unknown domain name ($name)";
+        my $params = $self->meta->domain($name);
 
-        my %classes
-            = map { $_ => $self->class_for( $types->{$_} ) } keys %$types;
+        if ($params) {
+            my %types = %{ $params->{types} };
+            %types = map { $_ => $self->class_for( $types{$_} ) } keys %types;
+            $params = { %$params, types => \%types };
+        }
+        else {
+            $params = $self->_find_sub_domain($name)
+                or croak "Unknown domain name ($name)";
+        }
 
-        $domain = $self->domain_class->new(
-            name  => $name,
-            types => \%classes
-        );
-
+        $domain = $self->domain_class->new( name => $name, %$params );
         $self->_cache_domain( $name => $domain );
     }
 
     return $domain;
+}
+
+#===================================
+sub _find_sub_domain {
+#===================================
+    my $self = shift;
+    my $name = shift;
+
+    # sub domain
+    my $parent_domain_name = $self->domain_for_index($name) or return;
+    my $parent_domain = $self->domain($parent_domain_name);
+
+    return unless grep { $_ eq $name } @{ $parent_domain->sub_domains };
+
+    +{ map { $_ => $parent_domain->$_ } qw(types settings) };
 }
 
 #===================================
