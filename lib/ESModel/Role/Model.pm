@@ -128,7 +128,9 @@ sub _build_class_wrappers {
     my $domains = $self->meta->domains;
     my %classes;
     for my $types ( values %$domains ) {
-        $classes{$_} = $self->wrap_doc_class($_) for values %$types;
+        for ( values %$types ) {
+            $classes{$_} ||= $self->wrap_doc_class($_);
+        }
     }
     \%classes;
 }
@@ -178,7 +180,8 @@ sub wrap_doc_class {
         }
     );
 
-    my $meta = Moose::Meta::Class->create_anon_class(
+    my $meta = Moose::Meta::Class->create(
+        $self->meta->wrapped_class_name($class),
         superclasses => [$class],
         roles        => ['ESModel::Role::Doc'],
         weaken       => 0,
@@ -207,7 +210,8 @@ sub wrap_class {
 
     load_class($class);
 
-    my $meta = Moose::Meta::Class->create_anon_class(
+    my $meta = Moose::Meta::Class->create(
+        $self->meta->wrapped_class_name($class),
         superclasses => [$class],
         weaken       => 0,
     );

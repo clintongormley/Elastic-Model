@@ -138,4 +138,11 @@ sub _required_analyzers {
     return @analyzers;
 }
 
+our $Counter = 1;
+#===================================
+sub wrapped_class_name {
+#===================================
+    return 'ESModel::__WRAPPED_' . $Counter++ . '_::' . $_[1];
+}
+
 1;
