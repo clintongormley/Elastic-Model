@@ -23,14 +23,16 @@ our %Default_Class = (
     result_class           => 'ESModel::Result',
 );
 
+for ( keys %Default_Class ) {
 #===================================
-has $_ => (
+    has $_ => (
 #===================================
-    isa     => Str,
-    is      => 'ro',
-    default => $Default_Class{$_},
-    writer  => "_set_$_"
-) for keys %Default_Class;
+        isa     => Str,
+        is      => 'ro',
+        default => $Default_Class{$_},
+        writer  => "_set_$_"
+    );
+}
 
 #===================================
 has [ 'deflators', 'inflators' ] => (
@@ -223,7 +225,10 @@ sub wrap_class {
 
     $meta->_set_original_class($class);
     $meta->_set_model($self);
+
+    # Just store weakened model ref?
     $meta->add_method( model => sub { shift->meta->model } );
+
     $meta->make_immutable;
     return $meta->name;
 }

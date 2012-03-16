@@ -14,7 +14,9 @@ my %defaults = (
 
 for my $k (qw(domain char_filter analyzer filter tokenizer)) {
     my %default = %{ $defaults{$k} || {} };
+#===================================
     has "${k}s" => (
+#===================================
         is      => 'ro',
         traits  => ['Hash'],
         isa     => HashRef,
@@ -28,7 +30,9 @@ for my $k (qw(domain char_filter analyzer filter tokenizer)) {
     );
     next if $k eq 'domain';
 
+#===================================
     before "add_$k" => sub {
+#===================================
         my $class = shift;
         my %params = ref $_[0] ? { shift() } : @_;
         for my $defn ( values %params ) {
@@ -39,6 +43,8 @@ for my $k (qw(domain char_filter analyzer filter tokenizer)) {
         }
     };
 }
+
+no Moose;
 
 our %DefaultAnalysis = (
     char_filter => { map { $_ => 1 } qw(html_strip char_filter) },

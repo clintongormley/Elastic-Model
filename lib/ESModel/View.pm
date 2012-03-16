@@ -9,7 +9,9 @@ use MooseX::Attribute::ChainedClone();
 
 use namespace::autoclean;
 
+#===================================
 has 'domain' => (
+#===================================
     traits  => ['ChainedClone'],
     isa     => IndexNames,
     is      => 'rw',
@@ -18,7 +20,9 @@ has 'domain' => (
     coerce  => 1,
 );
 
+#===================================
 has 'type' => (
+#===================================
     traits  => ['ChainedClone'],
     is      => 'rw',
     isa     => TypeNames,
@@ -26,112 +30,149 @@ has 'type' => (
     coerce  => 1,
 );
 
+#===================================
 has 'query' => (
+#===================================
     traits => ['ChainedClone'],
     isa    => HashRef,
     is     => 'rw',
 );
 
+#===================================
 has 'filter' => (
+#===================================
     traits => ['ChainedClone'],
     isa    => HashRef,
     is     => 'rw',
 );
 
+#===================================
 has 'post_filter' => (
+#===================================
     traits => ['ChainedClone'],
     isa    => HashRef,
     is     => 'rw',
 );
 
+#===================================
 has '_builder' => (
+#===================================
     isa     => Object,
     is      => 'ro',
     lazy    => 1,
     builder => '_build_builder'
 );
 
+#===================================
 has 'facets' => (
+#===================================
     traits => ['ChainedClone'],
     isa    => HashRef [HashRef],
     is     => 'rw'
 );
 
+#===================================
 has 'fields' => (
+#===================================
     traits  => ['ChainedClone'],
     isa     => ArrayRef [Str],
     is      => 'rw',
     default => sub { ['_source'] },
 );
 
+#===================================
 has 'from' => (
+#===================================
     traits  => ['ChainedClone'],
     isa     => Int,
     is      => 'rw',
     default => 0,
 );
+
+#===================================
 has 'size' => (
+#===================================
     traits  => ['ChainedClone'],
     isa     => Int,
     is      => 'rw',
     default => 10,
 );
 
+#===================================
 has 'sort' => (
+#===================================
     traits => ['ChainedClone'],
     isa    => ArrayRef,
     is     => 'rw',
 );
 
+#===================================
 has 'highlight' => (
+#===================================
     traits => ['ChainedClone'],
     isa    => ArrayRef [HashRef],
     is     => 'rw',
 );
 
+#===================================
 has 'indices_boost' => (
+#===================================
     traits => ['ChainedClone'],
     isa    => HashRef [Num],
     is     => 'rw',
 );
 
+#===================================
 has 'min_score' => (
+#===================================
     traits => ['ChainedClone'],
     isa    => Num,
     is     => 'rw',
 );
 
+#===================================
 has 'preference' => (
+#===================================
     traits => ['ChainedClone'],
     isa    => Str,
     is     => 'rw',
 );
 
+#===================================
 has 'routing' => (
+#===================================
     traits => ['ChainedClone'],
     isa    => Str,
     is     => 'rw',
 );
 
+#===================================
 has 'script_fields' => (
+#===================================
     traits => ['ChainedClone'],
     isa    => HashRef,
     is     => 'rw',
 );
 
+#===================================
 has 'timeout' => (
+#===================================
     traits => ['ChainedClone'],
     isa    => Str,
     is     => 'rw',
 );
 
+#===================================
 has 'track_scores' => (
+#===================================
     traits => ['ChainedClone'],
     isa    => Bool,
     is     => 'rw',
 );
 
+#===================================
 has 'search_builder' => (
+#===================================
     traits  => ['ChainedClone'],
     isa     => Object,
     is      => 'rw',
@@ -144,7 +185,7 @@ sub _build_search_builder { shift->model->es->builder }
 #===================================
 
 #===================================
-sub index { shift ->domain(@_)}
+sub index { shift->domain(@_) }
 #===================================
 
 #===================================
@@ -171,7 +212,7 @@ sub post_filterb {
 no Moose;
 
 #===================================
-sub _build_domain_names { [ shift->model->meta->all_domains] }
+sub _build_domain_names { [ shift->model->meta->all_domains ] }
 #===================================
 
 #===================================
