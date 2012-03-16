@@ -187,9 +187,10 @@ sub wrap_doc_class {
 
     load_class($class);
 
-    $class->meta->make_mutable;
+    my $orig_meta = $class->meta;
+    $orig_meta->make_mutable;
 
-    my $orig_meta = Moose::Util::MetaRole::apply_metaroles(
+    my $new_meta = Moose::Util::MetaRole::apply_metaroles(
         for             => $class,
         class_metaroles => {
             instance  => ['ESModel::Meta::Instance'],
@@ -215,7 +216,16 @@ sub wrap_doc_class {
     $meta->_set_original_class($class);
     $meta->_set_model($self);
     $meta->make_immutable;
-    $orig_meta->make_immutable;
+    $new_meta->make_immutable;
+
+    if ( does_role( $orig_meta, 'ESModel::Meta::Class::DocType' ) ) {
+        my $meta_meta = $orig_meta->meta;
+        for my $name ( $meta_meta->get_attribute_list ) {
+            my $attr = $meta_meta->get_attribute($name);
+            next unless $attr->has_value($orig_meta);
+            $meta->$name( $orig_meta->$name );
+        }
+    }
     return $meta->name;
 }
 
