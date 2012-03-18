@@ -61,7 +61,7 @@ sub _inflate_doc {
 }
 
 #===================================
-has timestamp => (
+has 'timestamp' => (
 #===================================
     traits  => ['Elastic::Model::Trait::Field'],
     isa     => Timestamp,
@@ -81,8 +81,8 @@ sub save {
     my $self = shift;
     my %args = ref $_[0] ? %{ shift() } : @_;
 
-    $self->touch if $self->meta->timestamp_path;
     $self->meta->model->save_doc( $self, \%args );
+        $self->touch;
 }
 
 #===================================

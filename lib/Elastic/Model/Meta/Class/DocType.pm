@@ -68,14 +68,6 @@ has 'dynamic_templates' => (
 );
 
 #===================================
-has 'timestamp_path' => (
-#===================================
-    isa => Maybe [Str],
-    is => 'rw',
-    default => 'timestamp'
-);
-
-#===================================
 sub root_class_mapping {
 #===================================
     my $self    = shift;
@@ -112,12 +104,8 @@ sub root_class_mapping {
     $mapping{_index}{enabled}    = 1 if $self->index_index;
     $mapping{_size}{enabled}     = 1 if $self->enable_size;
 
-    if ( my $path = $self->timestamp_path ) {
-        $mapping{_timestamp} = { enabled => 1, path => $path };
-
-        if ( my $ttl = $self->ttl ) {
-            $mapping{_ttl} = { enabled => 1, default => $ttl };
-        }
+    if ( my $ttl = $self->ttl ) {
+        $mapping{_ttl} = { enabled => 1, default => $ttl };
     }
 
     $mapping{_analyzer}{path} = $self->analyzer_path if $self->analyzer_path;

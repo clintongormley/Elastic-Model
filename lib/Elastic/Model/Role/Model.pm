@@ -421,7 +421,10 @@ sub map_class {
     my %root_mapping = %{ $meta->root_class_mapping }
         if $meta->can('root_class_mapping');
 
-    my %mapping = ( $self->type_map->class_mapping($class), %root_mapping );
+    my %mapping = (
+        $self->type_map->class_mapping($class),
+        %root_mapping, _timestamp => { enabled => 1, path => 'timestamp' }
+    );
     return \%mapping;
 }
 

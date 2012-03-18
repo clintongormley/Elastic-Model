@@ -23,9 +23,9 @@ Moose::Exporter->build_import_methods(
             disable_source_compression     search_analyzer
             dynamic_date_formats           source_excludes
             dynamic                        source_includes
-            dynamic_templates              timestamp_path
-            enable_size                    ttl
-            id_path                        type_settings
+            dynamic_templates              ttl
+            enable_size                    type_settings
+            id_path
             )
     ],
 );
@@ -54,7 +54,6 @@ sub routing_required           { shift->routing_required(1) }
 sub search_analyzer            { shift->search_analyzer(@_) }
 sub source_excludes            { shift->source_excludes(@_) }
 sub source_includes            { shift->source_includes(@_) }
-sub timestamp_path             { shift->timestamp_path(@_) }
 sub ttl                        { shift->ttl(@_) }
 sub type_settings              { shift->type_settings(@_) }
 #===================================
