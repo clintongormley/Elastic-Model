@@ -16,6 +16,7 @@ has 'uid' => (
     isa      => UID,
     is       => 'ro',
     required => 1,
+    writer   => '_set_uid',
     traits   => ['Elastic::Model::Trait::Exclude'],
     handles  => {
         id      => 'id',
@@ -42,6 +43,7 @@ has '_source' => (
     lazy    => 1,
     builder => '_get_source',
     writer  => '_overwrite_source',
+    clearer => '_clear_source',
 );
 
 #===================================
@@ -49,15 +51,6 @@ sub _get_source {
 #===================================
     my $self = shift;
     $self->meta->model->get_raw_doc( $self->uid );
-}
-
-#===================================
-sub _inflate_doc {
-#===================================
-    my $self   = shift;
-    my $source = $self->_source;
-    $self->_can_inflate(0);
-    $self->meta->model->inflate_object( $self, $source );
 }
 
 #===================================
@@ -70,6 +63,24 @@ has 'timestamp' => (
 );
 
 no Moose::Role;
+
+#===================================
+#===================================
+sub _inflate_doc {
+#===================================
+    my $self   = shift;
+    my $source = $self->_source;
+    $self->_clear_source;
+    $self->_can_inflate(0);
+    try {
+        $self->meta->model->inflate_object( $self, $source );
+    }
+    catch {
+        $self->_overwrite_source($source);
+        $self->_can_inflate(1);
+        die $_;
+    };
+}
 
 #===================================
 sub touch { shift->timestamp( int( Time::HiRes::time * 1000 + 0.5 ) / 1000 ) }

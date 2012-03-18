@@ -17,12 +17,11 @@ sub new_stub {
     my ( $uid, $source ) = @params{ 'uid', '_source' };
     croak "Invalid UID"
         unless $uid && $uid->isa('Elastic::Model::UID') && $uid->from_store;
-
-    $self->get_attribute('uid')->set_raw_value( $obj, $uid );
+    $obj->_set_uid($uid);
 
     if ( defined $source ) {
         croak "Invalid _source" unless ref $source eq 'HASH';
-        $self->get_attribute('_source')->set_raw_value( $obj, $source );
+        $obj->_overwrite_source($source);
     }
 
     $obj->_can_inflate(1);

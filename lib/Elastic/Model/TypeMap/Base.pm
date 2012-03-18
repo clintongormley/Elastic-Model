@@ -264,7 +264,7 @@ sub class_mapping {
     #    }
 
     my ($wrapper);
-    if ( does_role( $class, 'Elastic::Model::Role::Doc' ) ) {
+    if ( does_role( $class, 'Elastic::Model::Meta::Class::Doc' ) ) {
         $wrapper = $class;
         $class   = $wrapper->meta->original_class;
     }
