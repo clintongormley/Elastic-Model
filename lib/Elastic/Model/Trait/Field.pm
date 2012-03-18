@@ -74,4 +74,34 @@ has '_wrapped_methods' => (
     default => sub { {} }
 );
 
+#===================================
+before '_process_options' => sub {
+#===================================
+    my ( $class, $name, $opts ) = @_;
+    if ( my $orig = $opts->{trigger} ) {
+        ( 'CODE' eq ref $orig )
+            || $class->throw_error(
+            "Trigger must be a CODE ref on attribute ($name)",
+            data => $opts->{trigger} );
+        $opts->{trigger} = sub {
+            my $self = shift;
+            no warnings 'uninitialized';
+            unless ( @_ == 2 && $_[1] eq $_[0] ) {
+                $self->has_changed( $name, $_[1] );
+            }
+            $self->$orig(@_);
+        };
+    }
+    else {
+
+        $opts->{trigger} = sub {
+            my $self = shift;
+            no warnings 'uninitialized';
+            unless ( @_ == 2 && $_[1] eq $_[0] ) {
+                $self->has_changed( $name, $_[1] );
+            }
+        };
+    }
+};
+
 1;

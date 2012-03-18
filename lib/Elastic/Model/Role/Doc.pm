@@ -6,6 +6,7 @@ use Elastic::Model::Trait::Exclude;
 use MooseX::Types::Moose qw(Bool HashRef);
 use Elastic::Model::Types qw(Timestamp UID);
 use Scalar::Util qw(refaddr);
+use Try::Tiny;
 use Time::HiRes();
 use Carp;
 use namespace::autoclean;
@@ -62,9 +63,48 @@ has 'timestamp' => (
     exclude => 0
 );
 
+#===================================
+has '_old_value' => (
+#===================================
+    is        => 'ro',
+    isa       => HashRef,
+    traits    => ['Elastic::Model::Trait::Exclude'],
+    exclude   => 1,
+    writer    => '_set_old_value',
+    clearer   => '_clear_old_value',
+    predicate => '_has_old_value'
+);
+
 no Moose::Role;
 
 #===================================
+sub has_changed {
+#===================================
+    my $self = shift;
+    if (@_) {
+        my $attr = shift;
+        my $old = $self->_old_value || {};
+        if ( $attr eq "1" or @_ ) {
+            $old->{$attr} ||= shift unless $attr eq "1";
+            $self->_set_old_value($old);
+            return 1;
+        }
+        return exists $old->{$attr};
+    }
+    return $self->_has_old_value;
+}
+
+#===================================
+sub old_value {
+#===================================
+    my $self = shift;
+    my $old = $self->_old_value or return;
+    if ( my $attr = shift ) {
+        return $old->{$attr};
+    }
+    return $old;
+}
+
 #===================================
 sub _inflate_doc {
 #===================================
@@ -92,8 +132,11 @@ sub save {
     my $self = shift;
     my %args = ref $_[0] ? %{ shift() } : @_;
 
-    $self->meta->model->save_doc( $self, \%args );
+    if ( $self->has_changed || !$self->uid->from_store ) {
         $self->touch;
+        $self->meta->model->save_doc( $self, \%args );
+    }
+    $self;
 }
 
 #===================================
