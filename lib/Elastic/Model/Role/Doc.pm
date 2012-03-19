@@ -19,6 +19,7 @@ has 'uid' => (
     required => 1,
     writer   => '_set_uid',
     traits   => ['Elastic::Model::Trait::Exclude'],
+    exclude  => 1,
     handles  => {
         id      => 'id',
         type    => 'type',
@@ -33,6 +34,7 @@ has '_can_inflate' => (
     is      => 'rw',
     default => 0,
     traits  => ['Elastic::Model::Trait::Exclude'],
+    exclude => 1,
 );
 
 #===================================
@@ -42,6 +44,7 @@ has '_source' => (
     is      => 'ro',
     traits  => ['Elastic::Model::Trait::Exclude'],
     lazy    => 1,
+    exclude => 1,
     builder => '_get_source',
     writer  => '_overwrite_source',
     clearer => '_clear_source',

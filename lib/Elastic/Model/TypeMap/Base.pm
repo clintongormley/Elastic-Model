@@ -263,15 +263,7 @@ sub class_mapping {
     #        return $handler->(@_);
     #    }
 
-    my ($wrapper);
-    if ( does_role( $class, 'Elastic::Model::Meta::Class::Doc' ) ) {
-        $wrapper = $class;
-        $class   = $wrapper->meta->original_class;
-    }
-    else {
-        $wrapper = $map->model->class_for($class);
-    }
-    $attrs ||= $map->indexable_attrs( $wrapper || $class );
+    $attrs ||= $map->indexable_attrs( $class );
 
     my %props = map { $_ => $map->attribute_mapping( $attrs->{$_} ) }
         keys %$attrs;
@@ -344,9 +336,11 @@ sub _has_type {
 #===================================
 sub indexable_attrs {
 #===================================
-    my $self  = shift;
+    my $map   = shift;
     my $class = shift;
-    my $meta  = $class->meta;
+    $class = $map->model->class_for($class) || $class;
+    my $meta = $class->meta;
+
     return {
         map { $_->name => $_ }
         grep { !$_->exclude } $meta->get_all_attributes

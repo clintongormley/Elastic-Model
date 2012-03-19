@@ -130,22 +130,21 @@ sub _map_class {
 sub _class_attrs {
 #===================================
     my ( $map, $class, $attr ) = @_;
+
+    $class = $map->model->class_for($class) || $class;
     my $meta = $class->meta;
 
     return { map { $_->name => $_ } $meta->get_all_attributes }
-        unless does_role( $meta, 'Elastic::Model::Meta::Class::DocType' );
+        unless does_role( $meta, 'Elastic::Model::Meta::Class::Doc' );
 
     my %attrs;
-
-    my $wrapper = $map->model->class_for($class);
-    my $wrapper_meta = $wrapper ? $wrapper->meta : $meta;
 
     my $inc = $attr->include_attrs;
     my $exc = $attr->exclude_attrs;
 
     my @inc_attr = $inc
         ? map {
-        $wrapper_meta->find_attribute_by_name($_)
+        $meta->find_attribute_by_name($_)
             or die "Unknown attribute ($_) in class $class"
         } @$inc
         : $meta->get_all_attributes;
@@ -153,8 +152,7 @@ sub _class_attrs {
     %attrs = map { $_->name => $_ } grep { !$_->exclude } @inc_attr;
     delete @attrs{@$exc} if $exc;
 
-    $attrs{uid} = $wrapper_meta->find_attribute_by_name('uid')
-        if $wrapper;
+    $attrs{uid} = $meta->find_attribute_by_name('uid');
 
     return \%attrs;
 }
