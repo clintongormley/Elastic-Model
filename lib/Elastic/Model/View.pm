@@ -110,7 +110,7 @@ has 'sort' => (
 has 'highlight' => (
 #===================================
     traits => ['ChainedClone'],
-    isa    => ArrayRef [HashRef],
+    isa    => HashRef,
     is     => 'rw',
 );
 
