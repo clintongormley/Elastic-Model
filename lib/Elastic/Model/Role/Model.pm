@@ -192,20 +192,8 @@ sub wrap_doc_class {
         unless Moose::Util::does_role( $class, 'Elastic::Model::Role::Doc' );
 
     my $new_class = $self->meta->wrapped_class_name($class);
-    my $meta      = Moose::Meta::Class->create(
-        $new_class => superclasses => [$class] );
-
-    $meta = Moose::Util::MetaRole::apply_metaroles(
-        for             => $meta,
-        class_metaroles => {
-            class => [
-                'Elastic::Model::Meta::Class::Doc',
-                'Elastic::Model::Meta::Class'
-            ],
-            instance => ['Elastic::Model::Meta::Instance'],
-        }
-    );
-
+    my $meta
+        = Moose::Meta::Class->create( $new_class, superclasses => [$class] );
     $meta->_set_original_class($class);
     $meta->_set_model($self);
     $meta->make_immutable;
@@ -414,17 +402,21 @@ sub map_class {
     my $self  = shift;
     my $class = shift;
     $class = $self->class_for($class) || $class;
+
     die "Class $class is not an Elastic class."
         unless does_role( $class, 'Elastic::Model::Role::Doc' );
 
-    my $meta         = $class->meta->original_class->meta;
-    my %root_mapping = %{ $meta->root_class_mapping }
-        if $meta->can('root_class_mapping');
+    my $meta = $class->meta->original_class->meta;
 
     my %mapping = (
+        %{ $meta->type_mapping },
         $self->type_map->class_mapping($class),
-        %root_mapping, _timestamp => { enabled => 1, path => 'timestamp' }
+        dynamic           => 'strict',
+        _timestamp        => { enabled => 1, path => 'timestamp' },
+        numeric_detection => 1,
     );
+
+    $mapping{_source}{compress} = 1;
     return \%mapping;
 }
 
