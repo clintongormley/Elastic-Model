@@ -57,7 +57,7 @@ sub find_deflator {
 sub find_inflator {
 #===================================
     my ( $map, $attr ) = @_;
-    $attr->can('inflator') && $attr->deflator
+    $attr->can('inflator') && $attr->inflator
         || eval { $map->find( 'inflator', $attr->type_constraint, $attr ) }
         || die _type_error( 'inflator', $attr, $@ );
 }
