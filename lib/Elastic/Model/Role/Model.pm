@@ -299,10 +299,7 @@ sub get_doc {
     unless ($object) {
         $source ||= $self->get_raw_doc($uid) unless $uid->from_store;
         my $class = $self->domain($domain)->class_for_type( $uid->type );
-        $object = $class->meta->new_stub(
-            uid     => $uid,
-            _source => $source
-        );
+        $object = $class->meta->new_stub( $uid, $source );
         $object = $scope->store_object( $domain, $object );
     }
     $object;
