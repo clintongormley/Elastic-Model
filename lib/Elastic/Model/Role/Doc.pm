@@ -113,13 +113,11 @@ sub _inflate_doc {
 #===================================
     my $self   = shift;
     my $source = $self->_source;
-    $self->_clear_source;
     $self->_can_inflate(0);
     try {
         $self->meta->model->inflate_object( $self, $source );
     }
     catch {
-        $self->_overwrite_source($source);
         $self->_can_inflate(1);
         die $_;
     };
