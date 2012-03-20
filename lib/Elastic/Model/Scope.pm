@@ -13,6 +13,11 @@ has '_objects' => (
 );
 
 #===================================
+has 'parent' => (
+#===================================
+    is  => 'ro',
+    isa => 'Elastic::Model::Scope',
+);
 sub get_object {
 #===================================
     my ( $self, $domain, $uid ) = @_;
@@ -34,6 +39,13 @@ sub store_object {
         return $existing;
     }
     $self->_objects->{$domain}{ $uid->cache_key } = $object;
+}
+
+#===================================
+sub DEMOLISH {
+#===================================
+    my $self = shift;
+    $self->meta->model->detach_scope($self);
 }
 
 1;

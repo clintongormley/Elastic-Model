@@ -8,7 +8,7 @@ use Class::Load qw(load_class);
 use Moose::Util qw(does_role);
 use MooseX::Types::Moose qw(:all);
 use Elastic::Model::UID();
-use Scalar::Util qw(blessed);
+use Scalar::Util qw(blessed refaddr);
 
 use namespace::autoclean;
 
@@ -100,11 +100,13 @@ has '_index_domains' => (
 #===================================
 has 'current_scope' => (
 #===================================
-    is       => 'rw',
-    isa      => 'Elastic::Model::Scope',
-    lazy     => 1,
-    weak_ref => 1,
-    builder  => '_die_no_scope'
+    is        => 'rw',
+    isa       => 'Elastic::Model::Scope',
+    lazy      => 1,
+    weak_ref  => 1,
+    builder   => '_die_no_scope',
+    clearer   => 'clear_current_scope',
+    predicate => 'has_current_scope',
 );
 
 #===================================
@@ -281,7 +283,20 @@ sub view { shift->view_class->new(@_) }
 sub new_scope {
 #===================================
     my $self = shift;
-    $self->current_scope( $self->scope_class->new );
+    my @args
+        = $self->has_current_scope ? ( parent => $self->current_scope ) : ();
+    $self->current_scope( $self->scope_class->new(@args) );
+}
+
+#===================================
+sub detach_scope {
+#===================================
+    my ($self,$scope) = @_;
+    my $current = $self->current_scope;
+    return unless $current && refaddr($current) eq refaddr($scope);
+    my $parent = $scope->parent;
+    return $self->clear_current_scope unless $parent;
+    $self->current_scope($parent);
 }
 
 #===================================
