@@ -46,7 +46,7 @@ has '_source' => (
     lazy    => 1,
     exclude => 1,
     builder => '_get_source',
-    writer  => '_overwrite_source',
+    writer  => '_set_source',
     clearer => '_clear_source',
 );
 

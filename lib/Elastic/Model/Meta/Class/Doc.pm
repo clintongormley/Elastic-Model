@@ -26,7 +26,7 @@ sub new_stub {
         unless $uid && $uid->isa('Elastic::Model::UID') && $uid->from_store;
 
     $obj->_set_uid($uid);
-    $obj->_overwrite_source($source) if $source;
+    $obj->_set_source($source) if $source;
     $obj->_can_inflate(1);
     return $obj;
 }
