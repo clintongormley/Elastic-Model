@@ -1,7 +1,9 @@
 package Elastic::Model::Trait::Field;
 
 use Moose::Role;
-use MooseX::Types::Moose qw(:all);
+use MooseX::Types::Moose qw(
+    Str HashRef ArrayRef Bool Num Int CodeRef
+);
 use Elastic::Model::Types qw(
     FieldType IndexMapping TermVectorMapping MultiFields
     StoreMapping DynamicMapping PathMapping
@@ -251,16 +253,6 @@ has 'deflate_attrs' => (
     is => 'ro',
     writer   => 'set_deflate_attrs',
     init_arg => undef
-);
-
-#===================================
-has '_wrapped_methods' => (
-#===================================
-    isa     => HashRef,
-    traits  => ['Hash'],
-    handles => { method_wrapped => 'accessor' },
-    is      => 'ro',
-    default => sub { {} }
 );
 
 #===================================

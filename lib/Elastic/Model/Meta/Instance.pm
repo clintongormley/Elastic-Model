@@ -42,3 +42,17 @@ sub inline_get_is_lvalue {0}
 #===================================
 
 1;
+
+__END__
+
+# ABSTRACT: Enables auto-inflation when using any accessor
+
+=head1 DESCRIPTION
+
+Wraps all accessors in Docs to check whether the instance is a stub which
+should be auto-inflated.
+
+No user-servicable parts.
+
+=cut
+

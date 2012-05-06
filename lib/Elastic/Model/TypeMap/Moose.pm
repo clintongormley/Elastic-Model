@@ -88,7 +88,8 @@ has_type 'Maybe',
 #===================================
 has_type 'Moose::Meta::TypeConstraint::Enum',
 #===================================
-    deflate_via { \&_pass_through }, inflate_via { \&_pass_through },
+    deflate_via { \&_pass_through },             #
+    inflate_via { \&_pass_through },
     map_via { type => 'string', index => 'not_analyzed' };
 
 #===================================
