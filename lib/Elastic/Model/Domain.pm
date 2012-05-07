@@ -236,17 +236,90 @@ whose values represent the class which is stored in that C<type>.  For instance
         comment => 'MyApp::Comment'
     }
 
+=head2 settings
 
-has 'sub_domains' => (
-sub _get_default_routing {
-sub new_doc {
-sub create { shift->new_doc(@_)->save }
-sub get {
-sub view {
-sub index {
-sub mappings {
-sub es { shift->model->es }
-has 'name' => (
-has 'settings' => (
+A hashref containg index-wide L<settings|http://www.elasticsearch.org/guide/reference/index-modules/>
+that should be applied.
+
+    {
+        number_of_shards: 5,
+        number_of_replicas: 1
+    }
+
+B<Note:> The L<analysis|http://www.elasticsearch.org/guide/reference/index-modules/analysis/>
+settings will be generated automatically from your doc classes, and shouldn't
+be specified manually.
+
+=head1 METHODS
+
+=head2 new()
+
+    $domain = $model->domain_class->new({
+        name            => $domain_name,
+        sub_domains     => ['sub_1', 'sub_n'],
+        archive_indices => ['index_1','index_n'],
+        types           => {
+            user    => 'MyApp::User',
+            post    => 'MyApp::Post',
+        },
+        settings        => \%settings
+    });
+
+Although documented here, you shouldn't need  to call C<new()> yourself.
+Instead you should use L<Elastic::Model::Role::Model/"domain()">.
+
+=head2 new_doc()
+
+    $doc = $domain->new_doc( $type => \%args );
+
+C<new_doc()> will create a new object in the class that maps to type C<$type>,
+passing C<%args> to C<new()> in the associated class. For instance:
+
+    $user = $domain->new_doc( user => { name => 'Clint' });
+
+=head2 create()
+
+    $doc = $domain->create( $type => \%args );
+
+This is the equivalent of:
+
+    $doc = $domain->new_doc( $type => \%args )->save();
+
+=head2 get()
+
+    $doc = $domain->get( $type => $id );
+
+Retrieves a doc of type C<$type> with ID C<$id> from index C<< $domain->name >>
+or throws an exception if the doc doesn't exist.
+
+=head2 view()
+
+    $view = $domain->view(%args)
+
+Creates a L<view|Elastic::Model::View> with the L<Elastic::Model::View/"index">
+set to C<< $domain->name >>.  A C<view> is used for searching docs in a
+C<$domain>.
+
+=head2 index()
+
+    $index = $domain->index($name);
+
+Creates an L<Elastic::Model::Domain::Index> object with the Index C<name>
+set to C<$name> (or C<< $domain->name >> by default). This is used for
+manipulating indices and aliases in ElasticSearch.
+
+=head2 mappings()
+
+    $mapping = $domain->mappings();             # all types in the $domain
+    $mapping = $doma->mappings(@types);         # just for @types
+
+Returns the L<mapping|http://www.elasticsearch.org/guide/reference/mapping/>
+for the C<@types> specified, or all types known to the C<$domain>.
+
+=head2 es()
+
+    $es = $domain->es()
+
+Returns the connection to ElasticSearch.
 
 
