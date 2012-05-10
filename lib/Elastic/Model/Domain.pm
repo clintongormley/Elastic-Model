@@ -250,6 +250,12 @@ B<Note:> The L<analysis|http://www.elasticsearch.org/guide/reference/index-modul
 settings will be generated automatically from your doc classes, and shouldn't
 be specified manually.
 
+=head2 es
+
+    $es = $domain->es
+
+Returns the connection to ElasticSearch.
+
 =head1 METHODS
 
 =head2 new()
@@ -315,11 +321,4 @@ manipulating indices and aliases in ElasticSearch.
 
 Returns the L<mapping|http://www.elasticsearch.org/guide/reference/mapping/>
 for the C<@types> specified, or all types known to the C<$domain>.
-
-=head2 es()
-
-    $es = $domain->es()
-
-Returns the connection to ElasticSearch.
-
 
