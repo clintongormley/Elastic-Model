@@ -509,7 +509,7 @@ existing scope, then the new scope inherits from the existing scope.
     $scope = $model->new_scope();   # scope_2, inherits from scope_1
     undef $scope;                   # scope_2 and scope_1 are destroyed
 
-See L<Elastic::Manual::Scoping> to read more about how scopes work.
+See L<Elastic::Model::Scope> to read more about how scopes work.
 
 =head2 view()
 
@@ -564,7 +564,7 @@ it stores it in the current scope, otherwise it throws an error.
 C<get_doc()> also accepts a second optional C<$source> parameter which is
 used internally for inflating search results.
 
-See L<Elastic::Manual::Scoping> for a more detailed explanation.
+See L<Elastic::Model::Scope> for a more detailed explanation.
 
 =head3 get_doc_source()
 
