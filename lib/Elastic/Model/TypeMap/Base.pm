@@ -375,3 +375,254 @@ sub import_types {
 
 1;
 
+__END__
+
+# ABSTRACT: A base class for all TypeMaps
+
+=head1 SYNOPSIS
+
+Define your own type map:
+
+    package MyApp::TypeMap;
+
+    use Elastic::Model::TypeMap::Base qw(
+        Elastic::Model::TypeMap::Default
+    );
+
+    has_type 'MyCustomType',
+        deflate_via { sub { ... }},
+        inflate_via { sub { ... }},
+        map_via     { type => 'string' };
+
+
+Use your type map:
+
+    package main;
+
+    use MyApp;
+
+    my $model = MyApp->new(
+        type_map => 'MyApp::TypeMap'
+    );
+
+=head1 DESCRIPTION
+
+Moose's L<type constraints|Moose::Util::TypeConstraints> and introspection
+allows Elastic::Model to figure out how to map your data model to the
+ElasticSearch backend with the minimum of effort on your part.
+
+What you need to do is to be specific about what type constraint
+is contained in each attribute.  For instance,  if you have an attribute
+called C<count>, then specify the type constraint C<< isa => 'Int' >>.
+That way, we know how to define the field in ElasticSearch, and how to deflate
+and inflate the value.
+
+Type maps are used to define:
+
+=over
+
+=item *
+
+what mapping Elastic::Model will generate for each attribute when you
+L<create an index|Elastic::Model::Domain::Index/"create()">
+or L<update the mapping|Elastic::Model::Domain::Index/"put_mapping()"> of an
+existing index.
+
+=item *
+
+how Elastic::Model will deflate and inflate each attribute when saving or
+retrieving docs stored in ElasticSearch.
+
+=back
+
+
+L<Elastic::Model::Typemap::Default> is loads the following modules:
+
+=over
+
+=item *
+
+L<Elastic::Model::Typemap::Moose>
+
+=item *
+
+L<Elastic::Model::Typemap::Objects>
+
+=item *
+
+L<Elastic::Model::Typemap::Structured>
+
+=item *
+
+L<Elastic::Model::Typemap::ES>, and
+
+=item *
+
+L<Elastic::Model::Typemap::Common>
+
+=back
+
+=head1 DEFINING YOUR OWN TYPE MAP
+
+First, you need to name your type map class:
+
+    package MyApp::TypeMap;
+
+Then import the helper functions from L<Elastic::Model::TypeMap::Base>
+and load any other typemaps that you want to inherit from:
+
+    use Elastic::Model::TypeMap::Base qw(
+        Elastic::Model::TypeMap::Default
+    );
+
+Now you can define your type maps:
+
+    has_type 'MyCustomType',
+        deflate_via { sub { ... }},
+        inflate_via { sub { ... }},
+        map_via     { type => 'string' };
+
+The type name passed to C<has_type> should be a string, eg C<'Str'> for the
+core Moose string type, or the fully qualified name for the types you have
+defined with L<MooseX::Types>, eg C<'MyApp::Types::SomeType'>.
+
+C<deflate_via> and C<inflate_via> each expect a coderef which, when called
+returns a coderef:
+
+    sub {
+        my ($type_constraint, $attr, $typemap_class) = @_;
+        return sub {
+            my ($val) = @_;
+            return do_something($val)
+        }
+    }
+
+C<map_via> expects a coderef which returns the mapping for that type as a list,
+not as a hashref:
+
+    sub {
+        my ($type_constraint, $attr, $typemap_class) = @_;
+        return (type => 'string', ..... );
+    }
+
+=head2 A simple example
+
+Here is an example of how to define a type map for DateTime objects:
+
+    use DateTime;
+
+    has_type 'DateTime',
+
+        deflate_via {
+            sub { $_[0]->set_time_zone('UTC')->iso8601 };
+        },
+
+        inflate_via {
+            sub {
+                my %args;
+                @args{ (qw(year month day hour minute second)) } = split /\D/, shift;
+                DateTime->new(%args);
+            };
+        },
+
+        map_via { type => 'date' };
+
+=head1 ATTRIBUTES
+
+=head2 deflators
+
+    $deflators = $class->deflators
+
+Returns a hashref of all deflators known to C<$class>.
+
+=head2 inflators
+
+    $inflators = $class->inflators
+
+Returns a hashref of all inflators known to C<$class>.
+
+=head2 mappers
+
+    $mappers = $class->mappers
+
+Returns a hashref of all mappers known to C<$class>.
+
+=head2 type_map
+
+    $map = $class->type_map
+
+Returns a hashref containing the L</"deflators">, L</"inflators"> and
+L</"mappers"> known to C<$class>.
+
+=head1 METHODS
+
+L<Elastic::Model::TypeMap::Base> only has class methods, no instance methods,
+and no C<new()>.
+
+=head2 find_deflator()
+
+    $deflator = $class->find_deflator($attr)
+
+Returns a coderef which knows how to deflate C<$attr>, or throws an exception.
+
+=head2 find_inflator()
+
+    $inflator = $class->find_inflator($attr)
+
+Returns a coderef which knows how to inflate C<$attr>, or throws an exception.
+
+=head2 find_mapper()
+
+    $mapping = $class->find_mapper($attr)
+
+Returns a mapping for C<$attr>, or throws an exception.
+
+=head2 find()
+
+    $result = $class->find($thing, $type_constraint, $attr);
+
+Finds a C<$thing> (C<deflator>, C<inflator>, C<mapper>) or returns C<undef>.
+
+=head2 class_deflator()
+
+    $deflator = $class->class_deflator( $class_to_deflate, $attrs );
+
+Returns a coderef which knows how to deflate an object of class
+C<$class_to_deflate>, including the attributes listed in C<$attr> (or all
+attributes if not specified).
+
+=head2 class_inflator()
+
+    $inflator = $class->class_inflator( $class_to_inflate, $attrs );
+
+Returns a coderef which knows how to inflate deflated data for class
+C<$class_to_inflate>, including the attributes listed in C<$attr> (or all
+attributes if not specified).
+
+=head2 class_mapping()
+
+    $mapping = $class->class_mapping( $class_to_map, $attrs );
+
+Returns a hashref of the mapping for class C<$class_to_map>,
+including the attributes listed in C<$attr> (or all attributes if not specified).
+
+=head2 attribute_mapping()
+
+    $mapping = $class->attribute_mapping($attr);
+
+Returns a hashref of the mapping for attribute C<$attr>.
+
+=head2 indexable_attrs()
+
+    $attrs = $class->indexable_attrs($some_class);
+
+Returns an array ref all all attributes in C<$some_class> which don't
+have C<exclude> set to true.
+
+=head2 import_types()
+
+    $class->import_types($other_class);
+
+Imports the deflators, inflators and mappers from another typemap class into
+the current class.
+
