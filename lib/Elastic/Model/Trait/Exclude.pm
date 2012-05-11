@@ -14,3 +14,13 @@ Moose::Exporter->setup_import_methods(
 has 'exclude' => ( isa => Bool, is => 'ro', default => 1 );
 
 1;
+
+__END__
+
+# ABSTRACT: An internal use trait
+
+=head1 DESCRIPTION
+
+This trait is used by Elastic::Model doc attributes which shouldn't be
+stored in ElasticSearch. It implements just the
+L<Elastic::Model::Trait::Field/"exclude"> keyword.
