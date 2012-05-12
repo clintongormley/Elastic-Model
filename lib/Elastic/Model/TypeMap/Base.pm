@@ -411,11 +411,16 @@ Moose's L<type constraints|Moose::Util::TypeConstraints> and introspection
 allows Elastic::Model to figure out how to map your data model to the
 ElasticSearch backend with the minimum of effort on your part.
 
-What you need to do is to be specific about what type constraint
-is contained in each attribute.  For instance,  if you have an attribute
-called C<count>, then specify the type constraint C<< isa => 'Int' >>.
+What YOU need to do is: B<Be specific about the type constraint for each attribute.>
+
+For instance,  if you have an attribute called C<count>, then specify the
+type constraint C<< isa => 'Int' >>.
 That way, we know how to define the field in ElasticSearch, and how to deflate
-and inflate the value.
+and inflate the value. If you were to assign C<count> the type constraint
+C<PositiveInt>, although we don't know about that constraint, we do know
+about C<Int>, from which C<PostiveInt> derives, so we could
+still handle the field correctly.
+
 
 Type maps are used to define:
 
@@ -435,34 +440,16 @@ retrieving docs stored in ElasticSearch.
 
 =back
 
+=head1 BUILT-IN TYPE MAPS
 
-L<Elastic::Model::Typemap::Default> is loads the following modules:
-
-=over
-
-=item *
-
-L<Elastic::Model::Typemap::Moose>
-
-=item *
-
-L<Elastic::Model::Typemap::Objects>
-
-=item *
-
-L<Elastic::Model::Typemap::Structured>
-
-=item *
-
-L<Elastic::Model::Typemap::ES>, and
-
-=item *
-
-L<Elastic::Model::Typemap::Common>
-
-=back
+See L<Elastic::Model::TypeMap::Default> for the type-maps provided by
+default in Elastic::Model.
 
 =head1 DEFINING YOUR OWN TYPE MAP
+
+If you define your own types which need custom mapping or custom deflators/inflators
+then you can add these definitions in your own type-map, while still falling
+back to the built-in type-maps for other types.
 
 First, you need to name your type map class:
 
@@ -529,6 +516,9 @@ Here is an example of how to define a type map for DateTime objects:
 
 =head1 ATTRIBUTES
 
+It is unlikely that you will need to know about any of these attributes, but
+they are documented here for completeness.
+
 =head2 deflators
 
     $deflators = $class->deflators
@@ -555,6 +545,9 @@ Returns a hashref containing the L</"deflators">, L</"inflators"> and
 L</"mappers"> known to C<$class>.
 
 =head1 METHODS
+
+It is unlikely that you will need to know about any of these methods, but
+they are documented here for completeness.
 
 L<Elastic::Model::TypeMap::Base> only has class methods, no instance methods,
 and no C<new()>.

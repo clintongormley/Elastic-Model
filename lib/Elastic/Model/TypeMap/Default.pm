@@ -20,11 +20,16 @@ Moose's L<type constraints|Moose::Util::TypeConstraints> and introspection
 allows Elastic::Model to figure out how to map your data model to the
 ElasticSearch backend with the minimum of effort on your part.
 
-What you need to do is to be specific about what type constraint
-is contained in each attribute.  For instance,  if you have an attribute
-called C<count>, then specify the type constraint C<< isa => 'Int' >>.
+What YOU need to do is: B<Be specific about the type constraint for each attribute.>
+
+For instance,  if you have an attribute called C<count>, then specify the
+type constraint C<< isa => 'Int' >>.
 That way, we know how to define the field in ElasticSearch, and how to deflate
-and inflate the value.
+and inflate the value. If you were to assign C<count> the type constraint
+C<PositiveInt>, although we don't know about that constraint, we do know
+about C<Int>, from which C<PostiveInt> derives, so we could
+still handle the field correctly.
+
 
 Type maps are used to define:
 
@@ -44,6 +49,7 @@ retrieving docs stored in ElasticSearch.
 
 =back
 
+=head1 BUILT-IN TYPE MAPS
 
 L<Elastic::Model::Typemap::Default> loads the following type-maps:
 
@@ -63,7 +69,7 @@ L<Elastic::Model::Typemap::Structured>
 
 =item *
 
-L<Elastic::Model::Typemap::ES>, and
+L<Elastic::Model::Typemap::ES>
 
 =item *
 
