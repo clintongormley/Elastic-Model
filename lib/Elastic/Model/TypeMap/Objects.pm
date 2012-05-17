@@ -116,6 +116,8 @@ sub _map_class {
         return $handler->(@_);
     }
 
+# TODO: This is wrong. Should not check for Moose::Object, just get a list
+# of attributes
     die "Class $class is not a Moose class and no mapper is defined."
         unless $class->isa('Moose::Object');
 
@@ -158,3 +160,19 @@ sub _class_attrs {
 }
 
 1;
+
+# ABSTRACT: Type maps for objects and Moose classes
+
+=head1 DESCRIPTION
+
+L<Elastic::Model::TypeMap::Objects> provides mapping, inflation and deflation
+for Moose-based classes and objects .
+It is loaded automatically byL<Elastic::Model::TypeMap::Default>.
+
+=head1 TYPES
+
+=head2 Class
+
+=head3 Non-Moose classes
+
+Non-Moose classes must provide custom mappings, deflators and inflators.

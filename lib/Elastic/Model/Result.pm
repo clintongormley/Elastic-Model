@@ -44,7 +44,16 @@ sub score  { shift->result->{_score} }
 #===================================
 sub fields        { shift->result->{fields}        ||= {} }
 sub script_fields { shift->result->{script_fields} ||= {} }
-sub highlight     { shift->result->{highlight}     ||= {} }
 #===================================
 
+#===================================
+sub highlight {
+#===================================
+    my $self      = shift;
+    my $highlight = $self->result->{highlight};
+    if ( my $field = shift ) {
+        return @{ $highlight->{$field} || [] };
+    }
+    return $highlight;
+}
 1;

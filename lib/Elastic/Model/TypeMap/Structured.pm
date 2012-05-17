@@ -35,7 +35,8 @@ has_type 'MooseX::Types::Structured::Map',
 #===================================
     deflate_via { _flate_map( 'deflator', @_ ) },
     inflate_via { _flate_map( 'inflator', @_ ) },
-    map_via {_map_hash};    ## TODO: _map_map
+    map_via {_map_hash};
+    ## TODO: _map_map - should be like hashref
 
 #===================================
 sub _deflate_tuple {
@@ -108,6 +109,8 @@ sub _flate_map {
 sub _flate_optional {
 #===================================
     my $content = _content_handler(@_) or return;
+    # TODO: Check whether a missing optional value eg in a hashref or
+    # a map or dict remains missing or is replaced with undef
     sub {
         my ( $val, $model ) = @_;
         return defined $val ? $content->( $val, $model ) : undef;
@@ -138,3 +141,57 @@ sub _content_handler {
     return $map->find( $type, $tc->type_parameter, $attr );
 }
 1;
+
+__END__
+
+# ABSTRACT: Type maps for MooseX::Types::Structured
+
+=head1 DESCRIPTION
+
+L<Elastic::Model::TypeMap::Structured> provides mapping, inflation and deflation
+for the L<MooseX::Types::Structured> type constraints.
+It is loaded automatically byL<Elastic::Model::TypeMap::Default>.
+
+=head1 TYPES
+
+=head2 Optional
+
+An undef value is stored as a JSON C<null>. A missing value is not set.
+The mapping depends on the content type, eg C<Optional[Int]>.
+An C<Optional> without a content type is not supported.
+
+=head2 Tuple
+
+Because array refs are interpreted by ElasticSearch as multiple values
+of the same type, tuples are converted to hash refs whose keys are
+the index number.  For instance, a field C<foo> with C<Tuple[Int,Str]>
+and value C<[5,'foo']> will be deflated to C<< { 0 => 5, 1 => 'foo' } >>.
+
+A tuple is mapped as an object, with:
+
+    {
+        type       => 'object',
+        dynamic    => 'strict',
+        properties => \%properties
+    }
+
+The C<%properties> mapping depends on the content types. A C<Tuple> without
+content types is not supported.
+
+=head2 Dict
+
+A C<Dict> is mapped as an object, with:
+
+    {
+        type       => 'object',
+        dynamic    => 'strict',
+        properties => \%properties
+    }
+
+The C<%properties> mapping depends on the content types. A C<Dict> without
+content types is not supported.
+
+=head2 Map
+
+TODO: This needs to be resolved - do we use dynamic templates for the fields?
+

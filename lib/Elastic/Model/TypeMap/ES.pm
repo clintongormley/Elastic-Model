@@ -82,3 +82,66 @@ has_type 'Elastic::Model::Types::Timestamp',
     map_via { type => 'date' };
 
 1;
+
+# ABSTRACT: Type maps for ElasticSearch-specific types
+
+=head1 DESCRIPTION
+
+L<Elastic::Model::TypeMap::ES> provides mapping, inflation and deflation
+for ElasticSearch specific types.
+
+=head1 TYPES
+
+=head2 Elastic::Model::Types::UID
+
+A L<Elastic::Model::UID> is deflated into a hash ref and reinflated
+via L<Elastic::Model::UID/"new_from_store()">. It is mapped as:
+
+    {
+        type        => 'object',
+        dynamic     => 'strict',
+        properties  => {
+            index   => {
+                type                         => 'string',
+                index                        => 'not_analyzed',
+                omit_norms                   => 1,
+                omit_term_freq_and_positions => 1,
+            },
+            type => {
+                type                         => 'string',
+                index                        => 'not_analyzed',
+                omit_norms                   => 1,
+                omit_term_freq_and_positions => 1,
+            },
+            id   => {
+                type                         => 'string',
+                index                        => 'not_analyzed',
+                omit_norms                   => 1,
+                omit_term_freq_and_positions => 1,
+            },
+            routing   => {
+                type                         => 'string',
+                index                        => 'no',
+                omit_norms                   => 1,
+                omit_term_freq_and_positions => 1,
+            },
+        }
+    }
+
+=head2 Elastic::Model::Types::GeoPoint
+
+Attributes of type L<Elastic::Model::Types/"GeoPoint"> are mapped as
+C<< { type => 'geo_point' } >>.
+
+=head2 Elastic::Model::Types::Binary
+
+Attributes of type L<Elastic::Model::Types/"Binary"> are deflated via
+L<MIME::Base64/"encode_base64"> and inflated via L<MIME::Base64/"decode_base_64">.
+They are mapped as C<< { type => 'binary' } >>.
+
+=head2 Elastic::Model::Types::Timestamp
+
+Attributes of type L<Elastic::Model::Types/"Timestamp"> are deflated
+to epoch milliseconds, and inflated to epoch seconds (with floating-point
+milliseconds). It is mapped as C<< { type => 'date' } >>.
+

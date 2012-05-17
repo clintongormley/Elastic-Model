@@ -23,6 +23,8 @@ has '_virtual_size' => (
     writer => '_set_virtual_size',
 );
 
+has '+wrapper' => ( builder => '_as_objects' );
+
 #===================================
 sub BUILD {
 #===================================
@@ -75,3 +77,27 @@ sub _fetch_until {
 }
 
 1;
+
+__END__
+
+# ABSTRACT: An iterator over unbounded search results
+
+=head1 SYNOPSIS
+
+=head1 DESCRIPTION
+
+An L<Elastic::Model::Results::Scrolled> object is returned when you call
+L<Elastic::Model::View/scroll()> or L<Elastic::Model::View/scan()>,
+and is intended for searches that could potentially retrieve many results.
+Results are retrieved from ElasticSearch in chunks.
+
+By default, the short L<Elastic::Model::Role::Iterator/"WRAPPED ACCESSORS">
+return results as doc objects (eg C<MyApp::User>), but you can change this
+to receive L<Elastic::Model::Result> objects with all the search metadata
+by calling L<Elastic::Model::Role::Results/as_results()>.
+
+Most attributes and accessors in this class come from
+L<Elastic::Model::Role::Results> and L<Elastic::Model::Role::Iterator>.
+
+=head1
+

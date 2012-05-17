@@ -27,6 +27,8 @@ use MooseX::Types -declare => [ qw(
         MultiFields
         PathMapping
         SearchType
+        SortArg
+        SortArgs
         StoreMapping
         TermVectorMapping
         Timestamp
@@ -127,6 +129,21 @@ subtype MultiField, as Dict [
 subtype MultiFields,
 #===================================
     as HashRef [MultiField];
+
+#===================================
+subtype SortArg,
+#===================================
+    as HashRef;
+coerce SortArg, from Str,
+    via { $_ eq '_score' ? { _score => 'desc' } : { $_ => 'asc' } };
+
+#===================================
+subtype SortArgs,
+#===================================
+    as ArrayRef [SortArg];
+coerce SortArgs, from SortArg, via { [$_] };
+coerce SortArgs, from Str,
+    via { $_ eq '_score' ? [ { _score => 'desc' } ] : [ { $_ => 'asc' } ] };
 
 #===================================
 subtype Longitude,

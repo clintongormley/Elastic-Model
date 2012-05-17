@@ -258,13 +258,14 @@ If you already have the C<UID>, you can use that instead:
     print $user->has_changed;
     # 1
 
-    print $user-has_>changed('email');
+    print $user->has_changed('email');
     # 1
 
     print $user->old_value('email');
     # 'clint@domain.com';
 
     $user->save;
+
     print $user->uid->version;
     # 2
 
