@@ -8,7 +8,7 @@ use namespace::autoclean;
 my $init_meta = Moose::Exporter->build_import_methods(
     install         => [qw(import unimport)],
     class_metaroles => { class => ['Elastic::Model::Meta::Class::Model'] },
-    with_meta       => [qw(has_domain analyzer tokenizer filter char_filter)],
+    with_meta       => [qw(namespace analyzer tokenizer filter char_filter)],
 );
 
 #===================================
@@ -22,17 +22,21 @@ sub init_meta {
 }
 
 #===================================
-sub has_domain {
+sub namespace {
 #===================================
     my $meta   = shift;
-    my $name   = shift or croak "No domain name passed to has_domain";
+    my $name   = shift or croak "No namespace name passed to namespace";
     my $params = ref $_[0] ? shift : {@_};
 
     my $types = $params->{types};
-    croak "No types specified for domain $name"
+    croak "No types specified for namespace $name"
         unless $types && %$types;
 
-    $meta->add_domain( $name => $params );
+    $meta->add_namespace( $name => $types );
+
+    my $domains = $params->{domains} || [$name];
+    $meta->add_domain($_ => $name)
+        for ref $domains ? @$domains : $domains;
 }
 
 #===================================

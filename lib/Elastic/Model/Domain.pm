@@ -15,41 +15,20 @@ has 'name' => (
 );
 
 #===================================
+has 'namespace' => (
+#===================================
+    is       => 'ro',
+    isa      => 'Elastic::Model::Namespace',
+    required => 1,
+    handles  => ['class_for_type'],
+);
+
+#===================================
 has 'settings' => (
 #===================================
     isa     => HashRef,
     is      => 'rw',
     default => sub { {} },
-);
-
-#===================================
-has 'archive_indices' => (
-#===================================
-    is  => 'ro',
-    isa => ArrayRef [Str],
-);
-
-#===================================
-has 'sub_domains' => (
-#===================================
-    is      => 'ro',
-    isa     => ArrayRef [Str],
-    default => sub { [] },
-    lazy    => 1,
-);
-
-#===================================
-has 'types' => (
-#===================================
-    isa      => HashRef,
-    traits   => ['Hash'],
-    is       => 'ro',
-    required => 1,
-    handles  => {
-        class_for_type => 'get',
-        has_type       => 'exists',
-        all_types      => 'keys',
-    }
 );
 
 #===================================
@@ -59,6 +38,7 @@ has '_default_routing' => (
     is => 'ro',
     lazy    => 1,
     builder => '_get_default_routing',
+    clearer => '_clear_default_routing',
 );
 
 no Moose;
@@ -129,26 +109,160 @@ sub view {
 }
 
 #===================================
-sub index {
+sub create_index {
+#===================================
+    my $self     = shift;
+    my $name     = shift || $self->name;
+    my $mappings = $self->mappings();
+    my %settings = (
+        %{ $self->settings },
+        $self->model->meta->analysis_for_mappings($mappings)
+    );
+    $self->es->create_index(
+        index    => $name,
+        mappings => $mappings,
+        settings => \%settings,
+    );
+    return $self;
+}
+
+#===================================
+sub delete_index {
+#===================================
+    my $self = shift;
+    my %params = ref $_[0] ? %{ shift() } : @_ % 1 ? ( name => @_ ) : @_;
+    $params{name} ||= $self->name;
+    $params{index} = delete $params{name};
+    $self->es->delete_index(%params);
+    return $self;
+}
+
+#===================================
+sub index_exists {
 #===================================
     my $self = shift;
     my $name = shift || $self->name;
-    return Elastic::Model::Domain::Index->new(
-        domain => $self,
-        name   => $name,
+    !!$self->es->index_exists( index => $name );
+}
+
+#===================================
+sub refresh_index {
+#===================================
+    my $self = shift;
+    my $name = shift || $self->name;
+    $self->es->refresh_index( index => $name );
+    return $self;
+}
+
+#===================================
+sub open_index {
+#===================================
+    my $self = shift;
+    my $name = shift || $self->name;
+    $self->es->open_index( index => $name );
+    return $self;
+}
+
+#===================================
+sub close_index {
+#===================================
+    my $self = shift;
+    my $name = shift || $self->name;
+    $self->es->close_index( index => $name );
+    return $self;
+}
+
+#===================================
+sub alias_to {
+#===================================
+    my $self = shift;
+    my @args = ref $_[0] ? @{ shift() } : @_;
+
+    my $name = $self->name;
+    my $es   = $self->es;
+
+    my %indices = map { $_ => { remove => { index => $_, alias => $name } } }
+        keys %{ $es->get_aliases( index => $name ) };
+
+    while (@args) {
+        my $index  = shift @args;
+        my %params = (
+            ref $args[0] ? %{ shift @args } : (),
+            index => $index,
+            alias => $name
+        );
+        if ( my $filter = delete $params{filterb} ) {
+            $params{filter} = $es->builder->filter($filter)->{filter};
+        }
+        $indices{$index} = { add => \%params };
+    }
+
+    $es->aliases( actions => [ values %indices ] );
+    return $self;
+}
+
+#===================================
+sub update_settings {
+#===================================
+    my $self = shift;
+    my %settings = ( %{ $self->settings }, ref $_[0] ? %{ shift() } : @_ );
+    $self->update_index_settings(
+        index    => $self->name,
+        settings => \%settings
     );
+    return $self;
+}
+
+#===================================
+sub put_mapping {
+#===================================
+    my $self     = shift;
+    my $mappings = $self->mappings(@_);
+    my $index    = $self->name;
+    my $es       = $self->es;
+    for my $type ( keys %$mappings ) {
+        $es->put_mapping(
+            index   => $index,
+            type    => $type,
+            mapping => $mappings->{$type}
+        );
+    }
+    return $self;
+}
+
+#===================================
+sub get_mapping {
+#===================================
+    my $self  = shift;
+    my $types = ref $_[0] ? shift : [@_];
+    my $index = $self->name;
+    my $es    = $self->es;
+    return $self->es->mapping( index => $index, type => $types );
+}
+
+#===================================
+sub delete_mapping {
+#===================================
+    my $self  = shift;
+    my $index = $self->name;
+    my $es    = $self->es;
+    for ( ref $_[0] ? @{ shift() } : @_ ) {
+        $es->delete_mapping( index => $index, type => $_ );
+    }
+    return $self;
 }
 
 #===================================
 sub mappings {
 #===================================
     my $self = shift;
+    my $ns   = $self->namespace;
     my @types
-        = @_ == 0   ? $self->all_types
+        = @_ == 0   ? $ns->all_types
         : ref $_[0] ? @{ shift() }
         :             @_;
     my $model = $self->model;
-    +{ map { $_ => $model->map_class( $self->class_for_type($_) ) } @types };
+    +{ map { $_ => $model->map_class( $ns->class_for_type($_) ) } @types };
 }
 
 #===================================

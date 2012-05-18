@@ -351,8 +351,8 @@ sub indexable_attrs {
 sub type_map {
 #===================================
     my $class = shift;
-    $class = $class->meta->original_class
-        if $class->can('meta') && $class->meta->can('original_class');
+    $class = $class->original_class
+        if $class->can('original_class');
 
     # return a reference to the storage in ourself
     {

@@ -29,17 +29,17 @@ has 'parent' => (
 #===================================
 sub get_object {
 #===================================
-    my ( $self, $domain, $uid ) = @_;
-    my $existing = $self->_objects->{$domain}{ $uid->cache_key };
+    my ( $self, $ns, $uid ) = @_;
+    my $existing = $self->_objects->{$ns}{ $uid->cache_key };
 
     return $existing
         if $existing && $existing->uid->version >= ( $uid->version || 0 );
 
     my $parent = $self->parent or return undef;
-    $existing = $parent->get_object( $domain, $uid ) or return undef;
+    $existing = $parent->get_object( $ns, $uid ) or return undef;
 
     my $new = $existing->meta->new_stub( $uid, $existing->_source );
-    return $self->store_object( $domain, $new );
+    return $self->store_object( $ns, $new );
 }
 
 # if the object exists in the current scope
@@ -52,11 +52,11 @@ sub get_object {
 #===================================
 sub store_object {
 #===================================
-    my ( $self, $domain, $object ) = @_;
+    my ( $self, $ns, $object ) = @_;
     my $uid     = $object->uid;
     my $objects = $self->_objects;
 
-    if ( my $existing = $objects->{$domain}{ $uid->cache_key } ) {
+    if ( my $existing = $objects->{$ns}{ $uid->cache_key } ) {
         return $existing if $existing->uid->version >= $uid->version;
 
         if ( $existing->_can_inflate ) {
@@ -68,14 +68,14 @@ sub store_object {
         $objects->{old}{ $uid->cache_key . refaddr $existing} = $existing;
     }
 
-    $self->_objects->{$domain}{ $uid->cache_key } = $object;
+    $self->_objects->{$ns}{ $uid->cache_key } = $object;
 }
 
 #===================================
 sub DEMOLISH {
 #===================================
     my $self = shift;
-    $self->meta->model->detach_scope($self);
+    $self->model->detach_scope($self);
 }
 
 1;

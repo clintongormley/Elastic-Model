@@ -12,7 +12,7 @@ my %defaults = (
     tokenizer => {},
 );
 
-for my $k (qw(domain char_filter analyzer filter tokenizer)) {
+for my $k (qw(namespace domain char_filter analyzer filter tokenizer)) {
     my %default = %{ $defaults{$k} || {} };
 #===================================
     has "${k}s" => (
@@ -28,7 +28,7 @@ for my $k (qw(domain char_filter analyzer filter tokenizer)) {
             "all_${k}s" => 'keys',
         }
     );
-    next if $k eq 'domain';
+    next if $k eq 'domain' || $k eq 'namespace';
 
 #===================================
     before "add_$k" => sub {

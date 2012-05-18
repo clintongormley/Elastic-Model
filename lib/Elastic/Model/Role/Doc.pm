@@ -100,7 +100,7 @@ sub old_value {
 sub _get_source {
 #===================================
     my $self = shift;
-    $self->meta->model->get_doc_source( $self->uid );
+    $self->model->get_doc_source( $self->uid );
 }
 
 #===================================
@@ -110,7 +110,7 @@ sub _inflate_doc {
     my $source = $self->_source;
     $self->_can_inflate(0);
     try {
-        $self->meta->model->inflate_object( $self, $source );
+        $self->model->inflate_object( $self, $source );
     }
     catch {
         $self->_can_inflate(1);
@@ -134,7 +134,8 @@ sub save {
 
     if ( $self->has_changed || !$self->uid->from_store ) {
         $self->touch;
-        $self->meta->model->save_doc( $self, \%args );
+        $self->model->save_doc( $self, \%args );
+        $self->_clear_old_value;
     }
     $self;
 }
@@ -143,7 +144,7 @@ sub save {
 sub delete {
 #===================================
     my $self = shift;
-    $self->meta->model->delete_doc( $self, @_ );
+    $self->model->delete_doc( $self, @_ );
 }
 
 1;

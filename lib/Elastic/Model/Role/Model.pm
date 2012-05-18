@@ -8,7 +8,9 @@ use Class::Load qw(load_class);
 use Moose::Util qw(does_role);
 use MooseX::Types::Moose qw(:all);
 use Elastic::Model::UID();
-use Scalar::Util qw(blessed refaddr);
+use Elastic::Model::Namespace();
+use Scalar::Util qw(blessed refaddr weaken);
+use List::MoreUtils qw(uniq);
 
 use namespace::autoclean;
 
@@ -75,6 +77,16 @@ has 'doc_class_wrappers' => (
 );
 
 #===================================
+has 'namespaces' => (
+#===================================
+    is      => 'ro',
+    isa     => HashRef,
+    traits  => ['Hash'],
+    builder => '_build_namespaces',
+    handles => { get_namespace => 'get' }
+);
+
+#===================================
 has '_domain_cache' => (
 #===================================
     isa     => HashRef,
@@ -88,13 +100,17 @@ has '_domain_cache' => (
 );
 
 #===================================
-has '_index_domains' => (
+has '_index_namespace' => (
 #===================================
     is      => 'ro',
     isa     => HashRef,
+    traits  => ['Hash'],
     lazy    => 1,
-    builder => '_build_index_domains',
-    clearer => '_clear_index_domains',
+    builder => '_build_index_namespace',
+    handles => {
+        _clear_index_namespace => 'clear',
+        _get_index_namespace   => 'get',
+    }
 );
 
 #===================================
@@ -128,57 +144,69 @@ sub _die_no_scope { croak "There is no current_scope" }
 #===================================
 
 #===================================
+sub _build_namespaces {
+#===================================
+    my $self = shift;
+    my $conf = $self->meta->namespaces;
+    my %namespaces;
+
+    while ( my ( $name, $types ) = each %$conf ) {
+        my %classes
+            = map { $_ => $self->class_for( $types->{$_} ) } keys %$types;
+        $namespaces{$name} = Elastic::Model::Namespace->new(
+            name  => $name,
+            types => \%classes
+        );
+    }
+    \%namespaces;
+}
+
+#===================================
 sub _build_doc_class_wrappers {
 #===================================
-    my $self    = shift;
-    my $domains = $self->meta->domains;
-    my %classes;
-    for my $types ( map { $_->{types} } values %$domains ) {
-        for ( values %$types ) {
-            $classes{$_} ||= $self->wrap_doc_class($_);
-        }
-    }
-    \%classes;
+    my $self       = shift;
+    my $namespaces = $self->meta->namespaces;
+    +{  map { $_ => $self->wrap_doc_class($_) }
+        map { values %$_ } values %{ $self->meta->namespaces }
+    };
 }
 
 #===================================
-sub _build_index_domains {
+sub _build_index_namespace {
 #===================================
     my $self    = shift;
     my $domains = $self->meta->domains;
 
-    my %indices;
-    for my $domain ( keys %$domains ) {
+    my %namespaces;
+    push @{ $namespaces{ $domains->{$_} } }, $_ for keys %$domains;
 
-        my @names = (
-            $domain,
-            @{ $domains->{$domain}{archive_indices} || [] },
-            @{ $domains->{$domain}{sub_domains} || [] }
-        );
+    my %index;
 
-        my $aliases = $self->es->get_aliases( index => \@names );
-        push @names, keys %$aliases;
-
+    for my $name ( keys %namespaces ) {
+        my $aliases = $self->es->get_aliases( index => $namespaces{$name} );
+        my @names = uniq @{ $namespaces{$name} },
+            map { $_, keys %{ $aliases->{aliases} } }
+            keys %$aliases;
+        my $ns = $self->get_namespace($name);
         for (@names) {
-            croak "Cannot map index ($_) to domain ($domain). "
-                . "It is already mapped to domain ($indices{$_})"
-                if $indices{$_} && $indices{$_} ne $domain;
-            $indices{$_} = $domain;
+            croak "Cannot map index/alias ($_) to namespace ($ns). "
+                . "It is already mapped to namespace ($index{$_})"
+                if $index{$_} && refaddr $index{$_} ne refaddr $ns;
+            $index{$_} = $ns;
         }
     }
-    \%indices;
+    \%index;
 }
 
 #===================================
-sub domain_for_index {
+sub namespace_for_index {
 #===================================
-    my $self   = shift;
-    my $index  = shift or croak "No (index) passed to domain_for_index";
-    my $domain = $self->_index_domains->{$index};
-    return $domain if $domain;
-    $self->_clear_index_domains;
-    $self->_index_domains->{$index}
-        or croak "No domain found for index ($index). ";
+    my ( $self, $index ) = @_;
+    my $ns;
+    $ns = $self->_get_index_namespace($index) and return $ns;
+    $self->_clear_index_namespace;
+    $self->_get_index_namespace($index)
+        or croak "No namespace found for index ($index). ";
 }
 
 #===================================
@@ -190,7 +218,7 @@ sub wrap_doc_class {
     load_class($class);
 
     croak "Class ($class) does not do Elastic::Model::Role::Doc. "
-        . "Please add : use Elastic::Model::Doc;\n\n"
+        . "Please add : use Elastic::Doc;\n\n"
         unless Moose::Util::does_role( $class, 'Elastic::Model::Role::Doc' );
 
     my $new_class = $self->meta->wrapped_class_name($class);
@@ -198,6 +226,10 @@ sub wrap_doc_class {
         = Moose::Meta::Class->create( $new_class, superclasses => [$class] );
     $meta->_set_original_class($class);
     $meta->_set_model($self);
+
+    weaken( my $weak_model = $self );
+    $meta->add_method( model          => sub {$weak_model} );
+    $meta->add_method( original_class => sub {$class} );
     $meta->make_immutable;
 
     return $meta->name;
@@ -225,8 +257,9 @@ sub wrap_class {
     $meta->_set_original_class($class);
     $meta->_set_model($self);
 
-    # Just store weakened model ref?
-    $meta->add_method( model => sub { shift->meta->model } );
+    weaken( my $weak_model = $self );
+    $meta->add_method( model          => sub {$weak_model} );
+    $meta->add_method( original_class => sub {$class} );
 
     $meta->make_immutable;
     return $meta->name;
@@ -235,44 +268,23 @@ sub wrap_class {
 #===================================
 sub domain {
 #===================================
-    my $self   = shift;
-    my $name   = shift or croak "No domain name passed to domain()";
-    my $domain = $self->_get_domain($name);
-
-    unless ($domain) {
-
-        my $params = $self->meta->domain($name);
-
-        if ($params) {
-            my %types = %{ $params->{types} };
-            %types = map { $_ => $self->class_for( $types{$_} ) } keys %types;
-            $params = { %$params, types => \%types };
-        }
-        else {
-            $params = $self->_find_sub_domain($name)
-                or croak "Unknown domain name ($name)";
-        }
-
-        $domain = $self->domain_class->new( name => $name, %$params );
-        $self->_cache_domain( $name => $domain );
-    }
-
-    return $domain;
-}
-
-#===================================
-sub _find_sub_domain {
-#===================================
     my $self = shift;
-    my $name = shift;
+    my $name = shift or croak "No domain name passed to domain()";
+    my $domain;
 
-    # sub domain
-    my $parent_domain_name = $self->domain_for_index($name) or return;
-    my $parent_domain = $self->domain($parent_domain_name);
+    $domain = $self->_get_domain($name) and return $domain;
 
-    return unless grep { $_ eq $name } @{ $parent_domain->sub_domains };
+    my $ns_name = $self->meta->domain($name)
+        or croak "Unknown domain name ($name)";
 
-    +{ map { $_ => $parent_domain->$_ } qw(types settings) };
+    my $ns = $self->get_namespace($ns_name)
+        or croak "Unknown namespace ($ns_name)";
+
+    $domain = $self->domain_class->new(
+        name      => $name,
+        namespace => $ns
+    );
+    return $self->_cache_domain( $name => $domain );
 }
 
 #===================================
@@ -291,7 +303,7 @@ sub new_scope {
 #===================================
 sub detach_scope {
 #===================================
-    my ($self,$scope) = @_;
+    my ( $self, $scope ) = @_;
     my $current = $self->current_scope;
     return unless $current && refaddr($current) eq refaddr($scope);
     my $parent = $scope->parent;
@@ -305,17 +317,17 @@ sub get_doc {
     my ( $self, $uid, $source ) = @_;
     croak "No UID passed to get_doc()" unless $uid;
 
-    my $domain = $self->domain_for_index( $uid->index );
-    my $scope  = $self->current_scope;
+    my $ns    = $self->namespace_for_index( $uid->index );
+    my $scope = $self->current_scope;
 
     my $object;
-    $object = $scope->get_object( $domain, $uid ) unless $source;
+    $object = $scope->get_object( $ns, $uid ) unless $source;
 
     unless ($object) {
         $source ||= $self->get_doc_source($uid) unless $uid->from_store;
-        my $class = $self->domain($domain)->class_for_type( $uid->type );
+        my $class = $ns->class_for_type( $uid->type );
         $object = $class->meta->new_stub( $uid, $source );
-        $object = $scope->store_object( $domain, $object );
+        $object = $scope->store_object( $ns->name, $object );
     }
     $object;
 }
@@ -338,12 +350,12 @@ sub save_doc {
     my $doc    = shift;
     my %args   = ref $_[0] ? %{ shift() } : @_;
     my $uid    = $doc->uid;
-    my $domain = $self->domain_for_index( $uid->index );
+    my $ns     = $self->namespace_for_index( $uid->index );
     my $action = $uid->from_store ? 'index_doc' : 'create_doc';
     my $data   = $self->deflate_object($doc);
     my $result = $self->store->$action( $uid, $data, \%args );
     $uid->update_from_store($result);
-    return $self->current_scope->store_object( $domain, $doc );
+    return $self->current_scope->store_object( $ns->name, $doc );
 }
 
 #===================================
@@ -353,10 +365,10 @@ sub delete_doc {
     my $doc    = shift;
     my %args   = ref $_[0] ? %{ shift() } : @_;
     my $uid    = $doc->uid;
-    my $domain = $self->domain_for_index( $uid->index );
+    my $ns     = $self->namespace_for_index( $uid->index );
     my $result = $self->store->delete_doc( $doc->uid, \%args );
     $uid->update_from_store($result);
-    return $self->current_scope->delete_object( $domain, $doc );
+    return $self->current_scope->delete_object( $ns->name, $doc );
 }
 
 #===================================
@@ -418,7 +430,7 @@ sub map_class {
     die "Class $class is not an Elastic class."
         unless does_role( $class, 'Elastic::Model::Role::Doc' );
 
-    my $meta = $class->meta->original_class->meta;
+    my $meta = $class->original_class->meta;
 
     my %mapping = (
         %{ $meta->type_mapping },
