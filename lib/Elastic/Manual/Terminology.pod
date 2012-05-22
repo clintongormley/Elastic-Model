@@ -1,0 +1,227 @@
+package Elastic::Manual::Terminology;
+
+__END__
+
+# ABSTRACT: Explanation of terminology and concepts
+
+=head1 GLOSSARY AND CONCEPTS
+
+=head2 Cluster
+
+A C<cluster> is a collection of L<nodes|/Node> which function together - they
+all share the same C<cluster.name>. The cluster elects a single C<master node>
+which controls the cluster.  If the master node fails, another node is
+automatically elected.
+
+=head2 Node
+
+A C<node> is a running instance of ElasticSearch. Normally, you would only run
+one instance of ElasticSearch on one server, so a C<node> is roughly equivalent
+to a C<server>. When a node starts, it tries to join a L<cluster|/Cluster>
+which shares the same cluster name.  If it fails to find an existing cluster,
+it will form a new cluster.
+
+=head2 Shard
+
+A C<shard> is a single instance of Lucene (what ElasticSearch uses internally
+to provide its search function).  Shards are the building blocks
+of L<indices|/Index> - each index consists of at least one shard.
+
+A shard can be a C<primary> shard or a C<replica> shard.  A C<primary> shard
+is responsible for storing a newly indexed doc first.  Once it has been
+indexed by the primary shard, the new doc is indexed on all of the C<replica>
+shards (if there are any) in parallel to ensure that there are multiple
+copies of each document in the cluster.
+
+If a C<primary> shard fails, then a C<replica> shard will be promoted to
+a C<primary> shard, and a new C<replica> shard will be allocated on a different
+L<node|/Node>, if there is one available.
+
+A replica shard will never run on the same node as its primary shard, otherwise
+if that node were to go down, it would take both the primary and replica shard
+with it.
+
+=head2 Index
+
+An C<index> is the equivalent of a C<database> in a relational DB (not to be
+confused with an C<index> in a relational DB). It has a L<mapping|/Mapping>,
+which defines multiple L<types|/Type>.
+
+Internally, an C<index> is a logical namespace which points to one or more
+C<primary> L<shards|/Shard>, each of which may have zero or more
+C<replica shards>.  You can change the number of replica shards on an
+existing index, but the number of primary shards is fixed at index
+creation time.
+
+Searches can be performed across multiple indices.
+
+B<Note:> an index name must be a lower case string, without any spaces.
+
+See also L</Alias> and L</Domain>.
+
+=head2 Alias
+
+An C<alias> is an alternative name for an L<index|/Index>. For instance, you
+could have an alias called C<myapp> which points to the index C<myapp_v1>.
+When you want to change the structure of your index, you could reindex all your
+docs to C<myapp_v2> and, when ready, switch the C<myapp> alias to point to
+C<myapp_v2> instead.
+
+An C<alias> may also point to multiple indices. For example you might have
+indices C<logs_jan_2012>, C<logs_feb_2012>, ... C<logs_dec_2012>, and an alias
+C<logs_2012> which points to all 12 indices.  This allows you to use a single
+alias name to search multiple indices. B<Note:> you can't index docs to an alias
+that points to multiple indices.
+
+Also see L</Domain>.
+
+=head2 Model
+
+The C<model> ties your application to an ElasticSearch cluster. It is the
+Boss Object, providing the link between your classes, Elastic::Model and
+ElasticSearch.  See L<Elastic::Model> for more.
+
+=head2 Domain
+
+A C<domain> is an Elastic::Model concept. The C<domain name> can be the name
+of an L<index|/Index> or and L<alias|/Alias>. It has a L<namespace|/Namespace>
+which defines which class to use for each L<type|/Type>.
+
+See L<Elastic::Model::Domain>.
+
+=head2 Type
+
+A C<type> is like a C<table> in a relational DB.  For instance, you may have
+a C<user> type, a C<comment> type etc. An L<index|/Index> can have multiple
+types (just like a database can have multiple tables). In Elastic::Model,
+objects (L<documents|/Document>) of each type are handled by a single
+class, eg C<MyApp::User>, C<MyApp::Comment>. (See L</Namespace>).
+
+Each C<type> has a L</Mapping>, which defineds the list of L<Fields|/Field>
+in the type.
+
+Internally a C<type> is just a reserved field in a document (C<_type>).
+Searches can be performed across multiple types.
+
+=head2 Namespace
+
+A C<namespace> is an Elastic::Model concept which defines which of your
+classes should be used for a L<document|/Document> of a particular L<type|/Type>.
+For instance, documents of type C<user> may be handled by class C<MyApp::User>.
+
+See L<Elastic::Model::Namespace> and L</Domain>.
+
+=head2 Document
+
+A C<document> is like a C<row> in a relational DB table.  Elastic::Model
+converts your objects into a JSON object, which is the C<document> that is
+stored in ElasticSearch.  We use the term C<object> and C<document>
+interchangably.
+
+Each document is stored in one primary L<shard|/Shard> in an L<index|/Index>,
+has a single L<type|/Type>, an L<id|/ID>and zero or more L<fields|/Field>.
+
+The original JSON object is stored in the special C<_source> field, which
+is returned by default when you retrieve a document by ID, or when you
+perform a search.
+
+=head2 Mapping
+
+Each L<type|/Type> has a C<mapping> which is like a 'schema definition' in
+a relational DB. It defines various type-wide settings, plus the field-type
+(eg C<integer>, C<object>, C<string>)for each L<field|/Field> in the type,
+and specifics about how each field should be L<analyzed|/Analysis>.
+
+New fields can be added to a mapping, but generally existing fields may not
+be changed. Instead, you have to create a new index with the new mapping and
+reindex your data.
+
+Elastic::Model generates the mapping for you using Moose's introspection.
+L<Attribute keywords|Elastic::Model::Trait::Field> are provided to give you
+control over the mapping process.
+
+=head2 Field
+
+A C<field> is like a column in a table in a relational DB. Each field has
+a field-type, eg C<integer>, C<string>, C<datetime> etc.  Nested hashes can
+be stored, but internally these get flattened. For instance:
+
+    {
+        husband => {
+            firstname => 'Joe',
+            surname   => 'Bloggs'
+        },
+        wife => {
+            firstname => 'Alice',
+            surname   => 'Bloggs'
+        }
+    }
+
+... is flattened to:
+
+    {
+        'husband.firstname' => 'Joe',
+        'husband.surname'   => 'Bloggs',
+        'wife.firstname'    => 'Alice',
+        'wife.surname'      => 'Bloggs',
+    }
+
+You could search on the C<firstname> field, which would search the firstname
+for both the husband and the wife, or by specifying the fieldname
+in full, you could search on just the C<husband.firstname> field.
+
+
+=head2 ID
+
+The ID of a document identifies a document. The
+L<index|/Index>/L<type|/Type>/L<id|/ID> of a document must be unique. If no ID
+is provided, then it will be auto-generated.
+
+See also L</Routing>.
+
+=head2 Routing
+
+When you index a document, it is stored on a single primary L<shard|/Shard>.
+That shard is chosen by hashing the routing value. By default, the routing
+value is derived from the L</ID> of the document or, if the document has a
+specified parent document, from the ID of the parent document
+(to ensure that child and parent documents are stored on the same shard).
+
+This value can be overridden by specifying a C<routing> value at index time,
+or a routing field in the L<mapping|/Mapping>.
+
+
+=head2 Analysis
+
+Analysis is the process of converting L<full text|/Text> to L<terms|/Term>.
+Depending on which analyzer is used, these phrases: C<FOO BAR>, C<Foo-Bar>,
+C<foo,bar> will probably all result in the terms C<foo> and C<bar>.
+These terms are what is actually stored in the index.
+
+A full text query (not a term query) for C<FoO bAR> will also be analyzed to
+the terms C<foo> and C<bar>, and will thus match the terms stored in the index.
+
+It is this process of analysis (both at index time and at search time) that
+allows ElasticSearch to perform full text queries.
+
+See also L</Text> and L</Term>.
+
+=head2 Term
+
+A term is an exact value that is indexed in elasticsearch. The terms
+C<foo>, C<Foo>, C<FOO> are NOT equivalent. Terms (ie exact values) can be
+searched for using ‘term’ queries.
+
+See also L</Text> and L</Analysis>.
+
+=head2 Text
+
+Text (or full text) is ordinary unstructured text, such as this paragraph.
+By default, text will by L<analyzed|/Analysis> into L<terms|/Term>, which is
+what is actually stored in the index.
+
+Text fields need to be analyzed at index time in order to be searchable as
+full text, and keywords in full text queries must be analyzed at search time
+to produce (and search for) the same terms that were generated at index time.
+
+See also L</Term> and L</Analysis>.

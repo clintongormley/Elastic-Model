@@ -29,10 +29,6 @@ document and it'll try to autodetect data types and index your doc. That
 said, the power of full text search comes from the ability to configure
 your search to suit your data and requirements. Sophisticated options
 exist to give you complete control over how your data is indexed.
-This is known as the C<type mapping>.
-
-It is easy to add new fields to your documents, but once a field is mapped,
-you usually can't change it without reindexing your data.
 
 =head2 Real-time
 
@@ -56,8 +52,8 @@ You need a recent version of Java installed, then download the current
 stable release of ElasticSearch from L<http://www.elasticsearch.org/download/>.
 For instance:
 
-    curl -L -O https://github.com/downloads/elasticsearch/elasticsearch/elasticsearch-0.19.2.tar.gz
-    tar -xzf elasticsearch-0.19.2.tar.gz
+    curl -L -O https://github.com/downloads/elasticsearch/elasticsearch/elasticsearch-0.19.4.tar.gz
+    tar -xzf elasticsearch-0.19.4.tar.gz
 
 =head2 Install Elastic::Model
 
@@ -71,7 +67,7 @@ Or, if you want to run the full test suite, install Elastic::Model as:
 
 =head2 Start ElasticSearch
 
-    cd elasticsearch-0.19.2/
+    cd elasticsearch-0.19.4/
     ./bin/elasticsearch -f      # -f starts the server in the foreground
 
 You now have a running ElasticSearch cluster with one node. You can test that
@@ -83,31 +79,35 @@ it is running with:
 
 =head2 Create a Model
 
-First set up a simple model.  The model handles the relationship between your
-classes and ElasticSearch.
+First set up a simple L<model|Elastic::Manual::Terminology/Model>.  The model
+handles the relationship between your classes and ElasticSearch.
 
     package MyApp;
 
     use Moose;
     use Elastic::Model;
 
-    has_domain 'myapp' => (
+    namespace 'myapp' => (
         types   => {
             user    => 'MyApp::User'
-        }
+        },
+        # default if not specified:
+        # domains => ['myapp'],
     );
 
     1;
 
-Your model must define at least one C<domain>, which is like a 'namespace'.
-Initially, a domain can be considered to be the equivalent of an index/database.
-Later, you can use domains to scale your application.
+Your model must define at least one L<namespace|Elastic::Manual::Terminology/Namespace>,
+which tells Elastic::Model which
+L<type|Elastic::Manual::Terminology/Type> (like a table in a DB) should be
+handled by which of your classes.  So the above declaration says that objects
+of class C<MyApp::User> will be stored in the C<user> type in ElasticSearch.
 
-Each domain must define the list of C<types> that it knows about, and the class
-for each type.  A C<type> is like a table in a database.
-
-So, the above defines a domain called C<myapp> which has a single type C<user>,
-which is where objects of class C<MyApp::User> are stored.
+Your model must also define at least one L<domain|Elastic::Manual::Terminology/Domain>
+(which defaults to the C<name> of the namespace). A C<domain> can be an
+L<index|Elastic::Manual::Terminology/Index> (like a database in a relational DB)
+or an L<alias|Elastic::Manual::Terminology/Alias> (which points to one or
+more indices). It doesn't have to exist yet.
 
 =head2 Create your User class
 
@@ -115,6 +115,7 @@ which is where objects of class C<MyApp::User> are stored.
 
     use Moose;
     use Elastic::Doc;
+    use DateTime();
 
     has 'name' => (
         is  => 'rw',
@@ -134,7 +135,7 @@ which is where objects of class C<MyApp::User> are stored.
 
     1;
 
-This simple Moose class has only one extra line: C<use Elastic::Doc;>. At the
+This simple Moose class has only one extra line: "C<use Elastic::Doc;>". At the
 moment we're not configuring anything else, but because Moose allows us to
 introspect classes, we have enough information to setup everything we need.
 
@@ -158,39 +159,36 @@ Then, create an instance of your domain.
 
     my $domain = $model->domain('myapp');
 
-
 =head3 Setup your index
 
-Before we get started, we need to create our index in ElasticSearch.
+Before we get started, we need to create our L<index|Elastic::Manual::Terminology/Index>
+in ElasticSearch.
 
-    my $index = $domain->index;
+    $domain->create_index();
 
 The index name defaults to the domain name, so the above line is the equivalent
 of:
 
-    my $index = $domain->index( $domain->name );
+    $domain->create_index( $domain->name );
 
-Then we create the index:
-
-    $index->create;
-
-Next, want to setup our "type mapping" (where a "type" is like a table in
-a database, and a "mapping" is like the schema or column definition):
-
-    $index->put_mapping;
+This has created L<index|Elastic::Manual::Terminology/Index> C<myapp> (where
+an index is like a database in a relational DB), which contains
+L<type|Elastic::Manual::Terminology/Type> C<user> (where a type is like a
+table in a database) and the type's L<mapping|Elastic::Manual::Terminology/Mapping>
+(which is like the schema or column definition).
 
 If you'd like to examine the current mapping, you could do:
 
     use Data::Dumper;
-    print Dumper( $index->get_mapping );
+    print Dumper( $domain->get_mapping );
 
 Now, our index is ready to be used.
 
 =head3 Create a scope
 
-Scopes are discussed in detail in L<---TODO--->, but in brief, a C<scope> is
-an in-memory cache.  You need to create a scope before accessing any docs
-in ElasticSearch, and it should stay in scope until you are done, eg:
+Scopes are discussed in detail in L<Elastic::Model::Scope>, but in brief,
+a C<scope> is an in-memory cache.  You need to create a scope before accessing
+any docs in ElasticSearch, and it should stay in scope until you are done, eg:
 
     {
         my $scope = $model->new_scope;
@@ -208,23 +206,20 @@ Normally, you would create an object with:
 
     my $user = MyApp::User->new(...)
 
-but to use all of the magic of Elastic::Model, you should create your object
+but to use all of the magic of Elastic::Model, you must create your object
 via the C<$domain> object:
 
-    # my $user = $domain->new_doc( $type => \%new_args );
-
     my $user    = $domain->new_doc(
-        user => {
+        user => {                           # $type => \%args_to_new
             id    => 1,
             name  => 'Clinton',
             email => 'clint@domain.com',
         }
     );
 
-    # save to ElasticSearch
-    $user->save;
+    $user->save;                            # save to ElasticSearch
 
-The user object now has a UID auto-generated by ElasticSearch, which contains
+The user object now has a UID (unique ID), which contains
 the C<index> name (C<"myapp">), the C<type> name (C<"user">) and the C<id> (C<1>).
 If no ID is specified, then ElasticSearch will auto-generate a unique ID.
 The UID also contains the current C<version> number, which ElasticSearch uses
@@ -310,13 +305,15 @@ can be specified using the standard
 L<ElasticSearch query DSL|http://www.elasticsearch.org/guide/reference/query-dsl/>
 or with the more Perlish more compact L<ElasticSearch::SearchBuilder> syntax.
 
-    # standard query DSL
+Standard query DSL:
+
     $search = $view->query( { text =>  { name    => 'clinton' }})
                    ->filter({ range => { created => { gt => '2012-01-01' }}});
 
-    # SearchBuilder syntax
+SearchBuilder syntax:
+
     $search = $view->queryb(  { name    => 'clinton'             })
-                   ->filtebr( { created => { gt => '2012-01-01' }});
+                   ->filterb( { created => { gt => '2012-01-01' }});
 
 Once you have defined your view, you call a search method (eg
 L<search()|Elastic::Model::View/"search()">) which performs
