@@ -38,8 +38,8 @@ Type maps are used to define:
 =item *
 
 what mapping Elastic::Model will generate for each attribute when you
-L<create an index|Elastic::Model::Domain::Index/"create()">
-or L<update the mapping|Elastic::Model::Domain::Index/"put_mapping()"> of an
+L<create an index|Elastic::Model::Domain::Admin/"create_index()">
+or L<update the mapping|Elastic::Model::Domain::Admin/"update_mapping()"> of an
 existing index.
 
 =item *

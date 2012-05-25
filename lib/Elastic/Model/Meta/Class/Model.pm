@@ -125,7 +125,7 @@ sub analysis_for_mappings {
         }
         $analysis{$type} = \%defn if %defn;
     }
-    return ( analysis => \%analysis );
+    return \%analysis;
 }
 
 #===================================

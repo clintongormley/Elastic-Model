@@ -164,23 +164,18 @@ Then, create an instance of your domain.
 Before we get started, we need to create our L<index|Elastic::Manual::Terminology/Index>
 in ElasticSearch.
 
-    $domain->create_index();
+    $domain->admin->create_index();
 
 The index name defaults to the domain name, so the above line is the equivalent
 of:
 
-    $domain->create_index( $domain->name );
+    $domain->admin->create_index( $domain->name );
 
 This has created L<index|Elastic::Manual::Terminology/Index> C<myapp> (where
 an index is like a database in a relational DB), which contains
 L<type|Elastic::Manual::Terminology/Type> C<user> (where a type is like a
 table in a database) and the type's L<mapping|Elastic::Manual::Terminology/Mapping>
 (which is like the schema or column definition).
-
-If you'd like to examine the current mapping, you could do:
-
-    use Data::Dumper;
-    print Dumper( $domain->get_mapping );
 
 Now, our index is ready to be used.
 

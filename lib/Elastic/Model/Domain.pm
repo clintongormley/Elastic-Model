@@ -3,7 +3,7 @@ package Elastic::Model::Domain;
 use Carp;
 use Moose;
 use namespace::autoclean;
-use Elastic::Model::Domain::Index();
+use Elastic::Model::Domain::Admin();
 use MooseX::Types::Moose qw(:all);
 
 #===================================
@@ -24,21 +24,13 @@ has 'namespace' => (
 );
 
 #===================================
-has 'settings' => (
-#===================================
-    isa     => HashRef,
-    is      => 'rw',
-    default => sub { {} },
-);
-
-#===================================
 has '_default_routing' => (
 #===================================
     isa => Maybe [Str],
     is => 'ro',
     lazy    => 1,
     builder => '_get_default_routing',
-    clearer => '_clear_default_routing',
+    clearer => 'clear_default_routing',
 );
 
 no Moose;
@@ -102,6 +94,14 @@ sub get {
 }
 
 #===================================
+sub delete {
+#===================================
+    my $self = shift;
+
+    # TODO: delete-by-id
+}
+
+#===================================
 sub view {
 #===================================
     my $self = shift;
@@ -109,161 +109,8 @@ sub view {
 }
 
 #===================================
-sub create_index {
+sub admin { Elastic::Model::Domain::Admin->new( domain => shift() ) }
 #===================================
-    my $self     = shift;
-    my $name     = shift || $self->name;
-    my $mappings = $self->mappings();
-    my %settings = (
-        %{ $self->settings },
-        $self->model->meta->analysis_for_mappings($mappings)
-    );
-    $self->es->create_index(
-        index    => $name,
-        mappings => $mappings,
-        settings => \%settings,
-    );
-    return $self;
-}
-
-#===================================
-sub delete_index {
-#===================================
-    my $self = shift;
-    my %params = ref $_[0] ? %{ shift() } : @_ % 1 ? ( name => @_ ) : @_;
-    $params{name} ||= $self->name;
-    $params{index} = delete $params{name};
-    $self->es->delete_index(%params);
-    return $self;
-}
-
-#===================================
-sub index_exists {
-#===================================
-    my $self = shift;
-    my $name = shift || $self->name;
-    !!$self->es->index_exists( index => $name );
-}
-
-#===================================
-sub refresh_index {
-#===================================
-    my $self = shift;
-    my $name = shift || $self->name;
-    $self->es->refresh_index( index => $name );
-    return $self;
-}
-
-#===================================
-sub open_index {
-#===================================
-    my $self = shift;
-    my $name = shift || $self->name;
-    $self->es->open_index( index => $name );
-    return $self;
-}
-
-#===================================
-sub close_index {
-#===================================
-    my $self = shift;
-    my $name = shift || $self->name;
-    $self->es->close_index( index => $name );
-    return $self;
-}
-
-#===================================
-sub alias_to {
-#===================================
-    my $self = shift;
-    my @args = ref $_[0] ? @{ shift() } : @_;
-
-    my $name = $self->name;
-    my $es   = $self->es;
-
-    my %indices = map { $_ => { remove => { index => $_, alias => $name } } }
-        keys %{ $es->get_aliases( index => $name ) };
-
-    while (@args) {
-        my $index  = shift @args;
-        my %params = (
-            ref $args[0] ? %{ shift @args } : (),
-            index => $index,
-            alias => $name
-        );
-        if ( my $filter = delete $params{filterb} ) {
-            $params{filter} = $es->builder->filter($filter)->{filter};
-        }
-        $indices{$index} = { add => \%params };
-    }
-
-    $es->aliases( actions => [ values %indices ] );
-    return $self;
-}
-
-#===================================
-sub update_settings {
-#===================================
-    my $self = shift;
-    my %settings = ( %{ $self->settings }, ref $_[0] ? %{ shift() } : @_ );
-    $self->update_index_settings(
-        index    => $self->name,
-        settings => \%settings
-    );
-    return $self;
-}
-
-#===================================
-sub put_mapping {
-#===================================
-    my $self     = shift;
-    my $mappings = $self->mappings(@_);
-    my $index    = $self->name;
-    my $es       = $self->es;
-    for my $type ( keys %$mappings ) {
-        $es->put_mapping(
-            index   => $index,
-            type    => $type,
-            mapping => $mappings->{$type}
-        );
-    }
-    return $self;
-}
-
-#===================================
-sub get_mapping {
-#===================================
-    my $self  = shift;
-    my $types = ref $_[0] ? shift : [@_];
-    my $index = $self->name;
-    my $es    = $self->es;
-    return $self->es->mapping( index => $index, type => $types );
-}
-
-#===================================
-sub delete_mapping {
-#===================================
-    my $self  = shift;
-    my $index = $self->name;
-    my $es    = $self->es;
-    for ( ref $_[0] ? @{ shift() } : @_ ) {
-        $es->delete_mapping( index => $index, type => $_ );
-    }
-    return $self;
-}
-
-#===================================
-sub mappings {
-#===================================
-    my $self = shift;
-    my $ns   = $self->namespace;
-    my @types
-        = @_ == 0   ? $ns->all_types
-        : ref $_[0] ? @{ shift() }
-        :             @_;
-    my $model = $self->model;
-    +{ map { $_ => $model->map_class( $ns->class_for_type($_) ) } @types };
-}
 
 #===================================
 sub es { shift->model->es }
@@ -277,92 +124,51 @@ __END__
 
 =head1 SYNOPSIS
 
+Get a domain instance:
+
+    $domain = $model->domain('myapp');
+
+Create a new doc/object
+
+    $user = $domain->new_doc( user => \%args );
+    $user->save;
+
+    # or:
+
+    $user = $domain->create( user => \%args);
+
+Retrieve a doc by ID:
+
+    $user = $domain->get( $type => $id )
+
+Create a view on the current domain:
+
+    $view = $domain->view(%args);
+
+Create an admin object for administering indices and aliases:
+
+    $admin = $domain->admin();
+
 =head1 DESCRIPTION
 
-A "domain" is the logical namespace to which your docs belong. In the simplest
-case, a domain maps to a single index in ElasticSearch. However, domains allow
-you to combine multiple indices and index aliases in a single namespace.
+A "domain" is an L<index|Elastic::Manual::Terminology/Index> or an
+L<alias|Elastic::ManuaL::Terminology/Alias> (which points to one or more
+indices). You use a domain to create new docs/objects or to retrieve
+docs/obects by C<type>/C<id>.
 
-=over
-
-=item *
-
-The domain knows how your doc classes map to the types stored in ElasticSearch.
-For example any C<user> type in the indices that belong to a domain will be
-handled by your C<MyApp::User> class (assuming that's how you configured it).
-
-=item *
-
-A domain name MUST be an index or an index alias which points to a single
-index.
-
-=item *
-
-A domain may have several sub-domains, where a sub-domain can be an
-index or an index alias which points to a single index.
-
-=item *
-
-A domain or sub-domain may point to an alias which includes a
-L<default routing value|http://www.elasticsearch.org/guide/reference/api/admin-indices-aliases.html>
- - this routing value will be automatically applied to new docs.
-
-=item *
-
-A domain may also specify a number of L</"archive_indices"> which may be index
-names or index aliases pointing to one or more indices.  These need to be
-specified so that your model knows which domain should be used for docs
-retrieved from these indices.
-
-=back
+B<NOTE:> You can only create a doc in a domain that is either a single index,
+or an alias which points to a single index.
 
 =head1  ATTRIBUTES
 
 =head2 name
 
-A domain name must be the name of an index, or an index alias which points
-to a SINGLE index.
+A domain name must be the name of an index, or an index alias.
 
-=head2 sub_domains
+=head2 namespace
 
-A domain can have multiple sub-domains, where each sub-domain is the name
-of an index ( or an index alias which points to a SINGLE index).  Sub-domains
-share the same L</"types"> as the parent domain.  Sub-domains are
-particularly useful when using
-L<filtered aliases|http://www.elasticsearch.org/guide/reference/api/admin-indices-aliases.html>.
-
-=head2 archive_indices
-
-A domain can have multiple archive indices, where each archive index is
-an index name (or an index alias which can point to MULTIPLE indices).  Archive
-indices are used to inform your Model of which domain (and thus which
-L</"types">) should be used for docs stored in these indices. Archive indices
-cannot be used for creating new docs, as they may point to multiple indices.
-
-=head2 types
-
-A hashref whose keys represent the C<type> names in ElasticSearch, and
-whose values represent the class which is stored in that C<type>.  For instance
-
-    {
-        user    => 'MyApp::User',
-        post    => 'MyApp::Post',
-        comment => 'MyApp::Comment'
-    }
-
-=head2 settings
-
-A hashref containg index-wide L<settings|http://www.elasticsearch.org/guide/reference/index-modules/>
-that should be applied.
-
-    {
-        number_of_shards: 5,
-        number_of_replicas: 1
-    }
-
-B<Note:> The L<analysis|http://www.elasticsearch.org/guide/reference/index-modules/analysis/>
-settings will be generated automatically from your doc classes, and shouldn't
-be specified manually.
+An L<Elastic::Model::Namespace> object which maps
+L<types|Elastic::Manual::Terminology/Type> to your doc classes.
 
 =head2 es
 
@@ -370,23 +176,21 @@ be specified manually.
 
 Returns the connection to ElasticSearch.
 
-=head1 METHODS
+=head1 INSTANTIATOR
 
 =head2 new()
 
     $domain = $model->domain_class->new({
         name            => $domain_name,
-        sub_domains     => ['sub_1', 'sub_n'],
-        archive_indices => ['index_1','index_n'],
-        types           => {
-            user    => 'MyApp::User',
-            post    => 'MyApp::Post',
-        },
-        settings        => \%settings
+        namespace       => $namespace,
     });
 
 Although documented here, you shouldn't need  to call C<new()> yourself.
-Instead you should use L<Elastic::Model::Role::Model/"domain()">.
+Instead you should use L<Elastic::Model::Role::Model/"domain()">:
+
+    $domain = $model->domain($domain_name);
+
+=head1 METHODS
 
 =head2 new_doc()
 
@@ -420,19 +224,10 @@ Creates a L<view|Elastic::Model::View> with the L<Elastic::Model::View/"index">
 set to C<< $domain->name >>.  A C<view> is used for searching docs in a
 C<$domain>.
 
-=head2 index()
+=head2 admin()
 
-    $index = $domain->index($name);
+    $admin = $domain->admin();
 
-Creates an L<Elastic::Model::Domain::Index> object with the Index C<name>
-set to C<$name> (or C<< $domain->name >> by default). This is used for
-manipulating indices and aliases in ElasticSearch.
-
-=head2 mappings()
-
-    $mapping = $domain->mappings();             # all types in the $domain
-    $mapping = $doma->mappings(@types);         # just for @types
-
-Returns the L<mapping|http://www.elasticsearch.org/guide/reference/mapping/>
-for the C<@types> specified, or all types known to the C<$domain>.
+Returns an L<Elastic::Model::Domain::Admin> object, for creating/updating/deleting
+indices and aliases.
 
