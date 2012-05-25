@@ -1,0 +1,11 @@
+/_build
+.build/
+/blib
+/.includepath
+/.project
+/Build.PL
+/.includepath
+/.project
+/MYMETA.yml
+log.*
+ElasticModel-*
