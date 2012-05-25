@@ -21,9 +21,9 @@ sub type_mapping { shift->type_mapping(@_) }
 
 1;
 
-=head1 NAME
+__END__
 
-Elastic::Doc - Prepares an object class for storage in ElasticSearch
+# ABSTRACT: Adds Elastic::Model functionality to your object classes
 
 =head1 SYNOPSIS
 

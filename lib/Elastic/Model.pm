@@ -48,9 +48,7 @@ sub char_filter { shift->add_char_filter( shift, {@_} ) }
 
 1;
 
-=head1 NAME
-
-Elastic::Model - A NoSQL object-persistence framework for Moose using ElasticSearch as a backend.
+# ABSTRACT: A NoSQL object-persistence framework for Moose using ElasticSearch as a backend.
 
 =head1 DESCRIPTION
 
