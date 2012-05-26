@@ -14,25 +14,21 @@ use List::MoreUtils qw(uniq);
 
 use namespace::autoclean;
 
-our %Default_Class = (
-    type_map               => 'Elastic::Model::TypeMap::Default',
-    domain_class           => 'Elastic::Model::Domain',
-    store_class            => 'Elastic::Model::Store',
-    view_class             => 'Elastic::Model::View',
-    scope_class            => 'Elastic::Model::Scope',
-    results_class          => 'Elastic::Model::Results',
-    scrolled_results_class => 'Elastic::Model::Results::Scrolled',
-    result_class           => 'Elastic::Model::Result',
+#===================================
+has 'type_map' => (
+#===================================
+    is      => 'ro',
+    isa     => Str,
+    default => sub { shift->wrap_class('type_map') }
 );
 
-for ( keys %Default_Class ) {
+for my $class (qw(domain store view scope results scrolled_results result)) {
 #===================================
-    has $_ => (
+    has "${class}_class" => (
 #===================================
         isa     => Str,
         is      => 'ro',
-        default => $Default_Class{$_},
-        writer  => "_set_$_"
+        default => sub { shift->wrap_class($class) }
     );
 }
 
@@ -129,11 +125,6 @@ has 'current_scope' => (
 sub BUILD {
 #===================================
     my $self = shift;
-    for ( keys %Default_Class ) {
-        my $class = $self->wrap_class( $self->$_ );
-        my $set   = "_set_$_";
-        $self->$set($class);
-    }
     $self->doc_class_wrappers;
 }
 
@@ -221,47 +212,36 @@ sub wrap_doc_class {
         . "Please add : use Elastic::Doc;\n\n"
         unless Moose::Util::does_role( $class, 'Elastic::Model::Role::Doc' );
 
-    my $new_class = $self->meta->wrapped_class_name($class);
-    my $meta
-        = Moose::Meta::Class->create( $new_class, superclasses => [$class] );
-    $meta->_set_original_class($class);
-    $meta->_set_model($self);
-
-    weaken( my $weak_model = $self );
-    $meta->add_method( model          => sub {$weak_model} );
-    $meta->add_method( original_class => sub {$class} );
-    $meta->make_immutable;
-
-    return $meta->name;
+    $self->_wrap_class($class);
 }
 
 #===================================
 sub wrap_class {
 #===================================
     my $self  = shift;
-    my $class = shift;
+    my $name  = shift || '';
+    my $class = $self->meta->get_class($name)
+        or croak "Unknown class for ($name)";
 
+    $self->_wrap_class($class);
+}
+
+#===================================
+sub _wrap_class {
+#===================================
+    my $self  = shift;
+    my $class = shift;
     load_class($class);
 
-    my $meta = Moose::Meta::Class->create(
-        $self->meta->wrapped_class_name($class),
-        superclasses => [$class],
-        weaken       => 0,
-    );
-
-    $meta = Moose::Util::MetaRole::apply_metaroles(
-        for             => $meta,
-        class_metaroles => { class => ['Elastic::Model::Meta::Class'], }
-    );
-
-    $meta->_set_original_class($class);
-    $meta->_set_model($self);
+    my $meta
+        = Moose::Meta::Class->create( $self->meta->wrapped_class_name($class),
+        superclasses => [$class] );
 
     weaken( my $weak_model = $self );
     $meta->add_method( model          => sub {$weak_model} );
     $meta->add_method( original_class => sub {$class} );
-
     $meta->make_immutable;
+
     return $meta->name;
 }
 

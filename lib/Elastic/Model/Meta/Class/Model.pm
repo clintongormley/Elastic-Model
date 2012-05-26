@@ -44,6 +44,29 @@ for my $k (qw(namespace domain char_filter analyzer filter tokenizer)) {
     };
 }
 
+#===================================
+has 'classes' => (
+#===================================
+    is      => 'ro',
+    isa     => HashRef [Str],
+    traits  => ['Hash'],
+    default => sub {
+        +{  type_map         => 'Elastic::Model::TypeMap::Default',
+            domain           => 'Elastic::Model::Domain',
+            store            => 'Elastic::Model::Store',
+            view             => 'Elastic::Model::View',
+            scope            => 'Elastic::Model::Scope',
+            results          => 'Elastic::Model::Results',
+            scrolled_results => 'Elastic::Model::Results::Scrolled',
+            result           => 'Elastic::Model::Result',
+        };
+    },
+    handles => {
+        set_class   => 'set',
+        get_class   => 'get',
+    }
+);
+
 no Moose;
 
 our %DefaultAnalysis = (

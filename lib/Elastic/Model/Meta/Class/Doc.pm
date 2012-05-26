@@ -1,7 +1,6 @@
 package Elastic::Model::Meta::Class::Doc;
 
 use Moose::Role;
-with 'Elastic::Model::Meta::Class';
 
 use MooseX::Types::Moose qw(HashRef);
 use Carp;
