@@ -4,15 +4,15 @@ use Moose();
 use Moose::Exporter;
 use namespace::autoclean;
 
-Moose::Exporter->build_import_methods(
-    install          => [qw(import unimport init_meta)],
+Moose::Exporter->setup_import_methods(
     base_class_roles => ['Elastic::Model::Role::Doc'],
     with_meta        => ['type_mapping'],
     class_metaroles  => {
         class     => ['Elastic::Model::Meta::Class::Doc'],
         instance  => ['Elastic::Model::Meta::Instance'],
         attribute => ['Elastic::Model::Trait::Field'],
-    }
+    },
+    also => 'Moose',
 );
 
 #===================================
@@ -31,7 +31,6 @@ __END__
 
     package MyApp::User;
 
-    use Moose;
     use Elastic::Doc;
 
     has 'name' => (
@@ -39,12 +38,13 @@ __END__
         isa => 'Str'
     );
 
+    no Elastic::Doc;
+
 
 =head2 More complex class definition
 
     package MyApp::User;
 
-    use Moose;
     use Elastic::Doc;
 
     type_mapping {
@@ -82,6 +82,8 @@ __END__
         isa     => 'Str',
         index   => 'not_analyzed'   # index exact value
     );
+
+    no Elastic::Doc;
 
 =cut
 

@@ -5,21 +5,12 @@ use Moose::Exporter();
 use Carp;
 use namespace::autoclean;
 
-my $init_meta = Moose::Exporter->build_import_methods(
-    install         => [qw(import unimport)],
+Moose::Exporter->setup_import_methods(
     class_metaroles => { class => ['Elastic::Model::Meta::Class::Model'] },
-    with_meta       => [qw(namespace analyzer tokenizer filter char_filter)],
+    with_meta        => [qw(namespace analyzer tokenizer filter char_filter)],
+    base_class_roles => ['Elastic::Model::Role::Model'],
+    also             => 'Moose',
 );
-
-#===================================
-sub init_meta {
-#===================================
-    my $class = shift;
-    my %p     = @_;
-    Moose::Util::ensure_all_roles( $p{for_class},
-        'Elastic::Model::Role::Model' );
-    $class->$init_meta(%p);
-}
 
 #===================================
 sub namespace {
@@ -35,8 +26,7 @@ sub namespace {
     $meta->add_namespace( $name => $types );
 
     my $domains = $params->{domains} || [$name];
-    $meta->add_domain($_ => $name)
-        for ref $domains ? @$domains : $domains;
+    $meta->add_domain( $_ => $name ) for ref $domains ? @$domains : $domains;
 }
 
 #===================================
@@ -61,7 +51,6 @@ as soon as you are ready to use it.
 
     package MyApp;
 
-    use Moose;
     use Elastic::Model;
 
     has_domain 'myapp' => (
@@ -85,6 +74,7 @@ as soon as you are ready to use it.
         filter    => [ 'standard', 'lowercase', 'edge_ngrams' ]
     );
 
+    no Elastic::Model;
 
 
 =head2 Using your model
@@ -100,7 +90,7 @@ as soon as you are ready to use it.
 
 =head3 Create index in elasticsearch
 
-    $domain->index('myapp_1')->create;
+    $domain->admin->create_index;
 
 =head3 Create an object
 
@@ -155,29 +145,33 @@ Your model class is most easily defined as follows:
 
     package MyApp;
 
-    use Moose;
     use Elastic::Model;
 
-    has_domain 'my_domain' => (
+    namespace 'myapp' => (
         types => {
             foo => 'MyApp::Foo',
             bar => 'MyApp::Bar'
-        }
+        },
+        # domains => ['myapp']
     );
+
+    no Elastic::Model;
 
 This applies L<Elastic::Model::Role::Model> to your model,
 L<Elastic::Model::Meta::Model> to your model's metaclass and exports
 functions which help you to configure your model.
 
-A model must define one or more C<domains>, where a domain is like a
-'namespace'.  Initially, a domain corresponds to an C<index> (or database)
-in ElasticSearch, but later on, domains can be used to scale your application
-when a single index is insufficient. See L<Elastic::Model::Manual::Scaling> for
-more.
+Your model must define at least one L<namespace|Elastic::Manual::Terminology/Namespace>,
+which tells Elastic::Model which
+L<type|Elastic::Manual::Terminology/Type> (like a table in a DB) should be
+handled by which of your classes.  So the above declaration says that objects
+of class C<MyApp::User> will be stored in the C<user> type in ElasticSearch.
 
-Each C<domain> must contain one or more C<types> (where a C<type> is like a
-table in a relational database) and the class associated with that type.
-For instance, objects of class C<MyApp::User> might be stored in type C<user>.
+Your model must also define at least one L<domain|Elastic::Manual::Terminology/Domain>
+(which defaults to the C<name> of the namespace). A C<domain> can be an
+L<index|Elastic::Manual::Terminology/Index> (like a database in a relational DB)
+or an L<alias|Elastic::Manual::Terminology/Alias> (which points to one or
+more indices). It doesn't have to exist yet.
 
 =head2 Specifying custom analyzers
 

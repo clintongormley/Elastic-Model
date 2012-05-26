@@ -84,7 +84,6 @@ handles the relationship between your classes and ElasticSearch.
 
     package MyApp;
 
-    use Moose;
     use Elastic::Model;
 
     namespace 'myapp' => (
@@ -94,6 +93,8 @@ handles the relationship between your classes and ElasticSearch.
         # default if not specified:
         # domains => ['myapp'],
     );
+
+    no Elastic::Model;
 
     1;
 
@@ -113,7 +114,6 @@ more indices). It doesn't have to exist yet.
 
     package MyApp::User;
 
-    use Moose;
     use Elastic::Doc;
     use DateTime();
 
@@ -132,6 +132,8 @@ more indices). It doesn't have to exist yet.
         isa     => 'DateTime',
         default => sub { DateTime->now }
     );
+
+    no Elastic::Doc;
 
     1;
 

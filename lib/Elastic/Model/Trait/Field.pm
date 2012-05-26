@@ -297,6 +297,8 @@ __END__
         }
     );
 
+    no Elastic::Doc;
+
 =head1 DESCRIPTION
 
 L<Elastic::Model::Trait::Field> is automatically applied to all of your

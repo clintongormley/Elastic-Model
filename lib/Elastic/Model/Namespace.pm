@@ -49,6 +49,8 @@ __END__
         domains => ['index_1', 'alias_1'...]
     );
 
+    no Elastic::Model;
+
 =head1 DESCRIPTION
 
 L<Elastic::Model::Namespace> maps L<types|Elastic::Manual::Terminology/Type>
