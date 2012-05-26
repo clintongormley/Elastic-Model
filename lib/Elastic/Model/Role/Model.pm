@@ -103,10 +103,8 @@ has '_index_namespace' => (
     traits  => ['Hash'],
     lazy    => 1,
     builder => '_build_index_namespace',
-    handles => {
-        _clear_index_namespace => 'clear',
-        _get_index_namespace   => 'get',
-    }
+    clearer => '_clear_index_namespace',
+    handles => { _get_index_namespace => 'get', }
 );
 
 #===================================
