@@ -86,7 +86,7 @@ handles the relationship between your classes and ElasticSearch.
 
     use Elastic::Model;
 
-    namespace 'myapp' => (
+    has_namespace 'myapp' => (
         types   => {
             user    => 'MyApp::User'
         },

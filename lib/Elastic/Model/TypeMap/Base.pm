@@ -263,7 +263,7 @@ sub class_mapping {
     #        return $handler->(@_);
     #    }
 
-    $attrs ||= $map->indexable_attrs( $class );
+    $attrs ||= $map->indexable_attrs($class);
 
     my %props = map { $_ => $map->attribute_mapping( $attrs->{$_} ) }
         keys %$attrs;

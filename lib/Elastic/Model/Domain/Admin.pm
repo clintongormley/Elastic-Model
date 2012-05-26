@@ -407,7 +407,7 @@ Creates an index called C<$name> (which defaults to C<< $domain->name >>).
 The L<type mapping|Elastic::Manual::Terminology/Mapping> is automatically
 generated from the attributes of your doc classes listed in the domain's
 L<namespace|Elastic::Model::Domain/namespace>.  Similarly, any
-L<custom analyzers|Elastic::Model/"Specifying custom analyzers"> required
+L<custom analyzers|Elastic::Model/"Custom analyzers"> required
 by your classes are added to the index
 L<%settings|http://www.elasticsearch.org/guide/reference/api/admin-indices-update-settings.html>
 that you pass in:

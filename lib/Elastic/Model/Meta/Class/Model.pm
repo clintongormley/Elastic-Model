@@ -14,6 +14,7 @@ my %defaults = (
 
 for my $k (qw(namespace domain char_filter analyzer filter tokenizer)) {
     my %default = %{ $defaults{$k} || {} };
+
 #===================================
     has "${k}s" => (
 #===================================

@@ -41,7 +41,7 @@ __END__
 
     use Elastic::Model;
 
-    namespace 'myapp', (
+    has_namespace 'myapp', (
         types   => {
             user    => 'MyApp::User',
             post    => 'MyApp::Post',

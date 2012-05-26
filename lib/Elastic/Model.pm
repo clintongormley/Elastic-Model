@@ -7,13 +7,16 @@ use namespace::autoclean;
 
 Moose::Exporter->setup_import_methods(
     class_metaroles => { class => ['Elastic::Model::Meta::Class::Model'] },
-    with_meta        => [qw(namespace analyzer tokenizer filter char_filter)],
+    with_meta       => [
+        qw(has_namespace has_type_map override_classes
+            has_analyzer has_tokenizer has_filter has_char_filter)
+    ],
     base_class_roles => ['Elastic::Model::Role::Model'],
     also             => 'Moose',
 );
 
 #===================================
-sub namespace {
+sub has_namespace {
 #===================================
     my $meta   = shift;
     my $name   = shift or croak "No namespace name passed to namespace";
@@ -30,10 +33,26 @@ sub namespace {
 }
 
 #===================================
-sub analyzer    { shift->add_analyzer( shift,    {@_} ) }
-sub tokenizer   { shift->add_tokenizer( shift,   {@_} ) }
-sub filter      { shift->add_filter( shift,      {@_} ) }
-sub char_filter { shift->add_char_filter( shift, {@_} ) }
+sub has_type_map { shift->set_class( 'type_map', @_ ) }
+#===================================
+
+#===================================
+sub override_classes {
+#===================================
+    my $meta = shift;
+    my %classes = ref $_[0] eq 'HASHREF' ? %{ shift() } : @_;
+    for ( keys %classes ) {
+        croak "Unknown arg for classes ($_)"
+            unless $meta->get_class($_);
+        $meta->set_class( $_ => $classes{$_} );
+    }
+}
+
+#===================================
+sub has_analyzer    { shift->add_analyzer( shift,    {@_} ) }
+sub has_tokenizer   { shift->add_tokenizer( shift,   {@_} ) }
+sub has_filter      { shift->add_filter( shift,      {@_} ) }
+sub has_char_filter { shift->add_char_filter( shift, {@_} ) }
 #==================================
 
 1;
@@ -47,29 +66,36 @@ ElasticSearch as a backend.  It aims to Do the Right Thing with minimal
 extra code, but allows you to benefit from the full power of ElasticSearch
 as soon as you are ready to use it.
 
+=head1 INTRODUCTION TO Elastic::Model
+
+If you are not familiar with L<Elastic::Model>, you should start by reading
+L<Elastic::Manual::Intro>.
+
 =head1 SYNOPSIS
 
     package MyApp;
 
     use Elastic::Model;
 
-    has_domain 'myapp' => (
+    has_namespace 'myapp' => (
         types => {
             user => 'MyApp::User',
             post => 'MyApp::Post'
-        }
+        },
+        # domains => ['myapp']
     );
 
+    has_type_map 'MyApp::TypeMap';
 
     # Setup custom analyzers
 
-    filter 'edge_ngrams' => (
+    has_filter 'edge_ngrams' => (
         type     => 'edgeNGram',
         min_gram => 2,
         max_gram => 10
     );
 
-    analyzer 'edge_ngrams' => (
+    has_analyzer 'edge_ngrams' => (
         tokenizer => 'standard',
         filter    => [ 'standard', 'lowercase', 'edge_ngrams' ]
     );
@@ -147,7 +173,7 @@ Your model class is most easily defined as follows:
 
     use Elastic::Model;
 
-    namespace 'myapp' => (
+    has_namespace 'myapp' => (
         types => {
             foo => 'MyApp::Foo',
             bar => 'MyApp::Bar'
@@ -173,7 +199,20 @@ L<index|Elastic::Manual::Terminology/Index> (like a database in a relational DB)
 or an L<alias|Elastic::Manual::Terminology/Alias> (which points to one or
 more indices). It doesn't have to exist yet.
 
-=head2 Specifying custom analyzers
+=head2 Custom TypeMap
+
+Elastic::Model uses a L<TypeMap|Elastic::Model::TypeMap::Default> to figure
+out how to inflate and deflate your objects, and how to configure them
+in ElasticSearch.
+
+You can specify your own TypeMap using:
+
+    has_type_map 'MyApp::TypeMap';
+
+See L<Elastic::Model::TypeMap::Base> for instructions on how to define
+your own type-map classes.
+
+=head2 Custom analyzers
 
 Analysis is the process of converting full text into C<terms> or C<tokens> and
 is one of the things that gives full text search its power.  When storing text
@@ -205,38 +244,38 @@ zero or more token filters
 
 L<Elastic::Model> provides sugar to make it easy to specify custom analyzers:
 
-=head3 char_filter
+=head3 has_char_filter
 
 Character filters can change the text before it gets tokenized, for instance:
 
-    char_filter 'my_mapping' => (
+    has_char_filter 'my_mapping' => (
         type        => 'mapping',
         mappings    => ['ph=>f','qu=>q']
     );
 
-=head3 tokenizer
+=head3 has_tokenizer
 
 A tokenizer breaks up the text into individual tokens or terms. For instance,
 the C<pattern> tokenizer could be used to split text using a regex:
 
-    tokenizer 'my_word_tokenizer' => (
+    has_tokenizer 'my_word_tokenizer' => (
         type        => 'pattern',
         pattern     => '\W+',          # splits on non-word chars
     );
 
-=head3 filter
+=head3 has_filter
 
 Any terms/tokens produced by the L</"tokenizer"> can the be passed through
 multiple token filters.  For instance, each term could be broken down into
 "edge ngrams" (eg 'foo' => 'f','fo','foo') for partial matching.
 
-    filter 'my_ngrams' => (
+    has_filter 'my_ngrams' => (
         type        => 'edgeNGram',
         min_gram    => 1,
         max_gram    => 10,
     );
 
-=head3 analyzer
+=head3 has_analyzer
 
 Custom analyzers can be defined by combining character filters, a tokenizer and
 token filters, some of which could be built-in, and some defined by the
@@ -244,36 +283,53 @@ keywords above.
 
 For instance:
 
-    analyzer 'partial_word_analyzer' => (
+    has_analyzer 'partial_word_analyzer' => (
         type        => 'custom',
         char_filter => ['my_mapping'],
         tokenizer   => ['my_word_tokenizer'],
         filter      => ['lowercase','stop','my_ngrams']
     );
 
+=head2 Overriding Core Classes
 
-=cut
+If you would like to override any of the core classes used by L<Elastic::Model>,
+then you can do so as follows:
 
-=head1 SEE ALSO
+    override_classes (
+        domain  => 'MyApp::Domain',
+        store   => 'MyApp::Store'
+    );
 
-=head1 TODO
+The defaults are:
 
-=head1 BUGS
+=over
 
-None known
+=item *
 
-=head1 AUTHOR
+C<domain> C<--------------> L<Elastic::Model::Domain>
 
-Clinton Gormley, E<lt>clinton@traveljury.comE<gt>
+=item *
 
-=head1 COPYRIGHT AND LICENSE
+C<store> C<---------------> L<Elastic::Model::Store>
 
-Copyright (C) 2011 by Clinton Gormley
+=item *
 
-This library is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself, either Perl version 5.8.7 or,
-at your option, any later version of Perl 5 you may have available.
+C<view> C<----------------> L<Elastic::Model::View>
 
+=item *
 
-=cut
+C<scope> C<---------------> L<Elastic::Model::Scope>
 
+=item *
+
+C<results> C<-------------> L<Elastic::Model::Results>
+
+=item *
+
+C<scrolled_results> C<----> L<Elastic::Model::Results::Scrolled>
+
+=item *
+
+C<result> C<--------------> L<Elastic::Model::Result>
+
+=back

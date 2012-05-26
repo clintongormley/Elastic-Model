@@ -469,17 +469,6 @@ connection to C<localhost:9200>.
 
     $model = MyApp->new();   # localhost:9200
 
-If you want to use a different TypeMap than L<Elastic::Model::TypeMap::Default>,
-then you can do:
-
-    $model = MyApp->new(
-        es        => $es,
-        type_map  => 'MyApp::TypeMap'
-    );
-
-See L</"Overriding Core Classes"> for more parameters that can be passed to
-L</"new()">.
-
 =head2 domain()
 
     $domain = $model->domain($name);
@@ -597,6 +586,20 @@ Passes C<%args> through to L<Elastic::Model::Store/"search()">
 
 =head2 Deflation, Inflation And Mapping
 
+=head3 type_map
+
+    $typemap_class = $model->type_map;
+
+Elastic::Model uses L<Elastic::Model::TypeMap::Default> (after
+L<wrapping|/wrap_class()> it) to figure out how
+to deflate and inflate your objects, and how to configure (map) them in
+ElasticSearch.
+
+You can specify your own type-map class in your model configuration with
+L<has_type_map|Elastic::Model/Custom TypeMap>. See
+L<Elastic::Model::TypeMap::Base> for instructions on how to define
+your own type-map classes.
+
 =head3 deflator_for_class()
 
     $deflator = $model->deflator_for_class($class);
@@ -686,22 +689,23 @@ exists.
 
 Clears the L</"current_scope()">
 
-=head2 Overriding Core Classes
 
-If you would like to override any of the core classes used by L<Elastic::Model>,
-then you can pass the new class name as a parameter to L</"new()">.
+=head2 Core classes
 
-The class you are most likely to override is the
-L<type_map|Elastic::Model::TypeMap::Default>, in order to define your own
-deflators, inflators and mappings.
+The following core classes are used internally by ElasticSearch, after
+being wrapped by L</wrap_class()>, which pins the new anonymous class
+to the current C<$model> instance. An instance of the wrapped class
+can be created with, eg:
 
-=head3 Default core classes
+    $domain = $model->domain_class->new(%args);
+
+If you would like to override any of the core classes, then you can specify
+them in your model setup using
+L<override_classes|Elastic::Model/Overriding Core Classes>.
+
+=head3 Default core classes:
 
 =over
-
-=item *
-
-C<type_map> C<------------------> L<Elastic::Model::TypeMap::Default>
 
 =item *
 
@@ -733,30 +737,21 @@ C<result_class> C<--------------> L<Elastic::Model::Result>
 
 =back
 
-These classes are L<wrapped|/"wrap_class()"> to pin them to the current
-C<$model> and the wrapped class names are accessible via methods of the same
-name, eg:
-
-    $wrapped_class = $model->type_map;
-    $wrapped_class = $model->scope_class;
-
 =head3 wrap_class()
 
     $wrapped_class = $model->wrap_class($class)
 
-Wraps a class in an anonymous class and stores the current C<$model> in
-the wrapped class' metaclass, allowing a class to do:
+Wraps a class in an anonymous class and adds two methods: C<model()> (which
+returns the current C<$model> instance, and C<original_class())>, which
+returns the name of the wrapped class:
 
     $model = $wrapped_class->model
-    $class = $wrapped_class->meta->original_class;
+    $class = $wrapped_class->original_class;
 
 =head3 wrap_doc_class()
 
 Like L</"wrap_class()">, but specifically for classes which do
-L<Elastic::Model::Role::Doc>. It doesn't add C<model()> to the wrapped
-class. Instead, that class can access the C<$model> by doing:
-
-    $model = $wrapped_class->meta->model
+L<Elastic::Model::Role::Doc>.
 
 =head3 doc_class_wrappers
 

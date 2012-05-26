@@ -80,5 +80,5 @@ L<Elastic::Model::Typemap::Common>
 =head1 DEFINING YOUR OWN TYPE MAP
 
 See L<Elastic::Model::TypeMap::Base> for instructions on how to define
-your own type-maps
+your own type-map classes.
 
