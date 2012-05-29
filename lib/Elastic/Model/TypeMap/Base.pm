@@ -268,11 +268,12 @@ sub class_mapping {
     my %props = map { $_ => $map->attribute_mapping( $attrs->{$_} ) }
         keys %$attrs;
 
-    my $meta = $class->meta;
-    my $dynamic = $meta->can('dynamic') && $meta->dynamic || 'strict';
+    return ( type => 'object', enabled => 0 )
+        unless %props;
+
     return (
         type       => 'object',
-        dynamic    => $dynamic,
+        dynamic    => 'strict',
         properties => \%props
     );
 }

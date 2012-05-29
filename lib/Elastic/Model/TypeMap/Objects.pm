@@ -12,16 +12,21 @@ has_type 'Moose::Meta::TypeConstraint::Class',
     inflate_via { _inflate_class(@_) },
     map_via { _map_class(@_) };
 
+#TODO: Moose role
+# dynamic-off, map known attr
+# all attributes
+# __CLASS__
+
 #===================================
 has_type 'Moose::Meta::TypeConstraint::Role',
 #===================================
     deflate_via {undef}, inflate_via {undef};
 
 #===================================
-has_type 'Object',    ### TODO: Completely broken, needs rewriting
+has_type 'Object',
 #===================================
-    deflate_via {     ## TODO: Object deflator/inflator
-    sub {             ## Moose class?
+    deflate_via {
+    sub {
         my $obj = shift;
         my $ref = ref $obj;
 
@@ -47,12 +52,7 @@ has_type 'Object',    ### TODO: Completely broken, needs rewriting
         }
     },
 
-    map_via {
-    (   type       => 'object',
-        dynamic    => 1,
-        properties => { __CLASS__ => { type => 'string', index => 'no' } }
-    );
-    };
+    map_via { type => 'object', enabled => 0 };
 
 #===================================
 sub _deflate_class {
@@ -62,9 +62,6 @@ sub _deflate_class {
     if ( my $handler = $map->deflators->{$class} ) {
         return $handler->(@_);
     }
-
-    die "Class $class is not a Moose class and no deflator is defined."
-        unless $class->isa('Moose::Object');
 
     my $attrs = _class_attrs( $map, $class, $attr );
 
@@ -116,13 +113,8 @@ sub _map_class {
         return $handler->(@_);
     }
 
-# TODO: This is wrong. Should not check for Moose::Object, just get a list
-# of attributes
-    die "Class $class is not a Moose class and no mapper is defined."
-        unless $class->isa('Moose::Object');
-
     return ( type => 'object', enabled => 0 )
-        if $attr->has_enabled && !$attr->enabled;
+        if $attr->can('has_enabled') && $attr->has_enabled && !$attr->enabled;
 
     my $attrs = _class_attrs( $map, $class, $attr );
     return $map->class_mapping( $class, $attrs );
@@ -134,15 +126,12 @@ sub _class_attrs {
     my ( $map, $class, $attr ) = @_;
 
     $class = $map->model->class_for($class) || $class;
-    my $meta = $class->meta;
-
-    return { map { $_->name => $_ } $meta->get_all_attributes }
-        unless does_role( $meta, 'Elastic::Model::Meta::Class::Doc' );
+    my $meta = Class::MOP::Class->initialize($class);
 
     my %attrs;
 
-    my $inc = $attr->include_attrs;
-    my $exc = $attr->exclude_attrs;
+    my $inc = $attr->can('include_attrs') && $attr->include_attrs;
+    my $exc = $attr->can('exclude_attrs') && $attr->exclude_attrs;
 
     my @inc_attr = $inc
         ? map {
@@ -151,10 +140,14 @@ sub _class_attrs {
         } @$inc
         : $meta->get_all_attributes;
 
-    %attrs = map { $_->name => $_ } grep { !$_->exclude } @inc_attr;
+    %attrs = map { $_->name => $_ }
+        grep { !( $_->can('exclude') && $_->exclude ) } @inc_attr;
+
     delete @attrs{@$exc} if $exc;
 
-    $attrs{uid} = $meta->find_attribute_by_name('uid');
+    if ( my $uid = $meta->find_attribute_by_name('uid') ) {
+        $attrs{uid} = $uid;
+    }
 
     return \%attrs;
 }

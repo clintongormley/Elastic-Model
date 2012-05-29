@@ -6,14 +6,16 @@ use namespace::autoclean;
 #===================================
 has_type 'Any',
 #===================================
-    deflate_via {undef}, inflate_via {undef};
+    deflate_via { \&_pass_through },
+    inflate_via { \&_pass_through },
+    map_via { type => 'object', enabled => 0 };
 
 #===================================
-has_type 'Item',
+has_type 'Undef',
 #===================================
     deflate_via { \&_pass_through },
     inflate_via { \&_pass_through },
-    map_via { type => 'string', index => 'no' };
+    map_via { type => 'string', index => 'not_analyzed' };
 
 #===================================
 has_type 'Bool',
@@ -34,11 +36,6 @@ has_type 'Num',
 has_type 'Int',
 #===================================
     map_via { type => 'long' };
-
-#===================================
-has_type 'Ref',
-#===================================
-    deflate_via {undef}, inflate_via {undef};
 
 #===================================
 has_type 'ScalarRef',
@@ -95,6 +92,13 @@ has_type 'Moose::Meta::TypeConstraint::Enum',
     map_via { type => 'string', index => 'not_analyzed' };
 
 #===================================
+has_type 'Moose::Meta::TypeConstraint::Union',
+#===================================
+    deflate_via { \&_pass_through },    #
+    inflate_via { \&_pass_through },
+    map_via { type => 'object', enabled => 0 };
+
+#===================================
 has_type 'MooseX::Types::TypeDecorator',
 #===================================
     deflate_via { _decorated( 'deflator', @_ ) },
@@ -126,6 +130,7 @@ sub _flate_array {
 sub _flate_hash {
 #===================================
     my $content = _content_handler(@_) or return;
+
     # TODO: This is wrong
     # A hashref could have loads of different keys. Should we
     # auto-add fields with a template, or just serialize the hash?
@@ -170,8 +175,9 @@ sub _parameterized {
 sub _content_handler {
 #===================================
     my ( $type, $tc, $attr, $map ) = @_;
-    return unless $tc->can('type_parameter');
-    return $map->find( $type, $tc->type_parameter, $attr );
+    return $tc->can('type_parameter')
+        ? $map->find( $type, $tc->type_parameter, $attr )
+        : ( type => 'object', enabled => 0 );
 }
 
 1;

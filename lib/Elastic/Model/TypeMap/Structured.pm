@@ -4,6 +4,13 @@ use Elastic::Model::TypeMap::Base qw(:all);
 use namespace::autoclean;
 
 #===================================
+has_type 'MooseX::Meta::TypeConstraint::Structured',
+#===================================
+    deflate_via { _structured( 'deflator', @_ ) },
+    inflate_via { _structured( 'inflator', @_ ) },
+    map_via { _structured( 'mapper', @_ ) };
+
+#===================================
 has_type 'MooseX::Types::Structured::Optional',
 #===================================
     deflate_via { _flate_optional( 'deflator', @_ ) },
@@ -13,7 +20,9 @@ has_type 'MooseX::Types::Structured::Optional',
 #===================================
 has_type 'MooseX::Types::Structured::Tuple',
 #===================================
-    deflate_via { \&_deflate_tuple }, inflate_via { \&_inflate_tuple };
+    deflate_via { \&_deflate_tuple },
+    inflate_via { \&_inflate_tuple },
+    map_via \&_map_tuple;
 
 #===================================
 has_type 'MooseX::Types::Structured::Dict',
@@ -27,7 +36,7 @@ has_type 'MooseX::Types::Structured::Dict',
     },
 
     map_via {
-    sub { _map_dict( shift->type_constraints, @_ ) }
+    _map_dict( { @{ shift->type_constraints } }, @_ );
     };
 
 #===================================
@@ -35,8 +44,9 @@ has_type 'MooseX::Types::Structured::Map',
 #===================================
     deflate_via { _flate_map( 'deflator', @_ ) },
     inflate_via { _flate_map( 'inflator', @_ ) },
-    map_via {_map_hash};
-    ## TODO: _map_map - should be like hashref
+    map_via { type => 'object', enabled => 0 };
+
+## TODO: _map_map - should be like hashref
 
 #===================================
 sub _deflate_tuple {
@@ -109,6 +119,7 @@ sub _flate_map {
 sub _flate_optional {
 #===================================
     my $content = _content_handler(@_) or return;
+
     # TODO: Check whether a missing optional value eg in a hashref or
     # a map or dict remains missing or is replaced with undef
     sub {
@@ -124,13 +135,25 @@ sub _map_dict {
     my %properties;
     for ( keys %$tcs ) {
         my $tc = $tcs->{$_};
-        $properties{$_} = { $map->mapper( $tc, $attr ) };
+        $properties{$_} = { $map->find( 'mapper', $tc, $attr ) };
     }
     return (
         type       => 'object',
         dynamic    => 'strict',
         properties => \%properties
     );
+}
+
+#===================================
+sub _structured {
+#===================================
+    my ( $type, $tc, $attr, $map ) = @_;
+    my $types  = $type . 's';
+    my $parent = $tc->parent;
+    if ( my $handler = $map->$types->{ $parent->name } ) {
+        return $handler->( $tc, $attr, $map );
+    }
+    $map->find( $type, $parent, $attr );
 }
 
 #===================================
