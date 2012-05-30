@@ -13,26 +13,26 @@ has_type 'MooseX::Meta::TypeConstraint::Structured',
 #===================================
 has_type 'MooseX::Types::Structured::Optional',
 #===================================
-    deflate_via { _flate_optional( 'deflator', @_ ) },
-    inflate_via { _flate_optional( 'inflator', @_ ) },
+    deflate_via { _content_handler( 'deflator', @_ ) },
+    inflate_via { _content_handler( 'inflator', @_ ) },
     map_via { _content_handler( 'mapper', @_ ) };
 
 #===================================
 has_type 'MooseX::Types::Structured::Tuple',
 #===================================
-    deflate_via { \&_deflate_tuple },
-    inflate_via { \&_inflate_tuple },
-    map_via \&_map_tuple;
+    deflate_via { _deflate_tuple(@_) },    #
+    inflate_via { _inflate_tuple(@_) },    #
+    map_via { _map_dict( _tuple_to_dict(shift), @_ ) };
 
 #===================================
 has_type 'MooseX::Types::Structured::Dict',
 #===================================
     deflate_via {
-    sub { _flate_dict( 'deflator', shift->type_constraints, @_ ) }
+    _flate_dict( 'deflator', { @{ shift->type_constraints } }, @_ );
     },
 
     inflate_via {
-    sub { _flate_dict( 'inflator', shift->type_constraints, @_ ) }
+    _flate_dict( 'inflator', { @{ shift->type_constraints } }, @_ );
     },
 
     map_via {
@@ -46,12 +46,11 @@ has_type 'MooseX::Types::Structured::Map',
     inflate_via { _flate_map( 'inflator', @_ ) },
     map_via { type => 'object', enabled => 0 };
 
-## TODO: _map_map - should be like hashref
-
 #===================================
 sub _deflate_tuple {
 #===================================
     my $dict = _tuple_to_dict(shift);
+    return \&_pass_through unless %$dict;
     my $deflator = _flate_dict( 'deflator', $dict, @_, );
 
     return sub {
@@ -66,18 +65,12 @@ sub _deflate_tuple {
 sub _inflate_tuple {
 #===================================
     my $dict = _tuple_to_dict(shift);
+    return \&_pass_through unless %$dict;
     my $inflator = _flate_dict( 'inflator', $dict, @_ );
     sub {
         my $hash = $inflator->(@_);
         [ @{$hash}{ 0 .. keys(%$hash) - 1 } ];
     };
-}
-
-#===================================
-sub _map_tuple {
-#===================================
-    my $dict = _tuple_to_dict(shift);
-    return _map_dict( $dict, @_ );
 }
 
 #===================================
@@ -91,40 +84,21 @@ sub _tuple_to_dict {
 sub _flate_dict {
 #===================================
     my ( $type, $dict, $attr, $map ) = @_;
+
+    return \&_pass_through unless %$dict;
+
     my %flators;
 
     for my $key ( keys %$dict ) {
-        my $tc = $dict->{$key};
-        $flators{$key} = $map->find( $type, $tc, $attr );
+        $flators{$key} = $map->find( $type, $dict->{$key}, $attr )
+            || die "No $type found for key ($key)";
     }
-    sub {
-        my ( $hash, $model ) = @_;
-        +{ map { $_ => $flators{$_}->( $hash->{$_}, $model ) } keys %$hash };
-    };
-}
 
-#===================================
-sub _flate_map {
-#===================================
-    my $content = _content_handler(@_) or return;
     sub {
         my ( $hash, $model ) = @_;
-        {
-            map { $_ => $content->( $hash->{$_}, $model ) } %$hash
+        +{  map { $_ => $flators{$_}->( $hash->{$_}, $model ) }
+            grep { exists $flators{$_} } keys %$hash
         };
-    };
-}
-
-#===================================
-sub _flate_optional {
-#===================================
-    my $content = _content_handler(@_) or return;
-
-    # TODO: Check whether a missing optional value eg in a hashref or
-    # a map or dict remains missing or is replaced with undef
-    sub {
-        my ( $val, $model ) = @_;
-        return defined $val ? $content->( $val, $model ) : undef;
     };
 }
 
@@ -132,16 +106,49 @@ sub _flate_optional {
 sub _map_dict {
 #===================================
     my ( $tcs, $attr, $map ) = @_;
+
+    return ( type => 'object', enabled => 0 )
+        unless %$tcs;
+
     my %properties;
     for ( keys %$tcs ) {
-        my $tc = $tcs->{$_};
-        $properties{$_} = { $map->find( 'mapper', $tc, $attr ) };
+        my %key_mapping = $map->find( 'mapper', $tcs->{$_}, $attr );
+        die "Couldn't find mapping for key $_"
+            unless %key_mapping;
+        $properties{$_} = \%key_mapping;
     }
     return (
         type       => 'object',
         dynamic    => 'strict',
         properties => \%properties
     );
+}
+
+#===================================
+sub _flate_map {
+#===================================
+    my ( $type, $tc, $attr, $map ) = @_;
+
+    my $tcs = $tc->type_constraints || [];
+    my $content_tc = $tcs->[1]
+        or return \&_pass_through;
+
+    my $content = $map->find( $type, $content_tc, $attr ) or return;
+
+    sub {
+        my ( $hash, $model ) = @_;
+        +{ map { $_ => $content->( $hash->{$_}, $model ) } keys %$hash };
+    };
+}
+
+#===================================
+sub _flate_optional {
+#===================================
+    my $content = _content_handler(@_) or return;
+    sub {
+        my ( $val, $model ) = @_;
+        return defined $val ? $content->( $val, $model ) : undef;
+    };
 }
 
 #===================================
@@ -160,9 +167,16 @@ sub _structured {
 sub _content_handler {
 #===================================
     my ( $type, $tc, $attr, $map ) = @_;
-    return unless $tc->can('type_parameter');
-    return $map->find( $type, $tc->type_parameter, $attr );
+    return $tc->can('type_parameter')
+        ? $map->find( $type, $tc->type_parameter, $attr )
+        : $type eq 'mapper' ? ( type => 'object', enabled => 0 )
+        :                     \&_pass_through;
 }
+
+#===================================
+sub _pass_through { $_[0] }
+#===================================
+
 1;
 
 __END__

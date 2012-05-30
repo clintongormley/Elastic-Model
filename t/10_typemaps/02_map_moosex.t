@@ -29,7 +29,7 @@ our @mapping    = (
     'regexp_ref'     => { type => 'string', index   => 'no' },
     'num'            => { type => 'float' },
     'int'            => { type => 'long' },
-    'type'           => { type => 'object', enabled => 0 },
+    'type' => qr/No mapper found/,
 );
 
 do 't/10_typemaps/test_mapping.pl' or die $!;

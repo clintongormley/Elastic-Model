@@ -58,6 +58,8 @@ has_type 'Object',
 sub _deflate_class {
 #===================================
     my ( $tc, $attr, $map ) = @_;
+    return if $tc->is_a_type_of('MooseX::Types::UndefinedType');
+
     my $class = $tc->name;
     if ( my $handler = $map->deflators->{$class} ) {
         return $handler->(@_);
@@ -74,12 +76,11 @@ sub _deflate_class {
 sub _inflate_class {
 #===================================
     my ( $tc, $attr, $map ) = @_;
+    return if $tc->is_a_type_of('MooseX::Types::UndefinedType');
+
     my $class = $tc->name;
 
     my $custom = $map->inflators->{$class};
-
-    die "Class $class is not a Moose class and no inflator is defined."
-        unless $custom || $class->isa('Moose::Object');
 
     my $attr_inflator;
 
@@ -107,6 +108,7 @@ sub _inflate_class {
 sub _map_class {
 #===================================
     my ( $tc, $attr, $map ) = @_;
+    return if $tc->is_a_type_of('MooseX::Types::UndefinedType');
 
     my $class = $tc->name;
     if ( my $handler = $map->mappers->{$class} ) {

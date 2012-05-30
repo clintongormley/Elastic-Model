@@ -102,7 +102,8 @@ sub find {
     if ( my $handler = $handlers->{$name} || $handlers->{ ref $tc } ) {
         return $handler->( $tc, $attr, $map );
     }
-    my $parent = $tc->parent or return;
+
+    my $parent = $tc->can('parent') && $tc->parent or return;
     $map->find( $type, $parent, $attr );
 }
 

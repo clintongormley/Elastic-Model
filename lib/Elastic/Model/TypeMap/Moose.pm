@@ -13,8 +13,6 @@ has_type 'Any',
 #===================================
 has_type 'Undef',
 #===================================
-    deflate_via { \&_pass_through },
-    inflate_via { \&_pass_through },
     map_via { type => 'string', index => 'not_analyzed' };
 
 #===================================
@@ -41,7 +39,7 @@ has_type 'Int',
 has_type 'ScalarRef',
 #===================================
     deflate_via {
-    sub { $$_[0] }
+    sub { ${ $_[0] } }
     },
 
     inflate_via {
@@ -51,16 +49,25 @@ has_type 'ScalarRef',
     map_via { _content_handler( 'mapper', @_ ) };
 
 #===================================
+has_type 'CodeRef',
+#===================================
+    deflate_via {undef}, inflate_via {undef};
+
+#===================================
+has_type 'GlobRef',
+#===================================
+    deflate_via {undef}, inflate_via {undef};
+
+#===================================
+has_type 'FileHandle',
+#===================================
+    deflate_via {undef}, inflate_via {undef};
+
+#===================================
 has_type 'RegexpRef',
 #===================================
-    deflate_via {
-    sub {"$_[0]"}
-    },
-
-    inflate_via {
-    sub {qr/$_[0]/}
-    },
-
+    deflate_via {undef},
+    inflate_via {undef},
     map_via { type => 'string', index => 'no' };
 
 #===================================
@@ -94,8 +101,8 @@ has_type 'Moose::Meta::TypeConstraint::Enum',
 #===================================
 has_type 'Moose::Meta::TypeConstraint::Union',
 #===================================
-    deflate_via { \&_pass_through },    #
-    inflate_via { \&_pass_through },
+    deflate_via {undef},
+    inflate_via {undef},
     map_via { type => 'object', enabled => 0 };
 
 #===================================
@@ -130,14 +137,10 @@ sub _flate_array {
 sub _flate_hash {
 #===================================
     my $content = _content_handler(@_) or return;
-
-    # TODO: This is wrong
-    # A hashref could have loads of different keys. Should we
-    # auto-add fields with a template, or just serialize the hash?
     sub {
-        {
-            my ( $hash, $model ) = @_;
-            map { $content->( $_, $model ) } %$hash
+        my ( $hash, $model ) = @_;
+        +{
+            map { $_ => $content->( $hash->{$_}, $model ) } keys %$hash
         };
     };
 }
@@ -177,7 +180,8 @@ sub _content_handler {
     my ( $type, $tc, $attr, $map ) = @_;
     return $tc->can('type_parameter')
         ? $map->find( $type, $tc->type_parameter, $attr )
-        : ( type => 'object', enabled => 0 );
+        : $type eq 'mapper' ? ( type => 'object', enabled => 0 )
+        :                     \&_pass_through;
 }
 
 1;

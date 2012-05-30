@@ -17,14 +17,16 @@ our ( $test_class, @mapping );
 my $model = new_ok 'TypeTest';
 isa_ok my $tm = $model->type_map, 'Elastic::Model::TypeMap::Base';
 
+note '';
 note "Mapping for $test_class";
 
 does_ok my $class = $model->class_for($test_class),
     'Elastic::Model::Role::Doc';
 
 my $meta = $class->meta;
+
 while (@mapping) {
-    test_mapping( $meta, shift @mapping, shift @mapping );
+    test_mapping( $meta, splice @mapping, 0, 2 );
 }
 
 note '';
@@ -38,6 +40,7 @@ sub test_mapping {
     ok my $attr = $meta->find_attribute_by_name($name), "Has attr: $name";
     return unless $attr;
 
+#   use Data::Dump qw(pp); pp(eval {+{$name=> {$tm->find_mapper($attr)}}}||$@);
     if ( ref($test) eq 'HASH' ) {
         is_deeply eval { +{ $tm->find_mapper($attr) } } || $@, $test,
             "Mapping:  $name";
