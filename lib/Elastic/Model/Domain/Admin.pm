@@ -3,6 +3,7 @@ package Elastic::Model::Domain::Admin;
 use Moose;
 use MooseX::Types::Moose qw(Str);
 use Carp;
+
 use namespace::autoclean;
 
 #===================================
@@ -34,7 +35,8 @@ sub _index_config {
 
     my $index    = delete $settings->{index};
     my $mappings = $self->mappings();
-    my $analysis = $self->model->meta->analysis_for_mappings($mappings);
+    my $meta     = Class::MOP::class_of( $self->model );
+    my $analysis = $meta->analysis_for_mappings($mappings);
 
     return {
         index    => $index,

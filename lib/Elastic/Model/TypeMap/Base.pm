@@ -340,7 +340,8 @@ sub indexable_attrs {
     my $map   = shift;
     my $class = shift;
     $class = $map->model->class_for($class) || $class;
-    my $meta = $class->meta;
+
+    my $meta = Class::MOP::class_of($class);
 
     return {
         map { $_->name => $_ }

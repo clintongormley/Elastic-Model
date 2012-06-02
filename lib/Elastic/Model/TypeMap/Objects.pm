@@ -128,7 +128,10 @@ sub _class_attrs {
     my ( $map, $class, $attr ) = @_;
 
     $class = $map->model->class_for($class) || $class;
-    my $meta = Class::MOP::Class->initialize($class);
+
+    my $meta = Class::MOP::class_of($class);
+    die "Class ($class) is not a Moose class\n"
+        unless $meta && $meta->isa('Moose::Meta::Class');
 
     my %attrs;
 

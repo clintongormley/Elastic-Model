@@ -209,7 +209,7 @@ sub post_filterb {
 no Moose;
 
 #===================================
-sub _build_index_names { [ shift->model->meta->all_domains ] }
+sub _build_index_names { [ Class::MOP::class_of(shift->model)->all_domains ] }
 #===================================
 
 #===================================

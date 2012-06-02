@@ -136,7 +136,7 @@ sub _die_no_scope { croak "There is no current_scope" }
 sub _build_namespaces {
 #===================================
     my $self = shift;
-    my $conf = $self->meta->namespaces;
+    my $conf = Class::MOP::class_of($self)->namespaces;
     my %namespaces;
 
     while ( my ( $name, $types ) = each %$conf ) {
@@ -154,9 +154,9 @@ sub _build_namespaces {
 sub _build_doc_class_wrappers {
 #===================================
     my $self       = shift;
-    my $namespaces = $self->meta->namespaces;
+    my $namespaces = Class::MOP::class_of($self)->namespaces;
     +{  map { $_ => $self->wrap_doc_class($_) }
-        map { values %$_ } values %{ $self->meta->namespaces }
+        map { values %$_ } values %$namespaces
     };
 }
 
@@ -164,7 +164,7 @@ sub _build_doc_class_wrappers {
 sub _build_index_namespace {
 #===================================
     my $self    = shift;
-    my $domains = $self->meta->domains;
+    my $domains = Class::MOP::class_of($self)->domains;
 
     my %namespaces;
     push @{ $namespaces{ $domains->{$_} } }, $_ for keys %$domains;
@@ -232,7 +232,8 @@ sub _wrap_class {
     load_class($class);
 
     my $meta
-        = Moose::Meta::Class->create( $self->meta->wrapped_class_name($class),
+        = Moose::Meta::Class->create(
+        Class::MOP::class_of($self)->wrapped_class_name($class),
         superclasses => [$class] );
 
     weaken( my $weak_model = $self );
