@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-our $test_class = 'TypeTest::Object';
+our $test_class = 'TypeTest::Objects';
 
 my $uid = uid();
 our @mapping = (
@@ -82,7 +82,7 @@ our @mapping = (
         },
     },
 
-    'non_moose' => { enabled => 0, type => "object" },
+    'non_moose' => qr/not a Moose/,
 
 );
 

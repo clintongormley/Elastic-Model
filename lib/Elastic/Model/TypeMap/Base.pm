@@ -345,7 +345,8 @@ sub indexable_attrs {
 
     return {
         map { $_->name => $_ }
-        grep { !$_->exclude } $meta->get_all_attributes
+            grep { !( $_->can('exclude') && $_->exclude ) }
+            $meta->get_all_attributes
     };
 }
 

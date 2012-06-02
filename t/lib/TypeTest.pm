@@ -9,7 +9,7 @@ has_namespace 'foo', (
         moose      => 'TypeTest::Moose',
         moosex     => 'TypeTest::MooseX',
         structured => 'TypeTest::Structured',
-        object     => 'TypeTest::Object',
+        object     => 'TypeTest::Objects',
         common     => 'TypeTest::Common',
         es         => 'TypeTest::ES',
         user       => 'Foo::User',

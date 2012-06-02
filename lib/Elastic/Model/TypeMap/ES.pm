@@ -75,11 +75,11 @@ has_type 'Elastic::Model::Types::Binary',
 has_type 'Elastic::Model::Types::Timestamp',
 #===================================
     deflate_via {
-    sub { int( $_[0] * 1000 + 0.0005 ) }
+    sub { int( $_[0] * 1000 + 0.5 ) }
     },
 
     inflate_via {
-    sub { $_[0] / 1000 }
+    sub { sprintf "%.3f", $_[0] / 1000 }
     },
 
     map_via { type => 'date' };

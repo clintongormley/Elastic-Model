@@ -1,4 +1,4 @@
-package TypeTest::Object;
+package TypeTest::Objects;
 
 use Elastic::Doc;
 use MooseX::Types::Moose qw(:all);
@@ -9,6 +9,7 @@ has 'object_attr' => (
     is  => 'ro',
     isa => 'Object',
 );
+
 #===================================
 has 'objectx_attr' => (
 #===================================

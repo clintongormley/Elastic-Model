@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use Elastic::Model::TypeMap::Base qw(:all);
-use Scalar::Util qw(reftype);
+use Scalar::Util qw(reftype weaken);
 use Moose::Util qw(does_role);
 use namespace::autoclean;
 
@@ -35,23 +35,15 @@ has_type 'Object',
 
         die "$ref does not provide a deflate() method"
             unless $obj->can('deflate');
-
-        my $deflated = $obj->deflate();
-
-        die "${ref}->deflate() should return a HASH ref"
-            unless reftype $deflated eq 'HASH';
-
-        $deflated->{__CLASS__} ||= ref $obj;
-        return $deflated;
-        }
+        return { $ref => $obj->deflate };
+    };
     },
 
     inflate_via {
     sub {
-        my $hash  = shift;
-        my $class = delete $hash->{__CLASS__}
-            or die "Object missing __CLASS__ key";
-        $class->inflate($hash);    ## TODO: bless?
+        my ( $class, $data ) = %{ shift() };
+        my $inflated = $class->inflate($data);
+        return bless $inflated, $class;
         }
     },
 
@@ -83,28 +75,32 @@ sub _inflate_class {
 
     my $class = $tc->name;
 
-    my $custom = $map->inflators->{$class};
+    if ( my $handler = $map->inflators->{$class} ) {
+        return $handler->(@_);
+    }
 
-    my $attr_inflator;
+    my $model = $map->model;
+    weaken $model;
 
-    return sub {
-        my ( $hash, $model ) = @_;
-        if ( $hash->{uid} && $model->knows_class($class) ) {
+    if ( $model->knows_class($class) ) {
+        return sub {
+            my $hash = shift;
+            die "Missing UID\n" unless $hash->{uid};
             my $uid = Elastic::Model::UID->new( %{ $hash->{uid} },
                 from_store => 1 );
             return $model->get_doc($uid);
-        }
+            };
+    }
 
-        return $custom->(@_) if $custom;
+    my $attrs = _class_attrs( $map, $class, $attr );
+    my $attr_inflator = $map->class_inflator($class,$attrs);
 
-        $attr_inflator ||= $map->class_inflator($class);
-
-        my $obj = $class->meta->get_meta_instance->create_instance;
-        $attr_inflator->( $obj, $hash, $model );
+    return sub {
+        my $hash = shift;
+        my $obj  = Class::MOP::class_of($class)
+            ->get_meta_instance->create_instance;
+        $attr_inflator->( $obj, $hash );
     };
-
-    # TODO: decide what to do with non-ES classes
-    # TODO: inflate objects as references
 }
 
 #===================================
@@ -119,7 +115,9 @@ sub _map_class {
     }
 
     return ( type => 'object', enabled => 0 )
-        if $attr->can('has_enabled') && $attr->has_enabled && !$attr->enabled;
+        if $attr->can('has_enabled')
+            && $attr->has_enabled
+            && !$attr->enabled;
 
     my $attrs = _class_attrs( $map, $class, $attr );
     return $map->class_mapping( $class, $attrs );

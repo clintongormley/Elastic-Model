@@ -31,15 +31,15 @@ has_type 'MooseX::Types::Structured::Tuple',
 has_type 'MooseX::Types::Structured::Dict',
 #===================================
     deflate_via {
-    _flate_dict( 'deflator', { @{ shift->type_constraints } }, @_ );
+    _flate_dict( 'deflator', { @{ shift->type_constraints || [] } }, @_ );
     },
 
     inflate_via {
-    _flate_dict( 'inflator', { @{ shift->type_constraints } }, @_ );
+    _flate_dict( 'inflator', { @{ shift->type_constraints || [] } }, @_ );
     },
 
     map_via {
-    _map_dict( { @{ shift->type_constraints } }, @_ );
+    _map_dict( { @{ shift->type_constraints || [] } }, @_ );
     };
 
 #===================================
@@ -80,7 +80,7 @@ sub _inflate_tuple {
 sub _tuple_to_dict {
 #===================================
     my $i = 0;
-    return { map { $i++ => $_ } @{ shift->type_constraints } };
+    return { map { $i++ => $_ } @{ shift->type_constraints || [] } };
 }
 
 #===================================
