@@ -1,5 +1,8 @@
 package Elastic::Model::TypeMap::Common;
 
+use strict;
+use warnings;
+
 use Elastic::Model::TypeMap::Base qw(:all);
 use namespace::autoclean;
 

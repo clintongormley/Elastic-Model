@@ -1,5 +1,8 @@
 package Elastic::Model::TypeMap::Default;
 
+use strict;
+use warnings;
+
 use Elastic::Model::TypeMap::Base qw(
     Elastic::Model::TypeMap::Moose
     Elastic::Model::TypeMap::Structured

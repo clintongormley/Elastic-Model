@@ -1,5 +1,8 @@
 package Elastic::Model::TypeMap::Objects;
 
+use strict;
+use warnings;
+
 use Elastic::Model::TypeMap::Base qw(:all);
 use Scalar::Util qw(reftype);
 use Moose::Util qw(does_role);
