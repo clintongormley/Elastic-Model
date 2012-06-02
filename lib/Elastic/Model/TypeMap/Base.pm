@@ -122,9 +122,8 @@ sub class_deflator {
 
     my $has_uid = $class->can('uid');
     return sub {
-        my ( $obj, $model ) = @_;
+        my $obj = shift;
         my %hash;
-        my $meta = $obj->meta;
         for ( keys %deflators ) {
             my $attr = $attrs->{$_};
             unless ( $attr->has_value($obj) ) {
@@ -133,7 +132,7 @@ sub class_deflator {
                 $obj->$reader;
             }
             my $val = $attr->get_raw_value($obj);
-            eval { $hash{$_} = $deflators{$_}->( $val, $model ); 1 } and next;
+            eval { $hash{$_} = $deflators{$_}->($val); 1 } and next;
             die "Error deflating attribute ($_) in class "
                 . blessed($obj) . ":\n  "
                 . ( $@ || 'Unknown error' );
@@ -156,10 +155,10 @@ sub class_inflator {
         keys %$attrs;
 
     return sub {
-        my ( $obj, $hash, $model ) = @_;
+        my ( $obj, $hash ) = @_;
         for ( keys %$hash ) {
             my $attr = $attrs->{$_} or next;
-            my $val = $inflators{$_}->( $hash->{$_}, $model );
+            my $val = $inflators{$_}->( $hash->{$_} );
             $attr->set_raw_value( $obj, $val );
             $attr->_weaken_value($obj) if $attr->is_weak_ref;
 

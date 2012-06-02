@@ -128,8 +128,7 @@ sub _flate_array {
 #===================================
     my $content = _content_handler(@_) or return;
     sub {
-        my ( $array, $model ) = @_;
-        [ map { $content->( $_, $model ) } @$array ];
+        [ map { $content->($_) } @{ shift() } ];
     };
 }
 
@@ -138,10 +137,8 @@ sub _flate_hash {
 #===================================
     my $content = _content_handler(@_) or return;
     sub {
-        my ( $hash, $model ) = @_;
-        +{
-            map { $_ => $content->( $hash->{$_}, $model ) } keys %$hash
-        };
+        my $hash = shift;
+        +{ map { $_ => $content->( $hash->{$_} ) } keys %$hash};
     };
 }
 
@@ -150,8 +147,7 @@ sub _flate_maybe {
 #===================================
     my $content = _content_handler(@_) or return;
     sub {
-        my ( $val, $model ) = @_;
-        return defined $val ? $content->( $val, $model ) : undef;
+        return defined $_[0] ? $content->( $_[0]) : undef;
     };
 }
 

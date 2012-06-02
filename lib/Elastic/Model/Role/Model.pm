@@ -360,7 +360,7 @@ sub deflate_object {
     my $object = shift or die "No object passed to deflate()";
     my $class  = blessed $object
         or die "deflate() can only deflate objects";
-    $self->deflator_for_class($class)->( $object, $self );
+    $self->deflator_for_class($class)->($object);
 }
 
 #===================================
@@ -382,7 +382,7 @@ sub inflate_object {
     my $self   = shift;
     my $object = shift or die "No object passed to inflate()";
     my $hash   = shift or die "No hash pashed to inflate()";
-    $self->inflator_for_class( blessed $object)->( $object, $hash, $self );
+    $self->inflator_for_class( blessed $object)->( $object, $hash );
 }
 
 #===================================
