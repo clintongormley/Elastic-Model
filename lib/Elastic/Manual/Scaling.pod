@@ -21,7 +21,7 @@ A single shard can hold a lot of data. The exact amount depends on your hardware
 your data and your search requirements. You can easily run 5 primary shards on
 a single node (server). However, if that node dies, you may lose your data.
 
-Start a second node and ElasticSearch will bring up the 5 replica shards. Now,
+If you start a second node, ElasticSearch will bring up the 5 replica shards. Now,
 if one node dies, your other node will be able to continue functioning and
 your data will be safe.
 
@@ -47,7 +47,7 @@ For the examples below, we will assume a model definition as follows:
     package MyApp;
     use Elastic::Model;
 
-    has_namespace 'myapp', {
+    has_namespace 'myapp' => {
         user => 'MyApp::User',
         post => 'MyApp::Post'
     };
@@ -115,7 +115,7 @@ L<namespace|Elastic::Manual::Terminology/Namespace> in your model:
 
     use Elastic::Model;
 
-    has_namespace 'myapp', {
+    has_namespace 'myapp' => {
         user => 'MyApp::User',
         post => 'MyApp::Post'
     };
@@ -133,11 +133,11 @@ for these domains, you have two options:
 
 Either specify the extra domains in you namespace declaration:
 
-    has_namespace 'myapp', {
+    has_namespace 'myapp' => {
         user => 'MyApp::User',
         post => 'MyApp::Post'
     },
-    with_domains => ['alias_1','index_2'];
+    fixed_domains => ['alias_1','index_2'];
 
 =head3 Automatically include new domain names
 
@@ -205,7 +205,7 @@ the current month:
 
 Add it to the main alias for the namespace, C<myapp>:
 
-    $ns->alias->add_index('myapp_2012_06');
+    $ns->alias->add('myapp_2012_06');
 
 Set the C<current> alias (for writing new data):
 
@@ -226,8 +226,8 @@ Next month, you can update the C<last_two_months> alias with:
     # Or:
 
     $last_2 = $ns->alias('last_two_months');
-    $last_2->remove_index('myapp_2013_01');
-    $last_2->add_index('myapp_2013_01');
+    $last_2->remove('myapp_2013_01');
+    $last_2->add('myapp_2013_01');
 
 With the above, you can:
 
@@ -338,7 +338,7 @@ a big index:
 Then we add that index to our main domain C<myapp>, so that Elastic::Model
 knows that it uses the same namespace:
 
-    $ns->alias->add_index($index);
+    $ns->alias->add($index);
 
 Once we have reindexed the existing data from the old C<twitter> alias to
 the new index, we update the alias to point to the new index:

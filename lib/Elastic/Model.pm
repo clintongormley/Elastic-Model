@@ -20,16 +20,13 @@ sub has_namespace {
 #===================================
     my $meta   = shift;
     my $name   = shift or croak "No namespace name passed to namespace";
-    my $params = ref $_[0] ? shift : {@_};
+    my %params = ( types => @_ );
 
-    my $types = $params->{types};
+    my $types = $params{types};
     croak "No types specified for namespace $name"
         unless $types && %$types;
 
-    $meta->add_namespace( $name => $types );
-
-    my $domains = $params->{domains} || [$name];
-    $meta->add_domain( $_ => $name ) for ref $domains ? @$domains : $domains;
+    $meta->add_namespace( $name => \%params );
 }
 
 #===================================
@@ -71,19 +68,19 @@ as soon as you are ready to use it.
 If you are not familiar with L<Elastic::Model>, you should start by reading
 L<Elastic::Manual::Intro>.
 
+The rest of the documentation on this page explains how to use the
+L<Elastic::Model> module itself.
+
 =head1 SYNOPSIS
 
     package MyApp;
 
     use Elastic::Model;
 
-    has_namespace 'myapp' => (
-        types => {
-            user => 'MyApp::User',
-            post => 'MyApp::Post'
-        },
-        # domains => ['myapp']
-    );
+    has_namespace 'myapp' => {
+        user => 'MyApp::User',
+        post => 'MyApp::Post'
+    };
 
     has_type_map 'MyApp::TypeMap';
 
@@ -103,66 +100,9 @@ L<Elastic::Manual::Intro>.
     no Elastic::Model;
 
 
-=head2 Using your model
-
-    use MyApp();
-    use ElasticSearch();
-
-    my $es      = ElasticSearch->new( servers => 'es.domain.com:9200' );
-    my $model   = MyApp->new( es => $es);
-
-    my $domain  = $model->domain('myapp');
-    my $scope   = $model->new_scope;
-
-=head3 Create index in elasticsearch
-
-    $domain->admin->create_index;
-
-=head3 Create an object
-
-    my $user    = $domain->new_doc( user => { name => 'Clinton' })->save;
-
-=head3 Retrieve an object by UID
-
-    my $user_id = $user->uid;
-    $user       = $domain->get($uid);
-
-=head3 Create an object which refers to another object
-
-    my $post    = $domain->new_doc(
-        post => {
-            title   => "An interesting post",
-            body    => "Lorem ipsum",
-            user    => $user
-        }
-    );
-
-    $post->save;
-
-=head3 Reusable views
-
-    my $posts   = $domain->view->type('post');
-
-=head3 Full text search
-
-    my $results = $posts->queryb({
-        title       => 'intere',
-        'user.name' => 'clinton',
-        created     => { '>' => '2012-01-01' }
-    })->search;
-
-    say "Found ".$results->total." results";
-
-    while (my $post = $results->next_doc) {
-        say   "Title: "
-            . $post->title
-            . ", by "
-            . $post->user->name;
-    }
-
 =cut
 
-=head1 USING Elastic::Model
+=head1 USING ELASTIC::MODEL
 
 Your application needs a C<model> class to handle the relationship between
 your object classes and the ElasticSearch cluster.
@@ -173,31 +113,25 @@ Your model class is most easily defined as follows:
 
     use Elastic::Model;
 
-    has_namespace 'myapp' => (
-        types => {
-            foo => 'MyApp::Foo',
-            bar => 'MyApp::Bar'
-        },
-        # domains => ['myapp']
-    );
+    has_namespace 'myapp' => {
+        user => 'MyApp::User',
+        post => 'MyApp::Post'
+    };
 
     no Elastic::Model;
 
-This applies L<Elastic::Model::Role::Model> to your model,
-L<Elastic::Model::Meta::Model> to your model's metaclass and exports
+This applies L<Elastic::Model::Role::Model> to your C<MyApp> class,
+L<Elastic::Model::Meta::Class::Model> to C<MyApp>'s metaclass and exports
 functions which help you to configure your model.
 
 Your model must define at least one L<namespace|Elastic::Manual::Terminology/Namespace>,
 which tells Elastic::Model which
 L<type|Elastic::Manual::Terminology/Type> (like a table in a DB) should be
-handled by which of your classes.  So the above declaration says that objects
-of class C<MyApp::User> will be stored in the C<user> type in ElasticSearch.
+handled by which of your classes.  So the above declaration says:
 
-Your model must also define at least one L<domain|Elastic::Manual::Terminology/Domain>
-(which defaults to the C<name> of the namespace). A C<domain> can be an
-L<index|Elastic::Manual::Terminology/Index> (like a database in a relational DB)
-or an L<alias|Elastic::Manual::Terminology/Alias> (which points to one or
-more indices). It doesn't have to exist yet.
+I<"For all L<indices|Elastic::Model::Terminology/Index> which belong to namespace
+C<myapp>, objects of class C<MyApp::User> will be stored under the
+L<type|Elastic::Model::Terminology/Type> C<user> in ElasticSearch.">
 
 =head2 Custom TypeMap
 
@@ -306,6 +240,10 @@ The defaults are:
 
 =item *
 
+C<namespace> C<-----------> L<Elastic::Model::Namespace>
+
+=item *
+
 C<domain> C<--------------> L<Elastic::Model::Domain>
 
 =item *
@@ -331,5 +269,19 @@ C<scrolled_results> C<----> L<Elastic::Model::Results::Scrolled>
 =item *
 
 C<result> C<--------------> L<Elastic::Model::Result>
+
+=back
+
+=head1 SEE ALSO
+
+=over
+
+=item *
+
+L<Elastic::Manual>
+
+=item *
+
+L<Elastic::Doc>
 
 =back

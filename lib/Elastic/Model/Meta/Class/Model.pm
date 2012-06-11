@@ -12,7 +12,7 @@ my %defaults = (
     tokenizer => {},
 );
 
-for my $k (qw(namespace domain char_filter analyzer filter tokenizer)) {
+for my $k (qw(namespace char_filter analyzer filter tokenizer)) {
     my %default = %{ $defaults{$k} || {} };
 
 #===================================
@@ -29,7 +29,7 @@ for my $k (qw(namespace domain char_filter analyzer filter tokenizer)) {
             "all_${k}s" => 'keys',
         }
     );
-    next if $k eq 'domain' || $k eq 'namespace';
+    next if $k eq 'namespace';
 
 #===================================
     before "add_$k" => sub {
@@ -54,6 +54,7 @@ has 'classes' => (
     default => sub {
         +{  type_map         => 'Elastic::Model::TypeMap::Default',
             domain           => 'Elastic::Model::Domain',
+            namespace        => 'Elastic::Model::Namespace',
             store            => 'Elastic::Model::Store',
             view             => 'Elastic::Model::View',
             scope            => 'Elastic::Model::Scope',
@@ -63,8 +64,8 @@ has 'classes' => (
         };
     },
     handles => {
-        set_class   => 'set',
-        get_class   => 'get',
+        set_class => 'set',
+        get_class => 'get',
     }
 );
 

@@ -3,7 +3,6 @@ package Elastic::Model::Domain;
 use Carp;
 use Moose;
 use namespace::autoclean;
-use Elastic::Model::Domain::Admin();
 use MooseX::Types::Moose qw(:all);
 
 #===================================
@@ -109,10 +108,6 @@ sub view {
 }
 
 #===================================
-sub admin { Elastic::Model::Domain::Admin->new( domain => shift() ) }
-#===================================
-
-#===================================
 sub es { shift->model->es }
 #===================================
 
@@ -144,10 +139,6 @@ Retrieve a doc by ID:
 Create a view on the current domain:
 
     $view = $domain->view(%args);
-
-Create an admin object for administering indices and aliases:
-
-    $admin = $domain->admin();
 
 =head1 DESCRIPTION
 
@@ -223,11 +214,4 @@ or throws an exception if the doc doesn't exist.
 Creates a L<view|Elastic::Model::View> with the L<Elastic::Model::View/"index">
 set to C<< $domain->name >>.  A C<view> is used for searching docs in a
 C<$domain>.
-
-=head2 admin()
-
-    $admin = $domain->admin();
-
-Returns an L<Elastic::Model::Domain::Admin> object, for creating/updating/deleting
-indices and aliases.
 

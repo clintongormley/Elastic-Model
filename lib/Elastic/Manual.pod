@@ -1,0 +1,75 @@
+package Elastic::Manual;
+
+# ABSTRACT: What is Elastic::Model and how do I use it?
+
+__END__
+
+=pod
+
+=head1 WHAT IS ELASTIC::MODEL
+
+Elastic::Model is a NoSQL object-persistence framework for Moose using
+ElasticSearch as a backend.
+
+It is designed to make it easy to start using ElasticSearch with minimal extra
+code, but allows you full access to the rich feature set available in
+ElasticSearch as soon as you are ready to use it.
+
+For a brief example of how Elastic::Model works, you should start by reading
+L<Elastic::Manual::Intro>.
+
+=head1 WHAT IS ELASTICSEARCH?
+
+L<ElasticSearch|http://www.elasticsearch.org> is an open-source
+L<Lucene|http://lucene.apache.org/core/>-based full-text search engine,
+and a NoSQL document store / database.
+
+=head2 Schema-free and document oriented
+
+ElasticSearch stores your objects as JSON documents. Most Perl objects
+can be mapped easily to their JSON equivalent.
+
+It is schema free, in that you don't need to define your
+field/properties/attributes ahead of time; you can just toss it a JSON
+document and it'll try to autodetect data types and index your doc. That
+said, the power of full text search comes from the ability to configure
+your search to suit your data and requirements. Sophisticated options
+exist to give you complete control over how your data is indexed.
+
+=head2 Real-time
+
+ElasticSearch is a real-time data store (as soon as your document is indexed, it
+can be retrieved from any node in the cluster) and has near-real-time search.
+By default, docs become visible to search within 1 second of being indexed.
+
+=head2 Distributed
+
+ElasticSearch is built to scale out of the box.  It is easy to start with a
+single node, and to add new nodes as required, giving you high availability
+and huge scale. A cluster can scale to hundreds of nodes and terrabytes of
+data. If a node goes down, the cluster will automatically redistribute and
+just keep on working.
+
+=head1 TABLE OF CONTENTS
+
+=head2 L<Elastic::Manual::Intro>
+
+Start by reading L<Elastic::Manual::Intro> for a gentle introduction to
+L<Elastic::Model>.
+
+=head2 L<Elastic::Manual::Terminology>
+
+A brief definition of some of the terms used by ElasticSearch and Elastic::Model.
+
+=head2 L<Elastic::Manual::Scaling>
+
+How to use Elastic::Model to go from a small development environment to
+massive scale.
+
+=head2 L<Elastic::Manual::Conflicts>
+
+Optimistic locking and dealing with version conflicts.
+
+
+
+

@@ -129,7 +129,7 @@ perform a search.
 
 Each L<type|/Type> has a C<mapping> which is like a 'schema definition' in
 a relational DB. It defines various type-wide settings, plus the field-type
-(eg C<integer>, C<object>, C<string>)for each L<field|/Field> in the type,
+(eg C<integer>, C<object>, C<string>) for each L<field|/Field> in the type,
 and specifics about how each field should be L<analyzed|/Analysis>.
 
 New fields can be added to a mapping, but generally existing fields may not
@@ -174,8 +174,8 @@ in full, you could search on just the C<husband.firstname> field.
 =head2 ID
 
 The ID of a document identifies a document. The
-L<index|/Index>/L<type|/Type>/L<id|/ID> of a document must be unique. If no ID
-is provided, then it will be auto-generated.
+L<namespace|/Namespace>/L<type|/Type>/L<id|/ID> of a document must be unique.
+If no ID is provided, then it will be auto-generated.
 
 See also L</Routing>.
 

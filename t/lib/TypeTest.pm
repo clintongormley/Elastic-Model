@@ -3,18 +3,16 @@ package TypeTest;
 use Elastic::Model;
 
 #===================================
-has_namespace 'foo', (
+has_namespace 'foo' => {
 #===================================
-    types => {
-        moose      => 'TypeTest::Moose',
-        moosex     => 'TypeTest::MooseX',
-        structured => 'TypeTest::Structured',
-        object     => 'TypeTest::Objects',
-        common     => 'TypeTest::Common',
-        es         => 'TypeTest::ES',
-        user       => 'Foo::User',
-    }
-);
+    moose      => 'TypeTest::Moose',
+    moosex     => 'TypeTest::MooseX',
+    structured => 'TypeTest::Structured',
+    object     => 'TypeTest::Objects',
+    common     => 'TypeTest::Common',
+    es         => 'TypeTest::ES',
+    user       => 'Foo::User',
+};
 
 no Elastic::Model;
 

@@ -1,0 +1,6 @@
+package Elastic::Manual::Conflicts;
+
+# ABSTRACT: Optimisting locking and dealing with version conflicts
+
+=head1 TODO
+

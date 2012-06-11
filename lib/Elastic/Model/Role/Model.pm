@@ -3,26 +3,21 @@ package Elastic::Model::Role::Model;
 use Moose::Role;
 use Carp;
 use Elastic::Model::Types qw(ES);
-use ElasticSearch 0.52 ();
+use ElasticSearch 0.53 ();
 use Class::Load qw(load_class);
 use Moose::Util qw(does_role);
 use MooseX::Types::Moose qw(:all);
 use Elastic::Model::UID();
-use Elastic::Model::Namespace();
 use Scalar::Util qw(blessed refaddr weaken);
 use List::MoreUtils qw(uniq);
 
 use namespace::autoclean;
-
-#===================================
-has 'type_map' => (
-#===================================
-    is      => 'ro',
-    isa     => Str,
-    default => sub { shift->wrap_class('type_map') }
+my @wrapped_classes = qw(
+    domain namespace store view scope
+    results scrolled_results result
 );
 
-for my $class (qw(domain store view scope results scrolled_results result)) {
+for my $class (@wrapped_classes) {
 #===================================
     has "${class}_class" => (
 #===================================
@@ -31,6 +26,14 @@ for my $class (qw(domain store view scope results scrolled_results result)) {
         default => sub { shift->wrap_class($class) }
     );
 }
+
+#===================================
+has 'type_map' => (
+#===================================
+    is      => 'ro',
+    isa     => Str,
+    default => sub { shift->wrap_class('type_map') }
+);
 
 #===================================
 has [ 'deflators', 'inflators' ] => (
@@ -79,7 +82,7 @@ has 'namespaces' => (
     isa     => HashRef,
     traits  => ['Hash'],
     builder => '_build_namespaces',
-    handles => { get_namespace => 'get' }
+    handles => { namespace => 'get' }
 );
 
 #===================================
@@ -89,6 +92,8 @@ has '_domain_cache' => (
     is      => 'bare',
     traits  => ['Hash'],
     default => sub { {} },
+
+    # TODO clear domain cache when changing indices/aliases?
     handles => {
         _get_domain   => 'get',
         _cache_domain => 'set',
@@ -96,15 +101,15 @@ has '_domain_cache' => (
 );
 
 #===================================
-has '_index_namespace' => (
+has '_domain_namespace' => (
 #===================================
     is      => 'ro',
     isa     => HashRef,
     traits  => ['Hash'],
     lazy    => 1,
-    builder => '_build_index_namespace',
-    clearer => '_clear_index_namespace',
-    handles => { _get_index_namespace => 'get', }
+    builder => '_build_domain_namespace',
+    clearer => 'clear_domain_namespace',
+    handles => { _get_domain_namespace => 'get', }
 );
 
 #===================================
@@ -120,15 +125,9 @@ has 'current_scope' => (
 );
 
 #===================================
-sub BUILD {
-#===================================
-    my $self = shift;
-    $self->doc_class_wrappers;
-}
-
-#===================================
-sub _build_store { $_[0]->store_class->new( es => $_[0]->es ) }
-sub _build_es { ElasticSearch->new }
+sub BUILD         { shift->doc_class_wrappers }
+sub _build_store  { $_[0]->store_class->new( es => $_[0]->es ) }
+sub _build_es     { ElasticSearch->new }
 sub _die_no_scope { croak "There is no current_scope" }
 #===================================
 
@@ -138,13 +137,15 @@ sub _build_namespaces {
     my $self = shift;
     my $conf = Class::MOP::class_of($self)->namespaces;
     my %namespaces;
-
-    while ( my ( $name, $types ) = each %$conf ) {
+    my $ns_class = $self->namespace_class;
+    while ( my ( $name, $args ) = each %$conf ) {
+        my $types = $args->{types};
         my %classes
             = map { $_ => $self->class_for( $types->{$_} ) } keys %$types;
-        $namespaces{$name} = Elastic::Model::Namespace->new(
-            name  => $name,
-            types => \%classes
+        $namespaces{$name} = $ns_class->new(
+            name          => $name,
+            types         => \%classes,
+            fixed_domains => $args->{fixed_domains} || []
         );
     }
     \%namespaces;
@@ -156,45 +157,37 @@ sub _build_doc_class_wrappers {
     my $self       = shift;
     my $namespaces = Class::MOP::class_of($self)->namespaces;
     +{  map { $_ => $self->wrap_doc_class($_) }
-        map { values %$_ } values %$namespaces
+        map { values %{ $_->{types} } } values %$namespaces
     };
 }
 
 #===================================
-sub _build_index_namespace {
+sub _build_domain_namespace {
 #===================================
-    my $self    = shift;
-    my $domains = Class::MOP::class_of($self)->domains;
+    my $self       = shift;
+    my $namespaces = $self->namespaces;
+    my %domains;
 
-    my %namespaces;
-    push @{ $namespaces{ $domains->{$_} } }, $_ for keys %$domains;
-
-    my %index;
-
-    for my $name ( keys %namespaces ) {
-        my $aliases = $self->es->get_aliases( index => $namespaces{$name} );
-        my @names = uniq @{ $namespaces{$name} },
-            map { $_, keys %{ $aliases->{aliases} } }
-            keys %$aliases;
-        my $ns = $self->get_namespace($name);
-        for (@names) {
-            croak "Cannot map index/alias ($_) to namespace ($ns). "
-                . "It is already mapped to namespace ($index{$_})"
-                if $index{$_} && refaddr $index{$_} ne refaddr $ns;
-            $index{$_} = $ns;
+    for my $name ( keys %$namespaces ) {
+        my $ns = $namespaces->{$name};
+        for my $domain ( $namespaces->{$name}->all_domains ) {
+            croak "Cannot map domain ($domain) to namespace ($name). "
+                . "It is already mapped to namespace ($domains{$domain})."
+                if $domains{$domain};
+            $domains{$domain} = $ns;
         }
     }
-    \%index;
+    \%domains;
 }
 
 #===================================
-sub namespace_for_index {
+sub namespace_for_domain {
 #===================================
     my ( $self, $index ) = @_;
     my $ns;
-    $ns = $self->_get_index_namespace($index) and return $ns;
-    $self->_clear_index_namespace;
-    $self->_get_index_namespace($index)
+    $ns = $self->_get_domain_namespace($index) and return $ns;
+    $self->clear_domain_namespace;
+    $self->_get_domain_namespace($index)
         or croak "No namespace found for index ($index). ";
 }
 
@@ -252,12 +245,8 @@ sub domain {
     my $domain;
 
     $domain = $self->_get_domain($name) and return $domain;
-
-    my $ns_name = $self->meta->domain($name)
+    my $ns = $self->namespace_for_domain($name)
         or croak "Unknown domain name ($name)";
-
-    my $ns = $self->get_namespace($ns_name)
-        or croak "Unknown namespace ($ns_name)";
 
     $domain = $self->domain_class->new(
         name      => $name,
@@ -296,7 +285,7 @@ sub get_doc {
     my ( $self, $uid, $source ) = @_;
     croak "No UID passed to get_doc()" unless $uid;
 
-    my $ns    = $self->namespace_for_index( $uid->index );
+    my $ns    = $self->namespace_for_domain( $uid->index );
     my $scope = $self->current_scope;
 
     my $object;
@@ -329,7 +318,7 @@ sub save_doc {
     my $doc    = shift;
     my %args   = ref $_[0] ? %{ shift() } : @_;
     my $uid    = $doc->uid;
-    my $ns     = $self->namespace_for_index( $uid->index );
+    my $ns     = $self->namespace_for_domain( $uid->index );
     my $action = $uid->from_store ? 'index_doc' : 'create_doc';
     my $data   = $self->deflate_object($doc);
     my $result = $self->store->$action( $uid, $data, \%args );
@@ -344,7 +333,7 @@ sub delete_doc {
     my $doc    = shift;
     my %args   = ref $_[0] ? %{ shift() } : @_;
     my $uid    = $doc->uid;
-    my $ns     = $self->namespace_for_index( $uid->index );
+    my $ns     = $self->namespace_for_domain( $uid->index );
     my $result = $self->store->delete_doc( $doc->uid, \%args );
     $uid->update_from_store($result);
     return $self->current_scope->delete_object( $ns->name, $doc );

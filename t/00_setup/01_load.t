@@ -22,6 +22,7 @@ note "Core classes";
 
 my %classes = (
     type_map               => 'Elastic::Model::TypeMap::Default',
+    namespace_class        => 'Elastic::Model::Namespace',
     domain_class           => 'Elastic::Model::Domain',
     store_class            => 'Elastic::Model::Store',
     view_class             => 'Elastic::Model::View',
@@ -55,10 +56,8 @@ for my $m ( $model, $model_2 ) {
 note '';
 
 note "Namespaces";
-isa_ok $model->get_namespace('foo'), 'Elastic::Model::Namespace',
-    'Namespace foo';
-isa_ok $model->get_namespace('bar'), 'Elastic::Model::Namespace',
-    'Namespace bar';
+isa_ok $model->namespace('foo'), 'Elastic::Model::Namespace', 'Namespace foo';
+isa_ok $model->namespace('bar'), 'Elastic::Model::Namespace', 'Namespace bar';
 note '';
 
 note 'Domain';
