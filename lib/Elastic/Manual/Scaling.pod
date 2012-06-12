@@ -101,9 +101,9 @@ with a new index name:
 Now you can reindex your data from C<$index> to C<$new_index>, and finally
 update the alias and delete the old index:
 
-    my %current   = $ns->alias->aliased_to;
+    my $current   = $ns->alias->aliased_to;
     $ns->alias->to($new_index);
-    $ns->index($_)->delete for keys %current;
+    $ns->index($_)->delete for keys %$current;
 
 =head2 Namespaces, domains, aliases and indices
 

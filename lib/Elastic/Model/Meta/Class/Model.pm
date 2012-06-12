@@ -127,9 +127,7 @@ sub analysis_for_mappings {
                 if exists $analyzers{$name}
                     || $self->is_default( 'analyzer', $name );
             $analyzers{$name} = $self->analyzer($name)
-                or die
-                "Unknown analyzer '$name ' required by type '$type' in class "
-                . $self->class_for_type($type);    ## TODO: wrong method
+                or die "Unknown analyzer ($name) required by type ($type)";
         }
     }
     return unless %analyzers;

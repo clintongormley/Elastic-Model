@@ -14,8 +14,8 @@ sub to {
     my $self = shift;
     my @args = ref $_[0] ? @{ shift() } : @_;
 
-    my $name = $self->name;
-    my $es   = $self->es;
+    my $name    = $self->name;
+    my $es      = $self->es;
     my %indices = ( (
             map { $_ => { remove => { index => $_, alias => $name } } }
                 keys %{ $es->get_aliases( index => $name ) }
@@ -36,7 +36,7 @@ sub add {
     my @args    = ref $_[0] ? @{ shift() } : @_;
     my %indices = $self->_add_aliases(@args);
     $self->es->aliases( actions => [ values %indices ] );
-    $self->domain( $self->name )->clear_default_routing;
+    $self->model->domain( $self->name )->clear_default_routing;
     return $self;
 }
 
@@ -61,7 +61,7 @@ sub aliased_to {
     croak "($name) is an index, not an alias"
         if $indices->{$name};
 
-    map { $_ => $indices->{$_}{aliases}{$name} } keys %$indices;
+    +{ map { $_ => $indices->{$_}{aliases}{$name} } keys %$indices };
 }
 
 #===================================
@@ -105,6 +105,8 @@ __END__
     $alias->add( 'index_1' => \%settings, index_2 => \%settings);
 
     $alias->remove( 'index_1', 'index_2' );
+
+    \%indices = $alias->aliased_to;
 
 =head1 CONSUMES
 
@@ -167,9 +169,9 @@ The listed index names are removed from alias L</name>.
 
 =head2 aliased_to()
 
-    %indices = $alias->aliased_to();
+    $indices = $alias->aliased_to();
 
-Returns a hash of the current settings for an alias, suitable for passing to
+Returns a hashref of the current settings for an alias, suitable for passing to
 L</to()>. The keys are index names, and the values are the alias settings.
 
 

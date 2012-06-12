@@ -59,8 +59,8 @@ sub index_config {
 #===================================
 sub delete  { shift->_index_action( 'delete_index',  @_ ) }
 sub refresh { shift->_index_action( 'refresh_index', @_ ) }
-sub open    { shift->_index_action( 'open_index ',   @_ ) }
-sub close   { shift->_index_action( 'close_index ',  @_ ) }
+sub open    { shift->_index_action( 'open_index',   @_ ) }
+sub close   { shift->_index_action( 'close_index',  @_ ) }
 sub exists { !!$_[0]->es->index_exists( index => $_[0]->name ) }
 #===================================
 
@@ -88,11 +88,11 @@ sub update_settings {
 }
 
 #===================================
-sub update_analysers {
+sub update_analyzers {
 #===================================
     my $self   = shift;
     my $params = $self->index_config(@_);
-    delete $params->{mapping};
+    delete $params->{mappings};
     $self->es->update_index_settings($params);
     return $self;
 }
@@ -118,11 +118,11 @@ sub is_index {
 sub update_mapping {
 #===================================
     my $self     = shift;
-    my $mappings = $self->mappings( @{ shift() || [] } );
+    my $mappings = $self->mappings(@_);
     my $es       = $self->es;
     my $name     = $self->name;
     for my $type ( keys %$mappings ) {
-        $es->update_mapping(
+        $es->put_mapping(
             index   => $name,
             type    => $type,
             mapping => $mappings->{$type}
@@ -137,7 +137,7 @@ sub delete_mapping {
     my $self  = shift;
     my $es    = $self->es;
     my $name  = $self->name;
-    my @types = @{ shift() || [] };
+    my @types = ref $_[0] eq 'ARRAY' ? @{ shift() } : @_;
     $es->delete_mapping( index => $name, type => $_ ) for @types;
     return $self;
 }
@@ -254,12 +254,12 @@ until you are finished indexing:
     populate_index();
     $admin->update_settings( refresh_interval => '1s' );
 
-=head2 update_analysers()
+=head2 update_analyzers()
 
-    $admin = $admin->update_analysers( types => \@types );
+    $admin = $admin->update_analyzers( types => \@types );
 
-Mostly, analysers can't be changed on an existing index, but new analyzers
-can be added.  L</update_analysers()> will generate a new analyzer configuration
+Mostly, analyzers can't be changed on an existing index, but new analyzers
+can be added.  L</update_analyzers()> will generate a new analyzer configuration
 and try to update index (or the indices pointed to by alias) L</name>.
 
 You can limit the analyzers to those required for a specific list of C<@types>,

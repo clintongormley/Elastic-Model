@@ -172,7 +172,8 @@ sub _build_domain_namespace {
         my $ns = $namespaces->{$name};
         for my $domain ( $namespaces->{$name}->all_domains ) {
             croak "Cannot map domain ($domain) to namespace ($name). "
-                . "It is already mapped to namespace ($domains{$domain})."
+                . "It is already mapped to namespace ("
+                . $domains{$domain}->name . ")."
                 if $domains{$domain};
             $domains{$domain} = $ns;
         }
@@ -495,13 +496,13 @@ modules. They are documented here for completeness.
 
 =head2 Miscellaneous
 
-=head3 domain_for_index()
+=head3 namespace_for_domain()
 
-    $domain = $model->domain_for_index($index_name)
+    $namespace = $model->namespace_for_domain($domain_name)
 
-Returns the L<Elastic::Model::Domain> object which corresponds to the
-C<$index_name>.  If the index (or alias) name is not yet known to the
-C<$model>, it will query ElasticSearch for index/alias information.
+Returns the L<Elastic::Model::Namespace> object which corresponds to the
+C<$domain_name>.  If the index (or alias) name is not yet known to the
+C<$model>, it will update the known domain list from the namespace objects.
 
 =head3 es
 
