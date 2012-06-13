@@ -1,0 +1,6 @@
+package Elastic::Manual::Analysis;
+
+# ABSTRACT: Controlling how your properties are indexed
+
+=head1 TODO
+
