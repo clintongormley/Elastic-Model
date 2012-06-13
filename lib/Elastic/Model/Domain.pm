@@ -81,6 +81,7 @@ sub create { shift->new_doc(@_)->save }
 sub get {
 #===================================
     my $self = shift;
+
     my $type = shift or croak "No type passed to get()";
     my $id   = shift or croak "No id passed to get()";
     my $uid  = Elastic::Model::UID->new(
@@ -88,6 +89,7 @@ sub get {
         type    => $type,
         id      => $id,
         routing => $self->_default_routing,
+        @_
     );
     $self->model->get_doc($uid);
 }
@@ -203,6 +205,7 @@ This is the equivalent of:
 =head2 get()
 
     $doc = $domain->get( $type => $id );
+    $doc = $domain->get( $type => $id, routing => $routing );
 
 Retrieves a doc of type C<$type> with ID C<$id> from index C<< $domain->name >>
 or throws an exception if the doc doesn't exist.
