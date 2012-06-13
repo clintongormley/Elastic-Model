@@ -117,9 +117,7 @@ has 'current_scope' => (
 #===================================
     is        => 'rw',
     isa       => 'Elastic::Model::Scope',
-    lazy      => 1,
     weak_ref  => 1,
-    builder   => '_die_no_scope',
     clearer   => 'clear_current_scope',
     predicate => 'has_current_scope',
 );
@@ -290,13 +288,15 @@ sub get_doc {
     my $scope = $self->current_scope;
 
     my $object;
-    $object = $scope->get_object( $ns, $uid ) unless $source;
+    $object = $scope->get_object( $ns, $uid )
+        if $scope && !$source;
 
     unless ($object) {
         $source ||= $self->get_doc_source($uid) unless $uid->from_store;
         my $class = $ns->class_for_type( $uid->type );
         $object = $class->meta->new_stub( $uid, $source );
-        $object = $scope->store_object( $ns->name, $object );
+        $object = $scope->store_object( $ns->name, $object )
+            if $scope;
     }
     $object;
 }
@@ -324,7 +324,10 @@ sub save_doc {
     my $data   = $self->deflate_object($doc);
     my $result = $self->store->$action( $uid, $data, \%args );
     $uid->update_from_store($result);
-    return $self->current_scope->store_object( $ns->name, $doc );
+    my $scope = $self->current_scope;
+    return $scope
+        ? $scope->store_object( $ns->name, $doc )
+        : $doc;
 }
 
 #===================================
@@ -337,7 +340,10 @@ sub delete_doc {
     my $ns     = $self->namespace_for_domain( $uid->index );
     my $result = $self->store->delete_doc( $doc->uid, \%args );
     $uid->update_from_store($result);
-    return $self->current_scope->delete_object( $ns->name, $doc );
+    my $scope = $self->current_scope;
+    return $scope
+        ? $scope->delete_object( $ns->name, $doc )
+        : $doc;
 }
 
 #===================================

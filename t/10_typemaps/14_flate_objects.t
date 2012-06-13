@@ -106,8 +106,6 @@ my ( $de, $in );
 
         ( $de, $in ) = flators($attr);
 
-        my $scope = $model->new_scope;
-
         cmp_deeply $de->($saved), $deflated, "Deflate $attr: saved";
 
         isa_ok my $inflated = $in->($deflated),

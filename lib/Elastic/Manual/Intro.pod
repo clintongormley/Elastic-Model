@@ -135,7 +135,7 @@ Now, our index is ready to be used.
 =head2 Preparation for object access
 
 Before we can save or retrieve objects/documents from ElasticSearch, we need
-a C<domain> and a C<scope>:
+a C<domain>:
 
 =head3 Get a domain
 
@@ -147,22 +147,6 @@ which points at one or more indices.)
     $domain = $model->domain('myapp');
 
 See L<Elastic::Manual::Scaling> for more about how to use aliases.
-
-=head3 Create a scope
-
-Scopes are discussed in detail in L<Elastic::Model::Scope>, but in brief,
-a C<scope> is an in-memory cache.  You need to create a scope before accessing
-any docs in ElasticSearch, and it should stay in scope until you are done, eg:
-
-    {
-        my $scope = $model->new_scope;
-        # do your work here
-    }
-
-    # scope is cleared
-
-Typically, you would create a scope at (eg) the beginning of a web request,
-and let it go out of scope at the end of the request.
 
 =head2 Create an object
 
@@ -184,14 +168,6 @@ via the C<$domain> object:
     $user->save;                            # save to ElasticSearch
 
 =head2 Retrieve an object by ID
-
-Before we try to retrieve the object from ElasticSearch itself, we should clear
-the scope. Otherwise, we'll just get the same object back from the in-memory
-cache.  Normally, this would be what you want, but given that we're trying to
-demonstrate access to ElasticSearch itself:
-
-    undef $scope;
-    $scope = $model->new_scope;
 
 Now, we can retrieve the user object from ElasticSearch, using the
 C<type> and C<id>:
