@@ -49,9 +49,9 @@ done_testing;
 sub test_domain {
     my ( $index, $desc, $name ) = @_;
 
-    diag "";
-    diag "Testing $desc";
-    diag "";
+    note "";
+    note "Testing $desc";
+    note "";
 
     ## Exists and is ##
 
