@@ -184,12 +184,12 @@ sub _build_domain_namespace {
 #===================================
 sub namespace_for_domain {
 #===================================
-    my ( $self, $index ) = @_;
+    my ( $self, $domain ) = @_;
     my $ns;
-    $ns = $self->_get_domain_namespace($index) and return $ns;
+    $ns = $self->_get_domain_namespace($domain) and return $ns;
     $self->clear_domain_namespace;
-    $self->_get_domain_namespace($index)
-        or croak "No namespace found for index ($index). ";
+    $self->_get_domain_namespace($domain)
+        or croak "No namespace found for domain ($domain). ";
 }
 
 #===================================
