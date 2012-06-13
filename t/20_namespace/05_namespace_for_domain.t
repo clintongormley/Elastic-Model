@@ -38,6 +38,10 @@ for (qw(myapp2 myapp3 myapp4)) {
     is $model->namespace_for_domain($_)->name, 'myapp1', "Has domain $_";
 }
 
+ok $ns->alias('myapp')->to('myapp2'), 'Alias myapp to myapp2';
+throws_ok sub { $model->namespace_for_domain('myapp') }, qr/Cannot map/,
+    'Overlapping domains';
+
 $es->delete_index( index => $_, ignore_missing => 1 )
     for qw(myapp1 myapp2 myapp3 myapp4);
 
