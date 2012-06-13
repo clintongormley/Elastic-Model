@@ -8,12 +8,8 @@ use Test::Deep;
 
 use lib 't/lib';
 
+our $es;
 do 'es.pl';
-our $es = get_es();
-
-$es->delete_index( index => $_, ignore_missing => 1 ) for qw(myapp3 myapp4);
-
-wait_for_es();
 
 use_ok 'MyApp' || print 'Bail out';
 

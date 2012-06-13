@@ -7,31 +7,31 @@ use Test::More;
 
 our $es;
 
-#===================================
-sub get_es {
-#===================================
-    eval {
-        if ( $ENV{ES} )
-        {
-            $es = ElasticSearch->new( servers => $ENV{ES} );
-            $es->current_server_version;
-        }
-        elsif ( $ENV{ES_HOME} ) {
-            $es = ElasticSearch::TestServer->new(
-                instances => 1,
-                home      => $ENV{ES_HOME},
-                transport => 'http'
-            );
-        }
-        1;
-    } or do { diag $_ for split /\n/, $@; undef $es };
+eval {
+    if ( $ENV{ES} )
+    {
+        $es = ElasticSearch->new( servers => $ENV{ES} );
+        $es->current_server_version;
+    }
+    elsif ( $ENV{ES_HOME} ) {
+        $es = ElasticSearch::TestServer->new(
+            instances => 1,
+            home      => $ENV{ES_HOME},
+            transport => 'http'
+        );
+    }
+    1;
+} or do { diag $_ for split /\n/, $@; undef $es };
 
-    return $es if $es;
-
-    plan skip_all => 'No ElasticSearch test server available';
-    exit;
-
+if ($es) {
+    $es->delete_index( index => $_, ignore_missing => 1 )
+        for qw(myapp myapp1 myapp2 myapp3 myapp4 myapp5);
+    wait_for_es();
+    return $es;
 }
+
+plan skip_all => 'No ElasticSearch test server available';
+exit;
 
 #===================================
 sub wait_for_es {
