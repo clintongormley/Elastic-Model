@@ -95,6 +95,18 @@ sub get {
 }
 
 #===================================
+sub maybe_get {
+#===================================
+    my $self = shift;
+    my $user;
+    eval {
+        $user = $self->get(@_);
+        1;
+    } or $@->isa('ElasticSearch::Error::Missing') || die $@;
+    return $user;
+}
+
+#===================================
 sub delete {
 #===================================
     my $self = shift;
@@ -136,7 +148,9 @@ Create a new doc/object
 
 Retrieve a doc by ID:
 
-    $user = $domain->get( $type => $id )
+    $user = $domain->get( $type => $id );
+
+    $user = $domain->maybe_get( $type => $id );   # return undef if missing
 
 Create a view on the current domain:
 
@@ -209,6 +223,14 @@ This is the equivalent of:
 
 Retrieves a doc of type C<$type> with ID C<$id> from index C<< $domain->name >>
 or throws an exception if the doc doesn't exist.
+
+=head2 maybe_get()
+
+    $doc = $domain->maybe_get( $type => $id );
+    $doc = $domain->maybe_get( $type => $id, routing => $routing );
+
+Retrieves a doc of type C<$type> with ID C<$id> from index C<< $domain->name >>
+or returns undef if the doc doesn't exist.
 
 =head2 view()
 
