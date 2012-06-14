@@ -51,8 +51,8 @@ sub _write_doc {
 #===================================
 sub delete_doc {
 #===================================
-    my ( $self, $uid, $args ) = @_;
-    return $self->es->delete( %{ $uid->write_params }, %$args );
+    my ( $self, $uid, %args ) = @_;
+    return $self->es->delete( %{ $uid->write_params }, %args );
 }
 
 1;
@@ -107,6 +107,14 @@ For instance, to overwrite a document regardless of version number, you could
 do:
 
     $result = $store->index_doc($uid, \%data, { version => 0 });
+=head2 delete_doc()
+
+    $result = $store->delete_doc($uid, %args);
+
+Deletes a doc in the ElasticSearch backend and returns the raw
+result. Any failure throws an exception.  If the L<version|Elastic::Model::UID/"version">
+number does not match what is stored in ElasticSearch, then a conflict exception
+will be thrown.  Any C<%args> will be passed to L<ElasticSearch/"delete()">.
 
 =head2 search()
 

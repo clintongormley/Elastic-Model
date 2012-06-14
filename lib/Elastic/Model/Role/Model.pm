@@ -336,17 +336,20 @@ sub save_doc {
 #===================================
 sub delete_doc {
 #===================================
-    my $self   = shift;
-    my $doc    = shift;
-    my %args   = ref $_[0] ? %{ shift() } : @_;
-    my $uid    = $doc->uid;
-    my $ns     = $self->namespace_for_domain( $uid->index );
-    my $result = $self->store->delete_doc( $doc->uid, \%args );
+    my ( $self, %args ) = @_;
+    my $uid = delete $args{uid}
+        or croak "No UID passed to delete_doc()";
+
+    my $result = $self->store->delete_doc( $uid, %args )
+        or return;
+
     $uid->update_from_store($result);
-    my $scope = $self->current_scope;
-    return $scope
-        ? $scope->delete_object( $ns->name, $doc )
-        : $doc;
+
+    if ( my $scope = $self->current_scope ) {
+        my $ns = $self->namespace_for_domain( $uid->index );
+        $scope->delete_object( $ns->name, $uid );
+    }
+    return $uid;
 }
 
 #===================================
@@ -576,7 +579,10 @@ L<create_doc()|Elastic::Model::Store/"create_doc()">.
 
 =head3 delete_doc()
 
-TODO: Currently not working
+    $uid = $model->delete_doc(uid => $uid, ignore_missing => 1, ...)
+
+Calls L<Elastic::Model::Store/delete_doc()> and returns the updated
+L<Elastic::Model::UID> object.
 
 =head3 search()
 

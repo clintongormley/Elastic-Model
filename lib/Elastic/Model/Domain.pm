@@ -103,8 +103,22 @@ sub delete {
 #===================================
     my $self = shift;
 
-    # TODO: delete-by-id
+    my $type = shift or croak "No type passed to delete()";
+    my $id   = shift or croak "No id passed to delete()";
+    my %args = @_;
+
+    my $uid  = Elastic::Model::UID->new(
+        index   => $self->name,
+        type    => $type,
+        id      => $id,
+        routing => delete $args{routing} || $self->_default_routing,
+    );
+    $self->model->delete_doc( uid => $uid, %args );
 }
+
+#===================================
+sub maybe_delete { shift->delete( @_, ignore_missing => 1 ) }
+#===================================
 
 #===================================
 sub view {
@@ -142,7 +156,13 @@ Retrieve a doc by ID:
 
     $user = $domain->get( $type => $id );
 
-    $user = $domain->maybe_get( $type => $id );   # return undef if missing
+    $user = $domain->maybe_get( $type => $id );      # return undef if missing
+
+Delete a doc by ID;
+
+    $uid = $domain->delete( $type => $id );
+
+    $user = $domain->maybe_delete( $type => $id );   # return undef if missing
 
 Create a view on the current domain:
 
@@ -220,9 +240,26 @@ L<Elastic::Model::Store/get_doc()> for more parameters which can be passed.
 =head2 maybe_get()
 
     $doc = $domain->maybe_get( $type => $id );
-    $doc = $domain->maybe_get( $type => $id, routing => $routing );
+    $doc = $domain->maybe_get( $type => $id, routing => $routing, ... );
 
 Retrieves a doc of type C<$type> with ID C<$id> from index C<< $domain->name >>
+or returns undef if the doc doesn't exist.
+
+=head2 delete()
+
+    $uid = $domain->delete( $type => $id );
+    $uid = $domain->delete( $type => $id, routing => $routing, ... );
+
+Deletes a doc of type C<$type> with ID C<$id> from index C<< $domain->name >>
+or throws an exception if the doc doesn't exist. See
+L<Elastic::Model::Store/delete_doc()> for more parameters which can be passed.
+
+=head2 maybe_delete()
+
+    $uid = $domain->maybe_delete( $type => $id );
+    $uid = $domain->maybe_delete( $type => $id, routing => $routing, ... );
+
+Deletes a doc of type C<$type> with ID C<$id> from index C<< $domain->name >>
 or returns undef if the doc doesn't exist.
 
 =head2 view()
