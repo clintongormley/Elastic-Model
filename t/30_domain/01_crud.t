@@ -16,26 +16,39 @@ my $model = new_ok( 'MyApp', [ es => $es ], 'Model' );
 ok my $ns = $model->namespace('myapp'), 'Got ns';
 
 ok $ns->index('myapp2')->create, 'Create index myapp2';
+ok $ns->index('myapp3')->create, 'Create index myapp3';
 
 ok $ns->alias->to('myapp2'), 'Alias myapp to myapp2';
 ok $ns->alias('routed')->to( myapp2 => { routing => 'foo' } ),
     'Alias routed to myapp2 with routing';
+ok $ns->alias('multi')->to( 'myapp2', 'myapp3' );
 
 ## Basics - myapp ##
 isa_ok my $myapp = $model->domain('myapp'), 'Elastic::Model::Domain',
     'Got domain myapp';
+
 is $myapp->name, 'myapp', 'myapp has name';
 is $myapp->namespace->name, 'myapp', 'myapp has namespace:myapp';
-ok !$myapp->_default_routing, 'myapp has no default routing';
 
 ## Basics - routed ##
 isa_ok my $routed = $model->domain('routed'), 'Elastic::Model::Domain',
     'Got domain routed';
 is $routed->name, 'routed', 'routed has name';
 is $routed->namespace->name, 'myapp', 'routed has namespace:myapp';
+
+## Default routing ##
+is $myapp->_default_routing, '', 'myapp has no default routing';
+is $model->domain('myapp2')->_default_routing, '', 'Routing for index domain';
 is $routed->_default_routing, 'foo', 'routed has default routing';
+throws_ok sub { $model->domain('myapp1_fixed')->_default_routing },
+    qr/doesn't exist/, 'Non-existent domain';
+throws_ok sub { $model->domain('multi')->_default_routing },
+    qr/more than one index/, 'Multi-index alias';
 
 ## new_doc - myapp ##
+throws_ok sub { $myapp->new_doc }, qr/No type/, 'new_doc no type';
+throws_ok sub { $myapp->new_doc('foo') }, qr/Unknown type/,
+    'new_doc Unknown type';
 
 isa_ok my $user = $myapp->new_doc(
     user => {
@@ -48,7 +61,7 @@ isa_ok my $user = $myapp->new_doc(
 
 ## UID pre-save ##
 test_uid(
-    $user,
+    $user->uid,
     'Pre-save UID',
     {   index      => 'myapp',
         type       => 'user',
@@ -63,7 +76,7 @@ test_uid(
 ok $user->save, 'User saved';
 
 test_uid(
-    $user,
+    $user->uid,
     'Saved UID',
     {   index      => 'myapp2',
         type       => 'user',
@@ -77,17 +90,17 @@ test_uid(
 
 ## create - routed ##
 isa_ok $user = $routed->create(
-    user => {
+    user => (
         id    => 2,
         name  => 'John',
         email => 'john@foo.com'
-    }
+    )
     ),
     'MyApp::User', 'Routed user';
 
 ## UID post save ##
 test_uid(
-    $user,
+    $user->uid,
     'Routed UID',
     {   index      => 'myapp2',
         type       => 'user',
@@ -100,10 +113,12 @@ test_uid(
 );
 
 ## Get - myapp - user##
+throws_ok sub { $myapp->get() }, qr/No type/, 'Get no type';
+throws_ok sub { $myapp->get('user') }, qr/No id/, 'Get no ID';
 isa_ok $user= $myapp->get( user => 1 ), 'MyApp::User', 'Get user myapp';
 
 test_uid(
-    $user,
+    $user->uid,
     'Retrieved UID',
     {   index      => 'myapp2',
         type       => 'user',
@@ -125,7 +140,7 @@ is $myapp->get( user => 2, routing => 'foo' )->uid->id, 2,
 isa_ok $user = $routed->get( user => 2 ), 'MyApp::User', 'Get user routed';
 
 test_uid(
-    $user,
+    $user->uid,
     'Retrieved routed UID',
     {   index      => 'myapp2',
         type       => 'user',
@@ -142,14 +157,13 @@ throws_ok sub { $routed->get( user => 1 ) }, qr/Missing/,
 
 ## Maybe get ##
 isa_ok $user = $routed->get( user => 2 ), 'MyApp::User', 'Maybe_get existing';
-is $myapp->maybe_get(user=>3), undef, 'Maybe_get missing';
-
+is $myapp->maybe_get( user => 3 ), undef, 'Maybe_get missing';
 
 ## Change and save ##
 is $user->name('James'), 'James', 'Field updated';
 ok $user->save, 'User saved';
 test_uid(
-    $user,
+    $user->uid,
     'Updated UID',
     {   index      => 'myapp2',
         type       => 'user',
@@ -161,13 +175,37 @@ test_uid(
     }
 );
 
+## Delete ##
+throws_ok sub { $myapp->delete }, qr/No type/, 'Delete no type';
+throws_ok sub { $myapp->delete('foo') }, qr/No id/, 'Delete no id';
+throws_ok sub { $myapp->delete( user => 2 ) }, qr/Missing/,
+    'Delete missing doc';
+throws_ok sub { $myapp->delete( user => 1, routing => 'foo' ) }, qr/Missing/,
+    'Delete missing with routing';
+is $routed->maybe_delete( user => 1 ), undef, 'Delete maybe';
+ok my $uid = $myapp->maybe_delete( user => 2, routing => 'foo' ),
+    'Delete with routing';
+
+test_uid(
+    $uid,
+    'Deleted UID',
+    {   index      => 'myapp2',
+        type       => 'user',
+        id         => 2,
+        routing    => 'foo',
+        version    => 3,
+        from_store => 1,
+        cache_key  => 'user;2'
+    }
+);
+
 ## DONE ##
 
 done_testing;
 
 sub test_uid {
-    my ( $obj, $name, $vals ) = @_;
-    isa_ok my $uid = $obj->uid, 'Elastic::Model::UID', $name;
+    my ( $uid, $name, $vals ) = @_;
+    isa_ok $uid , 'Elastic::Model::UID', $name;
     for my $t (qw(index type id routing version from_store cache_key)) {
         is $uid->$t, $vals->{$t}, "$name $t";
     }
