@@ -88,7 +88,7 @@ sub _as_object_builder {
     sub {
         my $raw = shift or return;
         my $uid = Elastic::Model::UID->new_from_store($raw);
-        $model->get_doc( $uid, $raw->{_source} );
+        $model->get_doc( uid => $uid, source => $raw->{_source} );
     };
 }
 
@@ -100,7 +100,7 @@ sub _as_objects_builder {
     sub {
         map {
             my $uid = Elastic::Model::UID->new_from_store($_);
-            $m->get_doc( $uid, $_->{_source} )
+            $m->get_doc( uid => $uid, source => $_->{_source} )
         } @_;
     };
 }

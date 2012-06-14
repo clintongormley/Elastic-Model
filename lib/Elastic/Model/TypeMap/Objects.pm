@@ -88,12 +88,12 @@ sub _inflate_class {
             die "Missing UID\n" unless $hash->{uid};
             my $uid = Elastic::Model::UID->new( %{ $hash->{uid} },
                 from_store => 1 );
-            return $model->get_doc($uid);
-            };
+            return $model->get_doc( uid => $uid );
+        };
     }
 
     my $attrs = _class_attrs( $map, $class, $attr );
-    my $attr_inflator = $map->class_inflator($class,$attrs);
+    my $attr_inflator = $map->class_inflator( $class, $attrs );
 
     return sub {
         my $hash = shift;

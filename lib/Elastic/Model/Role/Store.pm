@@ -21,10 +21,14 @@ sub scrolled_search { shift->es->scrolled_search(@_) }
 #===================================
 sub get_doc {
 #===================================
-    my ( $self, $uid ) = @_;
+    my ( $self, %args ) = @_;
+    my $uid = $args{uid};
+    my %extra = map { $_ => $args{$_} }
+        grep { defined $args{$_} } qw(preference refresh ignore_missing);
+
     return $self->es->get(
         fields => [qw(_routing _parent _source)],
-        %{ $uid->read_params }
+        %{ $uid->read_params }, %extra
     );
 }
 
@@ -74,11 +78,14 @@ Returns the connection to ElasticSearch.
 
 =head2 get_doc()
 
-    $result = $store->get_doc($uid);
+    $result = $store->get_doc(uid => $uid);
 
 Retrieves the doc specified by the L<$uid|Elastic::Model::UID> from
 ElasticSearch, by calling L<ElasticSearch/"get()">. Throws an exception
 if the document does not exist.
+
+Also accepts C<preference>, C<refresh>,  C<ignore_missing> parameters.
+See L<ElasticSearch/get()> for details.
 
 =head2 create_doc()
 

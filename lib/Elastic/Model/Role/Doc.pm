@@ -100,7 +100,7 @@ sub old_value {
 sub _get_source {
 #===================================
     my $self = shift;
-    $self->model->get_doc_source( $self->uid );
+    $self->model->get_doc_source( uid => $self->uid );
 }
 
 #===================================

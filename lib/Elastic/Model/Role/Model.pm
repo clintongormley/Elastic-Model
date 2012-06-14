@@ -281,18 +281,22 @@ sub detach_scope {
 #===================================
 sub get_doc {
 #===================================
-    my ( $self, $uid, $source ) = @_;
-    croak "No UID passed to get_doc()" unless $uid;
+    my ( $self, %args ) = @_;
+    my $uid = $args{uid}
+        or croak "No UID passed to get_doc()";
 
-    my $ns    = $self->namespace_for_domain( $uid->index );
-    my $scope = $self->current_scope;
+    my $ns     = $self->namespace_for_domain( $uid->index );
+    my $scope  = $self->current_scope;
+    my $source = $args{source};
 
     my $object;
     $object = $scope->get_object( $ns, $uid )
         if $scope && !$source;
 
     unless ($object) {
-        $source ||= $self->get_doc_source($uid) unless $uid->from_store;
+        unless ( $source || $uid->from_store ) {
+            $source = $self->get_doc_source(%args) or return;
+        }
         my $class = $ns->class_for_type( $uid->type );
         $object = $class->meta->new_stub( $uid, $source );
         $object = $scope->store_object( $ns->name, $object )
@@ -304,11 +308,10 @@ sub get_doc {
 #===================================
 sub get_doc_source {
 #===================================
-    my $self = shift;
-    my $uid  = shift;
+    my ( $self, %args ) = @_;
 
-    my $result = $self->store->get_doc($uid);
-    $uid->update_from_store($result);
+    my $result = $self->store->get_doc(%args) or return;
+    $args{uid}->update_from_store($result);
     return $result->{_source};
 }
 
@@ -529,7 +532,8 @@ Returns the L<Elastic::Model::Store> instance.
 Normally, you want to use L<Elastic::Model::Domain/"get()"> rather than this
 method.
 
-    $doc = $model->get_doc($uid);
+    $doc = $model->get_doc(uid => $uid);
+    $doc = $model->get_doc(uid => $uid, ignore_missing => 1, ...);
 
 C<get_doc()> tries to retrieve the object corresponding to the
 L<$uid|Elastic::Model::UID>, first from the current
@@ -537,18 +541,22 @@ L<scope|Elastic::Model::Scope> or any of its parents, then failing that,
 from the L<store|Elastic::Model::Store>. If it finds the doc, then
 it stores it in the current scope, otherwise it throws an error.
 
-C<get_doc()> also accepts a second optional C<$source> parameter which is
+C<get_doc()> also accepts an optional C<$source> parameter which is
 used internally for inflating search results.
-
 See L<Elastic::Model::Scope> for a more detailed explanation.
+
+Any other args are passed on to L</Elastic::Model::Store::get_doc()>.
 
 =head3 get_doc_source()
 
-    $doc = $model->get_doc_source($uid)
+    $doc = $model->get_doc_source(uid => $uid);
+    $doc = $model->get_doc_source(uid => $uid, ignore_missing => 1, ...);
 
 Calls L<Elastic::Model::Store/"get_doc()"> and returns the raw source hashref
 as stored in ElasticSearch for the doc with the corresponding
 L<$uid|Elastic::Model::UID>. Throws an error if it doesn't exist.
+
+Any other args are passed on to L</Elastic::Model::Store::get_doc()>.
 
 =head3 save_doc()
 

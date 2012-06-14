@@ -84,27 +84,19 @@ sub get {
 
     my $type = shift or croak "No type passed to get()";
     my $id   = shift or croak "No id passed to get()";
+    my %args = @_;
     my $uid  = Elastic::Model::UID->new(
         index   => $self->name,
         type    => $type,
         id      => $id,
-        routing => $self->_default_routing,
-        @_
+        routing => delete $args{routing} || $self->_default_routing,
     );
-    $self->model->get_doc($uid);
+    $self->model->get_doc( uid => $uid, %args );
 }
 
 #===================================
-sub maybe_get {
+sub maybe_get { shift->get( @_, ignore_missing => 1 ) }
 #===================================
-    my $self = shift;
-    my $user;
-    eval {
-        $user = $self->get(@_);
-        1;
-    } or $@->isa('ElasticSearch::Error::Missing') || die $@;
-    return $user;
-}
 
 #===================================
 sub delete {
@@ -219,10 +211,11 @@ This is the equivalent of:
 =head2 get()
 
     $doc = $domain->get( $type => $id );
-    $doc = $domain->get( $type => $id, routing => $routing );
+    $doc = $domain->get( $type => $id, routing => $routing, ... );
 
 Retrieves a doc of type C<$type> with ID C<$id> from index C<< $domain->name >>
-or throws an exception if the doc doesn't exist.
+or throws an exception if the doc doesn't exist. See
+L<Elastic::Model::Store/get_doc()> for more parameters which can be passed.
 
 =head2 maybe_get()
 
