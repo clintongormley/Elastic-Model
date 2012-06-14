@@ -110,7 +110,7 @@ sub delete {
 sub view {
 #===================================
     my $self = shift;
-    $self->model->view( index => $self->name, @_ );
+    $self->model->view( domain => $self->name, @_ );
 }
 
 #===================================
@@ -229,7 +229,7 @@ or returns undef if the doc doesn't exist.
 
     $view = $domain->view(%args)
 
-Creates a L<view|Elastic::Model::View> with the L<Elastic::Model::View/"index">
+Creates a L<view|Elastic::Model::View> with the L<Elastic::Model::View/"domain">
 set to C<< $domain->name >>.  A C<view> is used for searching docs in a
 C<$domain>.
 

@@ -10,7 +10,7 @@ use MooseX::Attribute::ChainedClone();
 use namespace::autoclean;
 
 #===================================
-has 'index' => (
+has 'domain' => (
 #===================================
     traits  => ['ChainedClone'],
     isa     => IndexNames,
@@ -243,7 +243,8 @@ sub delete {
 #===================================
     my $self = shift;
     my %args = (
-        ( map { $_ => $self->$_ } qw(index type routing ) ),
+        index => $self->domain,
+        ( map { $_ => $self->$_ } qw(type routing ) ),
         query => $self->_build_query,
         @_
     );
@@ -267,11 +268,12 @@ sub _build_search {
     my %args = ( (
             map { $_ => $self->$_ }
                 qw(
-                index type sort from size highlight facets
+                type sort from size highlight facets
                 index_boost min_score preference routing
                 script_fields timeout track_scores
                 )
         ),
+        index => $self->domain,
         filter => $self->post_filter,
         query  => $self->_build_query,
         @_,
@@ -366,7 +368,7 @@ __END__
 
 =head1 SYNOPSIS
 
-    $view  = $model->view->index('my_domain');
+    $view  = $model->view->domain('my_domain');
     $posts = $view->type('post');
 
 10 most relevant posts containing C<'perl'> or C<'moose'>
@@ -412,20 +414,20 @@ To retrieve the results, you can use one of the "finalisers", eg:
 
 =head1 ATTRIBUTES
 
-=head2 index
+=head2 domain
 
-    $new_view = $view->index('my_index');
-    $new_view = $view->index(['index_one','index_two']);
+    $new_view = $view->domain('my_index');
+    $new_view = $view->domain(['index_one','alias_two']);
 
-By default, a C<view> will query all the indices known to a
-L<model|Elastic::Model::Role::Model>.  You can specify one or more indices.
+By default, a C<view> will query all the domains known to a
+L<model|Elastic::Model::Role::Model>.  You can specify one or more domains.
 
 =head2 type
 
     $new_view = $view->type('user');
     $new_view = $view->type(['user','post']);
 
-By default, a C<view> will query all types in all L<indices/"index"> specified
+By default, a C<view> will query all types in all L<domains/"domain"> specified
 in the view.  You can specify one or more types.
 
 =head2 query
@@ -573,6 +575,8 @@ to just the relevant shard(s).
 
 Make results from one index more relevant than those from another index.
 
+## TODO: Does an alias name also work?
+
 =head2 min_score
 
     $new_view = $view->min_score(2);
@@ -647,7 +651,7 @@ the same result appearing on page 1 and page 2.
 
 The C<scroll> will be kept alive for a max time of C<$timeout> since the
 last pull.  You don't want this number to be too high, as it will mean
-that ElasticSearch has to keep many old indexes live to serve them, or too
+that ElasticSearch has to keep many old indices live to serve them, or too
 low, otherwise your scroll might disappear while you are pulling.  By default,
 it is set to 1 minute.
 
