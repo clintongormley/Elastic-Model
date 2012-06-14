@@ -21,14 +21,11 @@ sub scrolled_search { shift->es->scrolled_search(@_) }
 #===================================
 sub get_doc {
 #===================================
-    my ( $self, %args ) = @_;
-    my $uid = $args{uid};
-    my %extra = map { $_ => $args{$_} }
-        grep { defined $args{$_} } qw(preference refresh ignore_missing);
-
+    my ( $self, $uid, %args ) = @_;
     return $self->es->get(
         fields => [qw(_routing _parent _source)],
-        %{ $uid->read_params }, %extra
+        %{ $uid->read_params },
+        %args,
     );
 }
 
@@ -40,11 +37,11 @@ sub index_doc  { shift->_write_doc( 'index',  @_ ) }
 #===================================
 sub _write_doc {
 #===================================
-    my ( $self, $action, $uid, $data, $args ) = @_;
+    my ( $self, $action, $uid, $data, %args ) = @_;
     return $self->es->$action(
         data => $data,
         %{ $uid->write_params },
-        %$args
+        %args
     );
 }
 
@@ -78,18 +75,15 @@ Returns the connection to ElasticSearch.
 
 =head2 get_doc()
 
-    $result = $store->get_doc(uid => $uid);
+    $result = $store->get_doc($uid, %args);
 
 Retrieves the doc specified by the L<$uid|Elastic::Model::UID> from
 ElasticSearch, by calling L<ElasticSearch/"get()">. Throws an exception
 if the document does not exist.
 
-Also accepts C<preference>, C<refresh>,  C<ignore_missing> parameters.
-See L<ElasticSearch/get()> for details.
-
 =head2 create_doc()
 
-    $result = $store->create_doc($uid, \%data, \%args);
+    $result = $store->create_doc($uid => \%data, %args);
 
 Creates a doc in the ElasticSearch backend and returns the raw result.
 Throws an exception if a doc with the same L<$uid|Elastic::Model::UID>
@@ -97,7 +91,7 @@ already exists.  Any C<%args> are passed to L<ElasticSearch/"create()">
 
 =head2 index_doc()
 
-    $result = $store->index_doc($uid, \%data, \%args);
+    $result = $store->index_doc($uid => \%data, %args);
 
 Updates (or creates) a doc in the ElasticSearch backend and returns the raw
 result. Any failure throws an exception.  If the L<version|Elastic::Model::UID/"version">
@@ -106,7 +100,8 @@ will be thrown.  Any C<%args> will be passed to L<ElasticSearch/"index()">.
 For instance, to overwrite a document regardless of version number, you could
 do:
 
-    $result = $store->index_doc($uid, \%data, { version => 0 });
+    $result = $store->index_doc($uid => \%data, version => 0 );
+
 =head2 delete_doc()
 
     $result = $store->delete_doc($uid, %args);

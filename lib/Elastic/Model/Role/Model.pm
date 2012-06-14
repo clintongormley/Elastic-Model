@@ -310,27 +310,32 @@ sub get_doc_source {
 #===================================
     my ( $self, %args ) = @_;
 
-    my $result = $self->store->get_doc(%args) or return;
-    $args{uid}->update_from_store($result);
+    my $uid = delete $args{uid};
+    my $result = $self->store->get_doc( $uid, %args ) or return;
+    $uid->update_from_store($result);
     return $result->{_source};
 }
 
 #===================================
 sub save_doc {
 #===================================
-    my $self   = shift;
-    my $doc    = shift;
-    my %args   = ref $_[0] ? %{ shift() } : @_;
+    my ( $self, %args ) = @_;
+
+    my $doc    = delete $args{doc};
     my $uid    = $doc->uid;
-    my $ns     = $self->namespace_for_domain( $uid->index );
     my $action = $uid->from_store ? 'index_doc' : 'create_doc';
     my $data   = $self->deflate_object($doc);
-    my $result = $self->store->$action( $uid, $data, \%args );
+
+    my $result = $self->store->$action( $uid, $data, %args );
     $uid->update_from_store($result);
-    my $scope = $self->current_scope;
-    return $scope
-        ? $scope->store_object( $ns->name, $doc )
-        : $doc;
+    $doc->_set_source($data);
+
+    if ( my $scope = $self->current_scope ) {
+        my $ns = $self->namespace_for_domain( $uid->index );
+        return $scope->store_object( $ns->name, $doc );
+    }
+    return $doc;
+
 }
 
 #===================================
@@ -566,7 +571,7 @@ Any other args are passed on to L</Elastic::Model::Store::get_doc()>.
 Normally, you want to use L<Elastic::Model::Role::Doc/"save()"> rather than this
 method.
 
-    $doc = $domain->save_doc($doc,%args);
+    $doc = $model->save_doc(doc => $doc, %args);
 
 Saves C<$doc> to ElasticSearch by calling
 L<Elastic::Model::Store/"index_doc()"> (if the C<$doc> was originally loaded

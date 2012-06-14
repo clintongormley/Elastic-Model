@@ -130,11 +130,10 @@ sub touch {
 sub save {
 #===================================
     my $self = shift;
-    my %args = ref $_[0] ? %{ shift() } : @_;
 
     if ( $self->has_changed || !$self->uid->from_store ) {
         $self->touch;
-        $self->model->save_doc( $self, \%args );
+        $self->model->save_doc( doc => $self, @_ );
         $self->_clear_old_value;
     }
     $self;
