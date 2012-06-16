@@ -480,7 +480,7 @@ connection to C<localhost:9200>.
     $domain = $model->domain($name);
 
 Returns an L<Elastic::Model::Domain> instance corresponding to the C<$name>,
-which can be the L<Elastic::Model::Domain/"name">, a
+which can be the L<Elastic::Model::Domain/"name">, an
 L<Elastic::Model::Domain/"sub_domain">, one of the
 L<Elastic::Model::Domain/"archive_indices"> or any alias or index that
 is aliased to any listed domain name, sub-domain name or archive-index.

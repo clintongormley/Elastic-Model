@@ -23,7 +23,11 @@ has '_virtual_size' => (
     writer => '_set_virtual_size',
 );
 
-has '+wrapper' => ( builder => '_as_objects' );
+#===================================
+has '+wrapper' => (
+#===================================
+    builder => 'as_results'
+);
 
 #===================================
 sub BUILD {

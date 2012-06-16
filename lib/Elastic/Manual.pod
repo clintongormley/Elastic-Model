@@ -61,6 +61,10 @@ L<Elastic::Model>.
 
 A brief definition of some of the terms used by ElasticSearch and Elastic::Model.
 
+=head2 L<Elastic::Manual::Searching>
+
+Which search method to use with a View, and how to iterate through the results.
+
 =head2 L<Elastic::Manual::Scaling>
 
 How to use Elastic::Model to go from a small development environment to

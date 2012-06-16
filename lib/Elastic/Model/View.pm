@@ -4,26 +4,23 @@ use Moose;
 
 use Carp;
 use Elastic::Model::Types qw(IndexNames TypeNames SearchType SortArgs);
-use MooseX::Types::Moose qw(:all);
-use MooseX::Attribute::ChainedClone();
+use MooseX::Types::Moose qw(Str Int HashRef ArrayRef Bool Num Object);
 
 use namespace::autoclean;
 
 #===================================
 has 'domain' => (
 #===================================
-    traits  => ['ChainedClone'],
     isa     => IndexNames,
     is      => 'rw',
     lazy    => 1,
-    builder => '_build_index_names',
+    builder => '_build_domains',
     coerce  => 1,
 );
 
 #===================================
 has 'type' => (
 #===================================
-    traits  => ['ChainedClone'],
     is      => 'rw',
     isa     => TypeNames,
     default => sub { [] },
@@ -33,57 +30,48 @@ has 'type' => (
 #===================================
 has 'query' => (
 #===================================
-    traits => ['ChainedClone'],
-    isa    => HashRef,
-    is     => 'rw',
+    isa => HashRef,
+    is  => 'rw',
 );
 
 #===================================
 has 'filter' => (
 #===================================
-    traits => ['ChainedClone'],
-    isa    => HashRef,
-    is     => 'rw',
+    isa => HashRef,
+    is  => 'rw',
 );
 
 #===================================
 has 'post_filter' => (
 #===================================
-    traits => ['ChainedClone'],
-    isa    => HashRef,
-    is     => 'rw',
-);
-
-#===================================
-has '_builder' => (
-#===================================
-    isa     => Object,
-    is      => 'ro',
-    lazy    => 1,
-    builder => '_build_builder'
+    isa => HashRef,
+    is  => 'rw',
 );
 
 #===================================
 has 'facets' => (
 #===================================
-    traits => ['ChainedClone'],
-    isa    => HashRef [HashRef],
-    is     => 'rw'
+    traits  => ['Hash'],
+    isa     => HashRef [HashRef],
+    is      => 'rw',
+    handles => {
+        add_facet    => 'set',
+        remove_facet => 'delete',
+        get_facet    => 'get'
+    }
 );
 
 #===================================
 has 'fields' => (
 #===================================
-    traits  => ['ChainedClone'],
-    isa     => ArrayRef [Str],
-    is      => 'rw',
+    isa => ArrayRef [Str],
+    is => 'rw',
     default => sub { ['_source'] },
 );
 
 #===================================
 has 'from' => (
 #===================================
-    traits  => ['ChainedClone'],
     isa     => Int,
     is      => 'rw',
     default => 0,
@@ -92,7 +80,6 @@ has 'from' => (
 #===================================
 has 'size' => (
 #===================================
-    traits  => ['ChainedClone'],
     isa     => Int,
     is      => 'rw',
     default => 10,
@@ -101,80 +88,96 @@ has 'size' => (
 #===================================
 has 'sort' => (
 #===================================
-    traits => ['ChainedClone'],
     isa    => SortArgs,
     is     => 'rw',
     coerce => 1,
 );
 
 #===================================
-has 'highlight' => (
+has 'highlighting' => (
 #===================================
-    traits => ['ChainedClone'],
-    isa    => HashRef,
-    is     => 'rw',
+    isa => HashRef,
+    is  => 'rw',
 );
 
 #===================================
-has 'index_boost' => (
+has 'index_boosts' => (
 #===================================
-    traits => ['ChainedClone'],
-    isa    => HashRef [Num],
-    is     => 'rw',
+    isa => HashRef [Num],
+    is => 'rw',
+    traits  => ['Hash'],
+    handles => {
+        add_index_boost    => 'set',
+        remove_index_boost => 'delete',
+        get_index_boost    => 'get'
+    }
 );
 
 #===================================
 has 'min_score' => (
 #===================================
-    traits => ['ChainedClone'],
-    isa    => Num,
-    is     => 'rw',
+    isa => Num,
+    is  => 'rw',
 );
 
 #===================================
 has 'preference' => (
 #===================================
-    traits => ['ChainedClone'],
-    isa    => Str,
-    is     => 'rw',
+    isa => Str,
+    is  => 'rw',
 );
 
 #===================================
 has 'routing' => (
 #===================================
-    traits => ['ChainedClone'],
-    isa    => ArrayRef[Str],
-    is     => 'rw',
+    isa => ArrayRef [Str],
+    is => 'rw',
 );
 
 #===================================
 has 'script_fields' => (
 #===================================
-    traits => ['ChainedClone'],
-    isa    => HashRef,
-    is     => 'rw',
+    isa     => HashRef,
+    is      => 'rw',
+    traits  => ['Hash'],
+    handles => {
+        add_script_field    => 'set',
+        remove_script_field => 'delete',
+        get_script_field    => 'get'
+    }
 );
 
 #===================================
 has 'timeout' => (
 #===================================
-    traits => ['ChainedClone'],
-    isa    => Str,
-    is     => 'rw',
+    isa => Str,
+    is  => 'rw',
+);
+
+#===================================
+has 'explain' => (
+#===================================
+    is  => 'rw',
+    isa => Bool,
+);
+
+#===================================
+has 'stats' => (
+#===================================
+    is  => 'rw',
+    isa => ArrayRef [Str],
 );
 
 #===================================
 has 'track_scores' => (
 #===================================
-    traits => ['ChainedClone'],
-    isa    => Bool,
-    is     => 'rw',
+    isa => Bool,
+    is  => 'rw',
 );
 
 #===================================
 has 'search_builder' => (
 #===================================
-    traits  => ['ChainedClone'],
     isa     => Object,
     is      => 'rw',
     lazy    => 1,
@@ -189,28 +192,117 @@ sub _build_search_builder { shift->model->es->builder }
 sub queryb {
 #===================================
     my $self = shift;
-    $self->query( $self->search_builder->query(@_)->{query} );
+    my @args = @_ > 1 ? {@_} : shift();
+    $self->query( $self->search_builder->query(@args)->{query} );
 }
 
 #===================================
 sub filterb {
 #===================================
     my $self = shift;
-    $self->filter( $self->search_builder->filter(@_)->{filter} );
+    my @args = @_ > 1 ? {@_} : shift();
+    $self->filter( $self->search_builder->filter(@args)->{filter} );
 }
 
 #===================================
 sub post_filterb {
 #===================================
     my $self = shift;
-    $self->post_filter( $self->search_builder->filter(@_)->{filter} );
+    my @args = @_ > 1 ? {@_} : shift();
+    $self->post_filter( $self->search_builder->filter(@args)->{filter} );
+}
+
+#===================================
+# clone views when setting attributes
+#===================================
+around [ qw(
+        from size timeout track_scores
+        search_builder preference min_score explain
+        )
+] => sub { _clone_args( \&_scalar_args, @_ ) };
+#===================================
+around [ qw(
+        domain type fields sort routing stats
+        )
+] => sub { _clone_args( \&_array_args, @_ ) };
+#===================================
+around [ qw(
+        facets index_boosts script_fields
+        highlighting query filter post_filter
+        )
+] => sub { _clone_args( \&_hash_args, @_ ) };
+#===================================
+for my $name (qw(facet index_boost script_field)) {
+    my $attr = $name . 's';
+    for my $method ( "add_$name", "remove_$name" ) {
+        around $method => sub {
+            my $orig = shift;
+            my $self = shift;
+            my %hash = %{ $self->$attr || {} };
+            $self = $self->$attr( \%hash );
+            $self->$orig(@_);
+            return $self;
+        };
+    }
+}
+#===================================
+
+#===================================
+sub _scalar_args {@_}
+sub _array_args { ref $_[0] eq 'ARRAY' ? shift() : \@_ }
+sub _hash_args { @_ > 1 ? {@_} : @_ }
+#===================================
+
+#===================================
+sub _clone_args {
+#===================================
+    my $args = shift;
+    my $orig = shift;
+    my $self = shift;
+    if (@_) {
+        $self = bless {%$self}, ref $self;
+        $self->$orig( $args->(@_) );
+        return $self;
+    }
+    $self->$orig();
 }
 
 no Moose;
 
 #===================================
-sub _build_index_names { [ Class::MOP::class_of(shift->model)->all_domains ] }
+sub _BUILD {
 #===================================
+    my ( $self, $args ) = @_;
+    for (qw(queryb filterb post_filterb highlight)) {
+        $self->$_( $args->{$_} ) if defined $args->{$_};
+    }
+}
+
+#===================================
+sub _build_domains {
+#===================================
+    my $self       = shift;
+    my $namespaces = $self->model->namespaces;
+    [   map { $_, @{ $namespaces->{$_}->fixed_domains } }
+        sort keys %$namespaces
+    ];
+}
+
+#===================================
+sub highlight {
+#===================================
+    my $self      = shift;
+    my %highlight = %{ $self->highlighting || {} };
+    my $fields    = $highlight{fields} = {};
+    if (@_) {
+        while ( my $field = shift @_ ) {
+            croak "Expected a field name but got ($field)" if ref $field;
+            $fields->{$field} = ref $_[0] eq 'HASH' ? shift() : {};
+        }
+        return $self->highlighting( \%highlight );
+    }
+    return keys %$fields;
+}
 
 #===================================
 sub search {
@@ -219,7 +311,6 @@ sub search {
     $self->model->results_class->new( search => $self->_build_search );
 }
 
-# TODO: scroll_objects / scroll_results ?
 #===================================
 sub scroll {
 #===================================
@@ -228,14 +319,13 @@ sub scroll {
     return $self->model->scrolled_results_class->new( search => $search, );
 }
 
-# TODO: scan_objects / scan_results
 #===================================
 sub scan {
 #===================================
     my $self = shift;
     croak "A scan cannot be combined with sorting"
         if @{ $self->sort || [] };
-    return $self->scroll( shift, search_type => 'scan' );
+    return $self->scroll_objects( shift, search_type => 'scan' );
 }
 
 #===================================
@@ -251,13 +341,9 @@ sub delete {
     $self->store->delete_by_query( \%args );
 }
 
-# TODO: first_object / first_result
 #===================================
-sub first { shift->search(@_)->first }
-sub total { shift->size(0)->search(@_)->total }
-
-# TODO: sub facets { shift->size(0)->search(@_)->facets }
-# TODO: sub page { shift->search->page(@_) }
+sub first  { shift->size(1)->search(@_)->first }
+sub total  { shift->size(0)->search(@_)->total }
 #===================================
 
 #===================================
@@ -268,14 +354,16 @@ sub _build_search {
     my %args = ( (
             map { $_ => $self->$_ }
                 qw(
-                type sort from size highlight facets
-                index_boost min_score preference routing
-                script_fields timeout track_scores
+                type sort from size facets
+                min_score preference routing
+                script_fields timeout track_scores explain
                 )
         ),
-        index => $self->domain,
-        filter => $self->post_filter,
-        query  => $self->_build_query,
+        index         => $self->domain,
+        filter        => $self->post_filter,
+        query         => $self->_build_query,
+        highlight     => $self->highlighting,
+        indices_boost => $self->index_boosts,
         @_,
         version => 1,
         fields  => [ '_parent', '_routing', @{ $self->fields } ],
@@ -299,67 +387,6 @@ sub _build_query {
         :      $q;
 }
 
-# TODO: extra methods for View
-#    count
-#    delete
-#    delete( { %qs } )
-#    get
-#    get( { %qs } )
-#    put
-#    put( { %qs } )
-#    new_document
-#    raw
-#
-#
-#
-#    query/queryb
-#    filter/filterb
-#
-#    facets
-#    fields          ## partial object?
-#    from
-#    highlight
-#    min_score
-#    preference
-#    routing
-#    script_fields
-#    search_type
-#
-#
-#
-#
-#
-#    size
-#    sort
-#    scroll
-#    track_scores
-#    timeout
-#    version
-
-#    search
-#    find ?
-#    search_related ?
-#    cursor (scroll?)
-#    single?
-#    slice
-#    next
-#    count
-#    all
-#    reset
-#    first
-#    update?
-#    update_all?
-#    delete
-#    delete_all
-#    populate/bulk create?
-#    pager?
-#    page
-#
-#    find_or_new
-#    create
-#    find_or_create
-#
-
 1;
 
 __END__
@@ -368,142 +395,251 @@ __END__
 
 =head1 SYNOPSIS
 
-    $view  = $model->view->domain('my_domain');
-    $posts = $view->type('post');
+    $view  = $domain->view();
+    $posts = $view->type( 'post' );
 
 10 most relevant posts containing C<'perl'> or C<'moose'>
 
-    $results = $posts->queryb({ content => 'perl moose' });
+    $results = $posts->queryb( content => 'perl moose' )->search;
 
-10 most relevant posts containing C<'perl'> or C<'moose'> published in 2012,
-sorted by C<timestamp>, with highlighted snippets from the C<content> field
+10 most relevant posts containing C<'perl'> or C<'moose'> published since
+1 Jan 2012, sorted by C<timestamp>, with highlighted snippets from the
+C<content> field:
 
     $results = $posts
-                ->queryb({ content => 'perl moose' })
-                ->filterb({
-                    created => {
-                        gte => '2012-01-01',
-                        lt  => '2013-01-01'
-                   }})
-                ->sort({ timestamp => 'asc' })
-                ->highlight({ field => { content => {} }});
+                ->queryb    ( 'content' => 'perl moose'            )
+                ->filterb   ( 'created' => { gte => '2012-01-01' } )
+                ->sort      ( 'timestamp'                          )
+                ->highlight ( 'content'                            )
+                ->search;
+
+The same as the above, but in one step:
+
+    $results = $domain->view(
+
+        type             => 'post',
+        sort             => 'timestamp',
+        queryb           => { content => 'perl moose' },
+        filterb          => { created => { gte => '2012-01-01' } },
+        highlight        => 'content',
+
+    )->search;
 
 Efficiently retrieve all posts, unsorted:
 
     $results = $posts->size(100)->scan('2m');
+
     while (my $result = $results->pop_result)) {
-        # do something
+        do_something_with($result);
     );
 
 =head1 DESCRIPTION
 
-L<Elastic::Model::View> is used to query your data.  Views are "chainable",
-in other words, you create a new view every time you set another option.
+L<Elastic::Model::View> is used to query your docs in ElasticSearch.
 
-For instance, you could do:
+Views are "chainable", in other words, you get a clone of the current view every
+time you set an attribute. For instance, you could do:
 
     $all_types      = $domain->view;
-    $users          = $all_types->users;
-    $posts          = $all_types->posts;
-    $recent_posts   = $posts->filter({ published => { gt => '2012-05-01' }});
+    $users          = $all_types->type('user');
+    $posts          = $all_types->('post');
+    $recent_posts   = $posts->filterb({ published => { gt => '2012-05-01' }});
 
-To retrieve the results, you can use one of the "finalisers", eg:
+Alternatively, you can set all or some of the attributes in a single call:
+
+    $recent_posts   = $domain->view(
+        type    => 'post',
+        filterb => { published => { gt => '2012-05-01 '}}
+    );
+
+Views are also reusable.  They only hit the database when you call one
+of the L<methods|/METHODS>, eg:
 
     $results        = $recent_posts->search;    # retrieve $size results
     $scroll         = $recent_posts->scroll;    # keep pulling results
 
-=head1 ATTRIBUTES
+=head1 METHODS
+
+Calling one of the methods listed below executes your query and returns
+the results.  Your C<view> is unchanged and can be reused later.
+
+See L<Elastic::Manual::Searching> for a discussion about when
+and how to use L</search()>, L</scroll()> or L</scan()>.
+
+=head2 search()
+
+    $results = $view->search();
+
+Executes a search and returns an L<Elastic::Model::Results> object
+with at most L</size> results.
+
+This is useful for returning finite results, ie where you know how many
+results you want.  For instance: I<"give me the best 10 results">.
+
+=head2 scroll()
+
+    $timeout = '1m';
+    $scrolled_results = $view->scroll($timeout);
+
+Executes a search and returns an L<Elastic::Model::Results::Scrolled>
+object which will pull L</size> results from ElasticSearch until either
+(1) no more results are available or (2) more than C<$timeout> (default 1 minute)
+elapses between requests to ElasticSearch.
+
+Scrolling allows you to return an unbound result set.  Useful if you're not
+sure whether to expect 2 results or 2000.
+
+=head2 scan()
+
+    $timeout = '1m';
+    $scrolled_results = $view->scan($timeout);
+
+L</scan()> is a special type of L</scroll()> request, intended for efficient
+handling of large numbers of unsorted docs (eg when you want to reindex
+all of your data).
+
+=head2 first()
+
+    $result = $view->first();
+    $object = $view->first->object;
+
+Executes the search and returns just the first result.  All other
+metadata is thrown away.
+
+=head2 total()
+
+    $total = $view->total();
+
+Executes the search and returns the total number of matching docs.
+All other metadta is thrown away.
+
+=head2 delete()
+
+    $results = $view->delete();
+
+Deletes all docs matching the query and returns a hashref indicating
+success. Any docs that are stored in a live L<scope|Elastic::Model::Scope>
+or are cached somewhere are not removed.
+
+This should really only be used once you are sure that the matching docs
+are out of circulation.  Also, it is more efficient to just delete a whole index
+(if possible), rather than deleting large numbers of docs.
+
+=head1 CORE ATTRIBUTES
 
 =head2 domain
 
     $new_view = $view->domain('my_index');
-    $new_view = $view->domain(['index_one','alias_two']);
+    $new_view = $view->domain('index_one','alias_two');
 
-By default, a C<view> will query all the domains known to a
-L<model|Elastic::Model::Role::Model>.  You can specify one or more domains.
+    \@domains = $view->domain;
+
+Specify one or more domains (indices or aliases) to query. By default, a C<view>
+created from a L<domain|Elastic::Model::Domain> will query just that domain's
+L<name|Elastic::Model::Domain/name>.
+A C<view> created from the L<model|Elastic::Model::Role::Model> will query all
+the main domains (ie the L<Elastic::Model::Namesapace/name>) and
+L<fixed domains|Elastic::Model::Namesapace/fixed domains> known to the model.
 
 =head2 type
 
     $new_view = $view->type('user');
-    $new_view = $view->type(['user','post']);
+    $new_view = $view->type('user','post');
 
-By default, a C<view> will query all types in all L<domains/"domain"> specified
-in the view.  You can specify one or more types.
+    \@types   = $view->type;
+
+By default, a C<view> will query all L<types|Elastic::Manual::Terminology/Type>
+L<domains/"domain"> specified in the view.  You can specify one or more types.
 
 =head2 query
 
-    $new_view = $view->query({ text => { title => 'interesting words' }});
-
-By default, a view will run a L<match_all|http://www.elasticsearch.org/guide/reference/query-dsl/match-all-query.html>
-query.  You can specify a query in the raw
-L<ElasticSearch query DSL|http://www.elasticsearch.org/guide/reference/query-dsl/>.
-
 =head2 queryb
 
-    $new_view = $view->queryb({ title => 'interesting words' })
+    # raw query DSL
+    $new_view = $view->query( text => { title => 'interesting words' } );
 
-Instead of the raw ElasticSearch query DSL, you can use the more Perlish
-L<ElasticSearch::SearchBuilder> query syntax.  This will translate the
-query to the raw DSL and set L</query>.
+    # SearchBuilder DSL
+    $new_view  = $view->queryb( title => 'interesting words' );
+
+    \%query   = $view->query
+
+Specify the query to run in the raw
+L<ElasticSearch query DSL|http://www.elasticsearch.org/guide/reference/query-dsl/>
+or use C<queryb()> to specify your query  with the more Perlish
+L<ElasticSearch::SearchBuilder> query syntax.
+
+By default, the query will
+L<match all docs|http://www.elasticsearch.org/guide/reference/query-dsl/match-all-query.html>.
 
 =head2 filter
 
-    $new_view = $view->filter({ term => { tag => 'perl' }});
+=head2 filterb
 
-You can filter the query results in the raw ElasticSearch query DSL.
+    # raw query DSL
+    $new_view = $view->filter( term => { tag => 'perl' } );
+
+    # SearchBuilder DSL
+    $new_view = $view->filterb( tag => 'perl' );
+
+    \%filter  = $view->filter;
+
+You can specify a filter to apply to the query results using either
+the raw ElasticSearch query DSL or, use C<filterb()> to specify your
+filter with the more Perlish L<ElasticSearch::SearchBuilder> DSL.
 If a filter is specified, it will be combined with the L</query>
 as a L<filtered query|http://www.elasticsearch.org/guide/reference/query-dsl/filtered-query.html>.
 or (if no query is specified) as a
 L<constant score|http://www.elasticsearch.org/guide/reference/query-dsl/constant-score-query.html>
 query.
 
-=head2 filterb
-
-    $new_view = $view->filter({ tag => 'perl' });
-
-Instead of the raw ElasticSearch query DSL, you can use the more Perlish
-L<ElasticSearch::SearchBuilder> query syntax.  This will translate the
-filter to the raw DSL and set L</filter>.
-
 =head2 post_filter
-
-    $new_view = $view->post_filter({ term => { tag => 'perl' }});
-
-L<Post-filters|http://www.elasticsearch.org/guide/reference/api/search/filter.html>
-filter the results AFTER the L<facets> have been calculated.  In the above
-example, the facets would be calculated on all values of C<tag>, but the
-results would then be limited to just those docs where C<tag == perl>.
-L</post_filter> accepts the raw ElasticSearch query DSL.
 
 =head2 post_filterb
 
-    $new_view = $view->post_filter({ tag => 'perl' });
+    # raw query DSL
+    $new_view = $view->post_filter( term => { tag => 'perl' } );
 
-Instead of the raw ElasticSearch query DSL, you can use the more Perlish
-L<ElasticSearch::SearchBuilder> query syntax.  This will translate the
-filter to the raw DSL and set L</post_filter>.
+    # SearchBuilder DSL
+    $new_view = $view->post_filterb( tag => 'perl' );
+
+    \%filter  = $view->post_filter;
+
+L<Post-filters|http://www.elasticsearch.org/guide/reference/api/search/filter.html>
+filter the results AFTER any L</facets> have been calculated.  In the above
+example, the facets would be calculated on all values of C<tag>, but the
+results would then be limited to just those docs where C<tag == perl>.
+
+You can specify a filter using either the raw ElasticSearch query DSL or,
+use C<post_filterb()> to specify it with the more Perlish
+L<ElasticSearch::SearchBuilder> DSL.
 
 =head2 sort
 
-    $new_view = $view->sort('_score');                # _score DESC
-    $new_view = $view->sort('timestamp');             # timestamp ASC
-    $new_view = $view->sort({timestamp => 'desc'});   # timestamp DESC
+    $new_view = $view->sort('_score');                # _score desc
+    $new_view = $view->sort('timestamp');             # timestamp asc
+    $new_view = $view->sort({timestamp => 'asc'});    # timestamp asc
+    $new_view = $view->sort({timestamp => 'desc'});   # timestamp desc
 
-    $new_view = $view->sort([
-        '_score',                                        # _score DESC
-        { timestamp => 'desc' }                          # then timestamp ASC
-    ]);
+    $new_view = $view->sort(
+        '_score',                                     # _score desc
+        { timestamp => 'desc' }                       # then timestamp desc
+    );
+
+    \@sort    = $view->sort
 
 By default, results are sorted by "relevance" (C<< _score => 'desc' >>).
-You can specify multiple sort arguments, which are applied in order.
+You can specify multiple sort arguments, which are applied in order, and
+can include scripts or geo-distance.
 See L<http://www.elasticsearch.org/guide/reference/api/search/sort.html> for
 more information.
 
-B<Note:> Sorting cannot be combined with L<scan()>.
+B<Note:> Sorting cannot be combined with L</scan()>.
 
 =head2 from
 
     $new_view = $view->from(10);
+
+    $from     = $view->from;
 
 By default, results are returned from the first result. If you would like to
 start at a later result (eg for paging), you can set L</from>.
@@ -512,6 +648,8 @@ start at a later result (eg for paging), you can set L</from>.
 
     $new_view = $view->size(100);
 
+    $size     = $view->size;
+
 The number of results returned in a single L</search()>, which defaults to 10.
 
 B<Note:> See L</scan()> for a slightly different interpretation of the L</size>
@@ -519,29 +657,70 @@ value.
 
 =head2 facets
 
-    $new_view = $view->facets()
+    $new_view = $view->facets(
+        facet_one => {
+            terms   => {
+                field => 'field.to.facet',
+                size  => 10
+            },
+            facet_filterb => { status => 'active' },
+        },
+        facet_two => {....}
+    );
 
-# TODO: Should be add_facet
+    $new_view = $view->add_facet( facet_three => {...} )
+    $new_view = $view->remove_facet('facet_three');
+
+    \%facets  = $view->facets;
+    \%facet   = $view->get_facet('facet_one');
+
+Facets allow you to aggregate data from a query, for instance: most popular
+terms, number of blog posts per day, average price etc. Facets are calculated
+from the query generated from L</query> and L</filter>.  If you want to filter
+your query results down further after calculating your facets, you can
+use L</post_filter>.
+
+See L<http://www.elasticsearch.org/guide/reference/api/search/facets/> for
+an explanation of what facets are available.
 
 =head2 highlight
 
-    $new_view = $view->highlight({
-        pre_tags    => '<em>',
-        post_tags   => '</em>',
-        fields      => {
-            title   => {},
-            content => {}
-        }
-    });
+    $new_view = $view->highlight(
+        'field_1',
+        'field_2' => \%field_2_settings,
+        'field_3'
+    );
 
-Add L<highlighted snippets|http://www.elasticsearch.org/guide/reference/api/search/highlighting.html>
-to your search results.
+Specify which fields should be used for
+L<highlighted snippets|http://www.elasticsearch.org/guide/reference/api/search/highlighting.html>.
+to your search results. You can pass just a list of fields or fields with
+their field-specific settings. These values are used to set the C<fields>
+parameter in L</highlighting>.
+
+=head2 highlighting
+
+    $new_view = $view->highlighting(
+        pre_tags    =>  ['<em>','<b>'],
+        post_tags   =>  ['</em>','</b>'],
+        encoder     => 'html'
+        ...
+    );
+
+The L</highlighting> attribute is used to pass any highlighting parameters
+which should be applied to all of the fields set in L</highlight> (although
+you can override these settings for individual fields by passing settings
+to L</highlight>).
+
+See L<http://www.elasticsearch.org/guide/reference/api/search/highlighting.html>.
+for more about how highlighting works.
+
+=head1 OTHER ATTRIBUTES
 
 =head2 fields
 
-    $new_view = $view->fields(['title','content']);
+    $new_view = $view->fields('title','content');
 
-By default, searches will return the L<source|http://www.elasticsearch.org/guide/reference/mapping/source-field.html>
+By default, searches will return the L<_source|http://www.elasticsearch.org/guide/reference/mapping/source-field.html>
 field which contains the whole document, allowing Elastic::Model to inflate
 the original object without having to retrieve the document separately. If you
 would like to just retrieve a subset of fields, you can specify them in
@@ -549,12 +728,20 @@ L</fields>. See L<http://www.elasticsearch.org/guide/reference/api/search/fields
 
 =head2 script_fields
 
-    $new_view = $view->script_fields({
+    $new_view = $view->script_fields(
         distance => {
             script  => q{doc['location'].distance(lat,lon)},
             params  => { lat => $lat, lon => $lon }
-        }
-    });
+        },
+        $name    => \%defn,
+        ...
+    );
+
+    $new_view = $view->add_script_field( $name => \%defn );
+    $new_view = $view->remove_script_field($name);
+
+    \%fields  = $view->script_fields;
+    \%defn    = $view->get_script_field($name);
 
 L<Script fields|http://www.elasticsearch.org/guide/reference/api/search/script-fields.html>
 can be generated using the L<mvel|http://mvel.codehaus.org/Language+Guide+for+2.0>
@@ -563,23 +750,35 @@ scripting language. (You can also use L<Javascript, Python and Java|http://www.e
 =head2 routing
 
     $new_view = $view->routing('routing_val');
-    $new_view = $view->routing(['routing_1','routing_2']);
+    $new_view = $view->routing('routing_1','routing_2');
 
 Search queries are usually directed at all shards. If you are using routing
 (eg to store related docs on the same shard) then you can limit the search
-to just the relevant shard(s).
+to just the relevant shard(s). B<Note:> if you are searching on aliases that
+have routing configured, then specifying a L</routing> manually will override
+those values.
 
-=head2 index_boost
+See L<Elastic::Manual::Scaling> for more.
 
-    $new_view = $view->index_boost({ index_1 => 4, index_2 => 2 });
+=head2 index_boosts
+
+    $new_view = $view->index_boosts(
+        index_1 => 4,
+        index_2 => 2
+    );
+
+    $new_view = $view->add_index_boost( $index => $boost );
+    $new_view = $view->remove_index_boost( $index );
+
+    \%boosts  = $view->index_boosts;
+    $boost    = $view->get_index_boost( $index );
 
 Make results from one index more relevant than those from another index.
 
-## TODO: Does an alias name also work?
-
 =head2 min_score
 
-    $new_view = $view->min_score(2);
+    $new_view  = $view->min_score(2);
+    $min_score = $view->min_score;
 
 Exclude results whose score (relevance) is less than the specified number.
 
@@ -595,169 +794,48 @@ L<http://www.elasticsearch.org/guide/reference/api/search/preference.html> for m
     $new_view = $view->timeout(10);         # 10 ms
     $new_view = $view->timeout('10s');      # 10 sec
 
+    $timeout  = $view->timeout;
+
 Sets an upper limit on the the time to wait for search results, returning
 with whatever results it has managed to receive up until that point.
 
 =head2 track_scores
 
     $new_view = $view->track_scores(1);
+    $track    = $view->track_scores;
 
 By default, If you sort on a field other than C<_score>, ElasticSearch
 does not return the calculated relevance score for each doc.  If
-L</track_score> is true, these scores will be returned regardless.
+L</track_scores> is true, these scores will be returned regardless.
+
+=head1 DEBUGGING ATTRIBUTES
+
+=head2 explain
+
+    $new_view = $view->explain(1);
+    $explain  = $view->explain;
+
+Set L</explain> to true to return debugging information explaining how
+each document's score was calculated. See
+L<Elastic::Model::Role::Results/explanation()> to view the output.
+
+=head2 stats
+
+    $new_view = $view->stats('group_1','group_2');
+    \@groups  = $view->stats;
+
+The statistics for each search can be aggregated by C<group>. These stats
+can later be retrieved using L<ElasticSearch/index_stats()>.
 
 =head2 search_builder
 
     $new_view = $view->search_builder($search_builder);
+    $builder  = $view->search_builder;
 
 If you would like to use a different search builder than the default
 L<ElasticSearch::SearchBuilder> for L</"queryb">, L</"filterb"> or
-L</postfilterb>, then you can set a value for L</searchbuilder>.
+L</post_filterb>, then you can set a value for L</search_builder>.
 
-=head1 METHODS
+=head1 TODO
 
-=head2 search()
-
-    $results = $view->search();
-
-Executes a search and returns a L<Elastic::Model::Results> object
-with at most L</size> results.
-
-This is useful for returning finite results, ie where you know how many
-results you want.  For instance: "give me the best 10 results".
-
-=head2 scroll()
-
-    $timeout = '1m';
-    $scrolled_results = $view->scroll($timeout);
-
-Executes a search and returns a L<Elastic::Model::Results::Scrolled>
-object which will pull L</size> results from ElasticSearch until either
-(1) no more results are available or (2) more than C<$timeout> elapses
-between requests to ElasticSearch.
-
-Scrolling allows you to return an unbound result set.  Useful if you're not
-sure whether to expect 2 results or 2000.  You can just keep pulling, and
-it will give you more results until they run out.  The C<$scrolled_results>
-object will pull a maximum of L</size> docs at a time, and maintain a buffer
-internally. This makes it efficient to fetch a "reasonably" large number
-of docs. (See L</scan()> for clarification of "reasonably").
-
-Also, the results reflect the state of the index at the time at which the
-initial query was made. If any docs have been updated in a way that would
-give you different query results now, this won't affect your scrolled results.
-This is useful for presenting consistent results to a user, so as to avoid
-the same result appearing on page 1 and page 2.
-
-The C<scroll> will be kept alive for a max time of C<$timeout> since the
-last pull.  You don't want this number to be too high, as it will mean
-that ElasticSearch has to keep many old indices live to serve them, or too
-low, otherwise your scroll might disappear while you are pulling.  By default,
-it is set to 1 minute.
-
-=head2 scan()
-
-    $timeout = '1m';
-    $scrolled_results = $view->scan($timeout);
-
-"Scan" is a special type of L</scroll()> request, intended for handling
-large numbers of docs.
-
-=head3 The problem with retrieving large numbers of docs
-
-When you create an index in ElasticSearch, it is created (by default) with
-5 primary shards. Each of your docs is stored in one of those shards. It is
-these primary shards that allow you to scale your index size.
-
-Let's consider what happens when you run a query like: "Give me the 10 most
-relevant docs that match C<"foo bar">".
-
-=over
-
-=item *
-
-Your query is sent to one of your ElasticSearch nodes.
-
-=item *
-
-That node forwards your query to all 5 shards in the index.
-
-=item *
-
-Each shard runs the query and finds the 10 most relevant docs, and returns
-them to the requesting node.
-
-=item *
-
-The requesting node sorts these 50 docs by relevance, discards the 40 least
-relevant, and returns the 10 most relevant.
-
-=back
-
-So then, if you ask for page 10,000 (ie results 100,001 - 100,010), each
-shard has to return 100,010 docs, and the requesting node has to discard
-500,040 of them!
-
-That approach doesn't scale. More than likely the requesting node will just
-run out of memory and be killed. There is a good reason why search engines
-don't return more than 100 pages of results.
-
-=head3 The solution: scanning
-
-You can retrieve all docs in your index, as long as you don't need them
-to be sorted, using scanning. Scanning works as follows:
-
-=over
-
-=item *
-
-Your query is sent to one of your ElasticSearch nodes.
-
-=item *
-
-That node forwards your query to all 5 shards in the index.
-
-=item *
-
-Each shard runs the query, finds all matching docs, and returns the first 10
-to the requesting node, B<IN ANY ORDER>.
-
-=item *
-
-The requesting node B<RETURNS ALL 50 DOCS IN ANY ORDER>.
-
-=item *
-
-It also returns a C<scroll_id> which (1) keeps track of what
-results have already been returned and (2) keeps a consistent view of
-the index state at the time of the intial query.
-
-=item *
-
-With this C<scroll_id>, we can keep pulling another 50 docs (ie
-number_of_primary_shards * L</size>) until we have exhausted all the docs.
-
-=back
-
-=head3 But I really need sorting!
-
-Do you?  Do you really? Why?  No user needs to page through all 5 million
-of your matching results.
-
-OK, so there may be situations where need to retrieve large numbers of sorted
-results.  The trick here is to break them up into chunks. For instance, you
-could request all docs created in October, then November etc. How you do it
-really depends on your requirements.
-
-=head2 delete()
-
-TODO: Document
-
-=head2 first()
-
-TODO: Document
-
-=head2 total()
-
-TODO: Document
-
+Possibly support L<partial fields|https://github.com/elasticsearch/elasticsearch/issues/1570>

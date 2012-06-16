@@ -97,7 +97,7 @@ for ElasticSearch specific types.
 
 =head2 Elastic::Model::Types::UID
 
-A L<Elastic::Model::UID> is deflated into a hash ref and reinflated
+An L<Elastic::Model::UID> is deflated into a hash ref and reinflated
 via L<Elastic::Model::UID/"new_from_store()">. It is mapped as:
 
     {

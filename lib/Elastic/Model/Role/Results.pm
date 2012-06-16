@@ -8,52 +8,68 @@ with 'Elastic::Model::Role::Iterator';
 use MooseX::Types::Moose qw(:all);
 use namespace::autoclean;
 
+#===================================
 has 'search' => (
+#===================================
     isa      => HashRef,
     is       => 'ro',
     required => 1,
 );
 
+#===================================
 has 'total' => (
+#===================================
     isa    => Int,
     is     => 'ro',
     writer => '_set_total',
 );
 
+#===================================
 has 'max_score' => (
+#===================================
     isa    => Num,
     is     => 'ro',
     writer => '_set_max_score',
 );
 
+#===================================
 has 'facets' => (
+#===================================
     isa    => HashRef,
     is     => 'ro',
     writer => '_set_facets',
 );
 
+#===================================
 has '_as_result' => (
+#===================================
     isa     => CodeRef,
     is      => 'ro',
     lazy    => 1,
     builder => '_as_result_builder'
 );
 
+#===================================
 has '_as_results' => (
+#===================================
     isa     => CodeRef,
     is      => 'ro',
     lazy    => 1,
     builder => '_as_results_builder'
 );
 
+#===================================
 has '_as_object' => (
+#===================================
     isa     => CodeRef,
     is      => 'ro',
     lazy    => 1,
     builder => '_as_object_builder'
 );
 
+#===================================
 has '_as_objects' => (
+#===================================
     isa     => CodeRef,
     is      => 'ro',
     lazy    => 1,
@@ -244,56 +260,56 @@ the following methods:
 
     $result = $results->first_result
 
-Creates a L<Elastic::Model::Result> object from the return value of
+Creates an L<Elastic::Model::Result> object from the return value of
 L<Elastic::model::Role::Iterator/"first_element">.
 
 =head2 last_result
 
     $result = $results->last_result
 
-Creates a L<Elastic::Model::Result> object from the return value of
+Creates an L<Elastic::Model::Result> object from the return value of
 L<Elastic::model::Role::Iterator/"last_element">.
 
 =head2 next_result
 
     $result = $results->next_result
 
-Creates a L<Elastic::Model::Result> object from the return value of
+Creates an L<Elastic::Model::Result> object from the return value of
 L<Elastic::model::Role::Iterator/"next_element">.
 
 =head2 prev_result
 
     $result = $results->prev_result
 
-Creates a L<Elastic::Model::Result> object from the return value of
+Creates an L<Elastic::Model::Result> object from the return value of
 L<Elastic::model::Role::Iterator/"prev_element">.
 
 =head2 current_result
 
     $result = $results->current_result
 
-Creates a L<Elastic::Model::Result> object from the return value of
+Creates an L<Elastic::Model::Result> object from the return value of
 L<Elastic::model::Role::Iterator/"current_element">.
 
 =head2 peek_next_result
 
     $result = $results->peek_next_result
 
-Creates a L<Elastic::Model::Result> object from the return value of
+Creates an L<Elastic::Model::Result> object from the return value of
 L<Elastic::model::Role::Iterator/"peek_next_element">.
 
 =head2 peek_prev_result
 
     $result = $results->peek_prev_result
 
-Creates a L<Elastic::Model::Result> object from the return value of
+Creates an L<Elastic::Model::Result> object from the return value of
 L<Elastic::model::Role::Iterator/"peek_prev_element">.
 
 =head2 pop_result
 
     $result = $results->pop_result
 
-Creates a L<Elastic::Model::Result> object from the return value of
+Creates an L<Elastic::Model::Result> object from the return value of
 L<Elastic::model::Role::Iterator/"pop_element">.
 
 =head2 all_results

@@ -7,13 +7,19 @@ use MooseX::Types::Moose qw(:all);
 
 use namespace::autoclean;
 
+#===================================
 has 'took' => (
+#===================================
     isa    => Num,
     is     => 'ro',
     writer => '_set_took',
 );
 
-has '+wrapper' => ( builder => '_as_results' );
+#===================================
+has '+wrapper' => (
+#===================================
+    builder => 'as_results'
+);
 
 no Moose;
 
@@ -23,7 +29,6 @@ sub BUILD {
     my $self   = shift;
     my $result = $self->model->es->search( $self->search );
 
-    # TODO: handle partial results if some shards failed?
     croak "Search timed out" if $result->{timed_out};
 
     $self->_set_took( $result->{took} );

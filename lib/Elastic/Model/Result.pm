@@ -7,13 +7,17 @@ use MooseX::Types::Moose qw(:all);
 
 use namespace::autoclean;
 
+#===================================
 has 'result' => (
+#===================================
     isa      => HashRef,
     is       => 'ro',
     required => 1,
 );
 
+#===================================
 has 'uid' => (
+#===================================
     isa     => UID,
     is      => 'ro',
     lazy    => 1,
@@ -37,12 +41,9 @@ sub object {
 }
 
 #===================================
-sub source { shift->result->{_source} }
-sub score  { shift->result->{_score} }
-#===================================
-
-#===================================
-sub fields        { shift->result->{fields}        ||= {} }
+sub source        { shift->result->{_source} }
+sub score         { shift->result->{_score} }
+sub fields        { shift->result->{fields} ||= {} }
 sub script_fields { shift->result->{script_fields} ||= {} }
 #===================================
 
