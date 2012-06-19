@@ -9,7 +9,9 @@ use MooseX::Types::Structured qw (Dict Optional Map);
 use namespace::autoclean;
 
 use MooseX::Types -declare => [ qw(
+        ArrayRefOfStr
         Binary
+        Consistency
         CoreFieldType
         DynamicMapping
         DynamicTemplate
@@ -19,6 +21,7 @@ use MooseX::Types -declare => [ qw(
         ESDoc
         FieldType
         GeoPoint
+        HighlightArgs
         IndexMapping
         IndexNames
         Latitude
@@ -26,13 +29,12 @@ use MooseX::Types -declare => [ qw(
         MultiField
         MultiFields
         PathMapping
+        Replication
         SearchType
-        SortArg
         SortArgs
         StoreMapping
         TermVectorMapping
         Timestamp
-        TypeNames
         UID
         )
 ];
@@ -94,6 +96,18 @@ enum PathMapping, (
 );
 
 #===================================
+enum Replication, (
+#===================================
+    'sync', 'async'
+);
+
+#===================================
+enum Consistency, (
+#===================================
+    'quorum', 'one', 'all'
+);
+
+#===================================
 enum SearchType, (
 #===================================
     'query_then_fetch',     'query_and_fetch',
@@ -131,19 +145,27 @@ subtype MultiFields,
     as HashRef [MultiField];
 
 #===================================
-subtype SortArg,
-#===================================
-    as HashRef;
-coerce SortArg, from Str,
-    via { $_ eq '_score' ? { _score => 'desc' } : { $_ => 'asc' } };
-
-#===================================
 subtype SortArgs,
 #===================================
-    as ArrayRef [SortArg];
-coerce SortArgs, from SortArg, via { [$_] };
-coerce SortArgs, from Str,
-    via { $_ eq '_score' ? [ { _score => 'desc' } ] : [ { $_ => 'asc' } ] };
+    as ArrayRef;
+coerce SortArgs, from HashRef, via { [$_] };
+coerce SortArgs, from Str,     via { [$_] };
+
+#===================================
+subtype HighlightArgs,
+#===================================
+    as HashRef;
+coerce HighlightArgs, from Str, via { return { $_ => {} } };
+coerce HighlightArgs, from ArrayRef, via {
+    my $args = $_;
+    my %fields;
+    while ( my $field = shift @$args ) {
+        die "Expected a field name but got ($field)"
+            if ref $field;
+        $fields{$field} = ref $args->[0] eq 'HASH' ? shift @$args : {};
+    }
+    return \%fields;
+};
 
 #===================================
 subtype Longitude,
@@ -194,9 +216,9 @@ subtype IndexNames, as ArrayRef [Str],
 coerce IndexNames, from Str, via { [$_] };
 
 #===================================
-subtype TypeNames, as ArrayRef [Str];
+subtype ArrayRefOfStr, as ArrayRef [Str];
 #===================================
-coerce TypeNames, from Str, via { [$_] };
+coerce ArrayRefOfStr, from Str, via { [$_] };
 
 #===================================
 class_type ESDateTime, { class => 'DateTime' };

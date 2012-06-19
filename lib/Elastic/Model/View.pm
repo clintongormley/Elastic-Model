@@ -3,7 +3,9 @@ package Elastic::Model::View;
 use Moose;
 
 use Carp;
-use Elastic::Model::Types qw(IndexNames TypeNames SearchType SortArgs);
+use Elastic::Model::Types qw(
+    IndexNames ArrayRefOfStr SearchType SortArgs
+    HighlightArgs Consistency Replication);
 use MooseX::Types::Moose qw(Str Int HashRef ArrayRef Bool Num Object);
 
 use namespace::autoclean;
@@ -22,7 +24,7 @@ has 'domain' => (
 has 'type' => (
 #===================================
     is      => 'rw',
-    isa     => TypeNames,
+    isa     => ArrayRefOfStr,
     default => sub { [] },
     coerce  => 1,
 );
@@ -64,8 +66,9 @@ has 'facets' => (
 #===================================
 has 'fields' => (
 #===================================
-    isa => ArrayRef [Str],
-    is => 'rw',
+    isa     => ArrayRefOfStr,
+    coerce  => 1,
+    is      => 'rw',
     default => sub { ['_source'] },
 );
 
@@ -96,8 +99,17 @@ has 'sort' => (
 #===================================
 has 'highlighting' => (
 #===================================
-    isa => HashRef,
-    is  => 'rw',
+    isa     => HashRef,
+    is      => 'rw',
+    trigger => \&_check_no_fields,
+);
+
+#===================================
+has 'highlight' => (
+#===================================
+    is     => 'rw',
+    isa    => HighlightArgs,
+    coerce => 1,
 );
 
 #===================================
@@ -130,8 +142,9 @@ has 'preference' => (
 #===================================
 has 'routing' => (
 #===================================
-    isa => ArrayRef [Str],
-    is => 'rw',
+    isa    => ArrayRefOfStr,
+    coerce => 1,
+    is     => 'rw',
 );
 
 #===================================
@@ -164,8 +177,9 @@ has 'explain' => (
 #===================================
 has 'stats' => (
 #===================================
-    is  => 'rw',
-    isa => ArrayRef [Str],
+    is     => 'rw',
+    isa    => ArrayRefOfStr,
+    coerce => 1,
 );
 
 #===================================
@@ -173,6 +187,20 @@ has 'track_scores' => (
 #===================================
     isa => Bool,
     is  => 'rw',
+);
+
+#===================================
+has 'consistency' => (
+#===================================
+    is  => 'rw',
+    isa => Consistency,
+);
+
+#===================================
+has 'replication' => (
+#===================================
+    is  => 'rw',
+    isa => Replication
 );
 
 #===================================
@@ -215,24 +243,34 @@ sub post_filterb {
 #===================================
 # clone views when setting attributes
 #===================================
-around [ qw(
-        from size timeout track_scores
-        search_builder preference min_score explain
-        )
+
+around [
+#===================================
+    'from',           'size',       'timeout',   'track_scores',
+    'search_builder', 'preference', 'min_score', 'explain',
+    'consistency',    'replication'
+#===================================
 ] => sub { _clone_args( \&_scalar_args, @_ ) };
+
+around [
 #===================================
-around [ qw(
-        domain type fields sort routing stats
-        )
+    'domain', 'type', 'fields', 'sort', 'routing', 'stats'
+#===================================
 ] => sub { _clone_args( \&_array_args, @_ ) };
+
+around [
 #===================================
-around [ qw(
-        facets index_boosts script_fields
-        highlighting query filter post_filter
-        )
+    'facets', 'index_boosts', 'script_fields', 'highlighting',
+    'query',  'filter',       'post_filter'
+#===================================
 ] => sub { _clone_args( \&_hash_args, @_ ) };
+
 #===================================
-for my $name (qw(facet index_boost script_field)) {
+around 'highlight'
+#===================================
+    => sub { _clone_args( \&_highlight_args, @_ ) };
+
+for my $name ( 'facet', 'index_boost', 'script_field' ) {
     my $attr = $name . 's';
     for my $method ( "add_$name", "remove_$name" ) {
         around $method => sub {
@@ -245,12 +283,12 @@ for my $name (qw(facet index_boost script_field)) {
         };
     }
 }
-#===================================
 
 #===================================
-sub _scalar_args {@_}
-sub _array_args { ref $_[0] eq 'ARRAY' ? shift() : \@_ }
-sub _hash_args { @_ > 1 ? {@_} : @_ }
+sub _scalar_args    {@_}
+sub _hash_args      { @_ > 1 ? {@_} : @_ }
+sub _highlight_args { ref $_[0] ? shift : \@_ }
+sub _array_args     { ref $_[0] eq 'ARRAY' ? shift() : \@_ }
 #===================================
 
 #===================================
@@ -267,15 +305,27 @@ sub _clone_args {
     $self->$orig();
 }
 
+#===================================
+sub _check_no_fields {
+#===================================
+    my ( $self, $val ) = @_;
+    croak "Use the (highlight) attribute to set the fields to highlight"
+        if $val->{fields};
+}
+
 no Moose;
 
 #===================================
-sub _BUILD {
+sub BUILD {
 #===================================
-    my ( $self, $args ) = @_;
-    for (qw(queryb filterb post_filterb highlight)) {
-        $self->$_( $args->{$_} ) if defined $args->{$_};
+    my ( $orig_self, $args ) = @_;
+    my $self = $orig_self;
+    for (qw(queryb filterb post_filterb)) {
+        $self = $self->$_( $args->{$_} )
+            if defined $args->{$_};
     }
+
+    %{$orig_self} = %{$self};
 }
 
 #===================================
@@ -284,24 +334,8 @@ sub _build_domains {
     my $self       = shift;
     my $namespaces = $self->model->namespaces;
     [   map { $_, @{ $namespaces->{$_}->fixed_domains } }
-        sort keys %$namespaces
+            sort keys %$namespaces
     ];
-}
-
-#===================================
-sub highlight {
-#===================================
-    my $self      = shift;
-    my %highlight = %{ $self->highlighting || {} };
-    my $fields    = $highlight{fields} = {};
-    if (@_) {
-        while ( my $field = shift @_ ) {
-            croak "Expected a field name but got ($field)" if ref $field;
-            $fields->{$field} = ref $_[0] eq 'HASH' ? shift() : {};
-        }
-        return $self->highlighting( \%highlight );
-    }
-    return keys %$fields;
 }
 
 #===================================
@@ -332,18 +366,12 @@ sub scan {
 sub delete {
 #===================================
     my $self = shift;
-    my %args = (
-        index => $self->domain,
-        ( map { $_ => $self->$_ } qw(type routing ) ),
-        query => $self->_build_query,
-        @_
-    );
-    $self->store->delete_by_query( \%args );
+    $self->model->store->delete_by_query( $self->_build_delete(@_) );
 }
 
 #===================================
-sub first  { shift->size(1)->search(@_)->first }
-sub total  { shift->size(0)->search(@_)->total }
+sub first { shift->size(1)->search(@_)->first }
+sub total { shift->size(0)->search(@_)->total }
 #===================================
 
 #===================================
@@ -351,18 +379,23 @@ sub _build_search {
 #===================================
     my $self = shift;
 
+    my ( $highlight, $fields );
+    if ( $fields = $self->highlight and keys %$fields ) {
+        $highlight = { %{ $self->highlighting || {} }, fields => $fields };
+    }
+
     my %args = ( (
             map { $_ => $self->$_ }
                 qw(
                 type sort from size facets
-                min_score preference routing
+                min_score preference routing stats
                 script_fields timeout track_scores explain
                 )
         ),
         index         => $self->domain,
         filter        => $self->post_filter,
         query         => $self->_build_query,
-        highlight     => $self->highlighting,
+        highlight     => $highlight,
         indices_boost => $self->index_boosts,
         @_,
         version => 1,
@@ -383,8 +416,21 @@ sub _build_query {
 
     return
          !$q ? { constant_score => { filter => $f } }
-        : $f ? { filtered_query => { query => $q, filter => $f } }
+        : $f ? { filtered => { query => $q, filter => $f } }
         :      $q;
+}
+
+#===================================
+sub _build_delete {
+#===================================
+    my $self = shift;
+    my %args = (
+        index => $self->domain,
+        ( map { $_ => $self->$_ } qw(type routing consistency replication) ),
+        query => $self->_build_query,
+        @_
+    );
+    return { map { $_ => $args{$_} } grep { defined $args{$_} } keys %args };
 }
 
 1;
@@ -524,6 +570,9 @@ or are cached somewhere are not removed.
 This should really only be used once you are sure that the matching docs
 are out of circulation.  Also, it is more efficient to just delete a whole index
 (if possible), rather than deleting large numbers of docs.
+
+B<Note:> The only attributes relevant to L</delete()> are L</domain>,
+L</type>, L</query>, L</routing>, L</consistency> and L</replication>.
 
 =head1 CORE ATTRIBUTES
 
@@ -835,6 +884,27 @@ can later be retrieved using L<ElasticSearch/index_stats()>.
 If you would like to use a different search builder than the default
 L<ElasticSearch::SearchBuilder> for L</"queryb">, L</"filterb"> or
 L</post_filterb>, then you can set a value for L</search_builder>.
+
+=head1 DELETE ATTRIBUTES
+
+These parameters are only used with L</delete()>.
+
+=head2 consistency
+
+    $new_view    = $view->consistency('quorum' | 'all' | 'one');
+    $consistency = $view->consistency;
+
+At least C<one>, C<all> or a C<quorum> of nodes must be present for the
+delete to take place.
+
+=head2 replication
+
+    $new_view    = $view->replication('sync' | 'async');
+    $replication = $view->replication;
+
+Should a delete be done synchronously (ie waits until all nodes within
+the replcation group have run the delete) or asynchronously (returns
+immediately, performs the delete in the background).
 
 =head1 TODO
 
