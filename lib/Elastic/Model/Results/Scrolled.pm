@@ -24,12 +24,6 @@ has '_virtual_size' => (
 );
 
 #===================================
-has '+wrapper' => (
-#===================================
-    builder => 'as_results'
-);
-
-#===================================
 sub BUILD {
 #===================================
     my $self   = shift;
@@ -75,10 +69,18 @@ sub _fetch_until {
     my $i        = shift || 0;
     my $scroll   = $self->_scroll;
     my $elements = $self->elements;
-    while ( !$scroll->eof && $i >= @{$elements} ) {
-        push @{$elements}, $scroll->drain_buffer;    ### TODO:  pass max?
+    while ( !$scroll->eof and $i > ( @$elements - 1 ) ) {
+        push @$elements, $scroll->drain_buffer;
+        $scroll->refill_buffer;
     }
 }
+
+#===================================
+before 'all_elements' => sub {
+#===================================
+    my $self = shift;
+    $self->_fetch_until( $self->size - 1 );
+};
 
 1;
 

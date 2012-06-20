@@ -6,7 +6,9 @@ use MooseX::Types::Moose qw(:all);
 use MooseX::Attribute::Chained;
 use namespace::autoclean;
 
+#===================================
 has 'elements' => (
+#===================================
     isa     => ArrayRef,
     traits  => ['Array'],
     is      => 'ro',
@@ -18,35 +20,52 @@ has 'elements' => (
     default => sub { [] },
 );
 
-has 'page_size' => (
-    isa     => Int,
-    is      => 'rw',
-    default => 10
-);
+#has 'page_size' => (
+#    isa     => Int,
+#    is      => 'rw',
+#    default => 10
+#);
 
+#===================================
 has '_i' => (
+#===================================
     isa     => Int,
     is      => 'rw',
     default => -1,
 );
 
+#===================================
 has 'wrapper' => (
-    traits  => ['Chained'],
+#===================================
     isa     => CodeRef,
     is      => 'rw',
     lazy    => 1,
-    builder => 'as_elements',
+    default => sub {\&_pass_through},
 );
 
+#===================================
 has 'multi_wrapper' => (
-    traits  => ['Chained'],
+#===================================
     isa     => CodeRef,
     is      => 'rw',
     lazy    => 1,
-    builder => 'as_elements',
+    default => sub {\&_pass_through},
 );
 
-after 'all_elements' => sub { shift->reset };
+#===================================
+after 'all_elements'
+#===================================
+    => sub { shift->reset };
+
+#===================================
+around [ 'wrapper', 'multi_wrapper' ]
+#===================================
+    => sub {
+    my $orig = shift;
+    my $self = shift;
+    if (@_) { $self->$orig(@_); return $self }
+    $self->$orig(@_);
+    };
 
 no Moose;
 
@@ -106,9 +125,20 @@ sub current   { $_[0]->wrapper->( $_[0]->current_element ) }
 sub peek_next { $_[0]->wrapper->( $_[0]->peek_next_element ) }
 sub peek_prev { $_[0]->wrapper->( $_[0]->peek_prev_element ) }
 sub pop       { $_[0]->wrapper->( $_[0]->pop_element ) }
-sub all       { $_[0]->multi_wrapper->( $_[0]->all_elements ) }
-sub slice     { $_[0]->multi_wrapper->( $_[0]->slice_elements ) }
 #===================================
+
+#===================================
+sub all {
+#===================================
+    my $self = shift;
+    $self->multi_wrapper->( $self->all_elements(@_) );
+}
+#===================================
+sub slice {
+#===================================
+    my $self = shift;
+    $self->multi_wrapper->( $self->slice_elements(@_) );
+}
 
 #===================================
 sub first_element {
@@ -203,11 +233,29 @@ sub slice_elements {
     }
     my @slice;
     if ( $first < $size && $first <= $last ) {
+        $self->_fetch_until($last);
         my $elements = $self->elements;
         @slice = @{$elements}[ $first .. $last ];
     }
     return @slice;
 }
+
+#===================================
+sub as_elements {
+#===================================
+    my $self = shift;
+    $self->wrapper( \&_pass_through );
+    $self->multi_wrapper( \&_pass_through );
+    $self;
+}
+
+#===================================
+sub _pass_through {@_}
+#===================================
+
+#===================================
+sub _fetch_until {}
+#===================================
 
 # TODO: extra methods for iterator
 #=element C<page()>
@@ -277,14 +325,6 @@ sub slice_elements {
 #    return \%search;
 #}
 #
-
-#===================================
-sub as_elements {
-#===================================
-    my $self = shift;
-    $self->wrapper( sub       {@_} );
-    $self->multi_wrapper( sub {@_} );
-}
 
 1;
 

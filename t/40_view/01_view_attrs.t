@@ -486,6 +486,12 @@ test_view( 'New-highlighting', $domain->view( highlighting => { x => 'y' } ),
 
 test_view( 'Set-highlighting', $view->highlighting( { x => 'y' } ), {} );
 
+test_view( 'New-highlighting-empty',
+    $domain->view( highlighting => { x => 'y' }, highlight => {} ), {} );
+
+test_view( 'Set-highlighting-empty',
+    $view->highlighting( { x => 'y' } )->highlight( {} ), {} );
+
 ## index_boosts ##
 test_view(
     'New-index_boosts-hash',

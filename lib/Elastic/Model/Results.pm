@@ -15,12 +15,6 @@ has 'took' => (
     writer => '_set_took',
 );
 
-#===================================
-has '+wrapper' => (
-#===================================
-    builder => 'as_results'
-);
-
 no Moose;
 
 #===================================
@@ -29,13 +23,15 @@ sub BUILD {
     my $self   = shift;
     my $result = $self->model->es->search( $self->search );
 
-    croak "Search timed out" if $result->{timed_out};
+    my $hits = $result->{hits};
+    $self->_set_total( $hits->{total} );
+    $self->_set_elements( $hits->{hits} );
+    $self->_set_max_score( $hits->{max_score} || 0 );
 
-    $self->_set_took( $result->{took} );
-    $self->_set_total( $result->{hits}{total} );
-    $self->_set_elements( $result->{hits}{hits} );
+    $self->_set_took( $result->{took} || 0 );
     $self->_set_facets( $result->{facets} || {} );
-    $self->_set_max_score( $result->{max_score} || 0 );
+
+    #$self->_set_timed_out( !!$result->{timed_out} );
 }
 
 1;

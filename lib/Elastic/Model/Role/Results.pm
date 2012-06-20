@@ -35,9 +35,11 @@ has 'max_score' => (
 #===================================
 has 'facets' => (
 #===================================
-    isa    => HashRef,
-    is     => 'ro',
-    writer => '_set_facets',
+    isa     => HashRef,
+    traits  => ['Hash'],
+    is      => 'ro',
+    writer  => '_set_facets',
+    handles => { facet => 'get' }
 );
 
 #===================================
@@ -127,6 +129,7 @@ sub as_results {
     my $self = shift;
     $self->wrapper( $self->_as_result );
     $self->multi_wrapper( $self->_as_results );
+    $self;
 }
 
 #===================================
@@ -135,6 +138,7 @@ sub as_objects {
     my $self = shift;
     $self->wrapper( $self->_as_object );
     $self->multi_wrapper( $self->_as_objects );
+    $self;
 }
 
 #===================================

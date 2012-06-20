@@ -342,16 +342,12 @@ sub _build_domains {
 sub search {
 #===================================
     my $self = shift;
-    $self->model->results_class->new( search => $self->_build_search );
+    $self->model->results_class->new( search => $self->_build_search )->as_results;
 }
 
 #===================================
-sub scroll {
+sub scroll { shift->_scroll(@_)->as_results }
 #===================================
-    my $self = shift;
-    my $search = $self->_build_search( scroll => shift() || '1m', @_ );
-    return $self->model->scrolled_results_class->new( search => $search, );
-}
 
 #===================================
 sub scan {
@@ -359,8 +355,17 @@ sub scan {
     my $self = shift;
     croak "A scan cannot be combined with sorting"
         if @{ $self->sort || [] };
-    return $self->scroll_objects( shift, search_type => 'scan' );
+    return $self->_scroll( shift, search_type => 'scan',@_ )->as_objects;
 }
+
+#===================================
+sub _scroll {
+#===================================
+    my $self = shift;
+    my $search = $self->_build_search( scroll => shift() || '1m', @_ );
+    return $self->model->scrolled_results_class->new( search => $search );
+}
+
 
 #===================================
 sub delete {
