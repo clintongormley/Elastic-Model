@@ -32,7 +32,7 @@ which works pretty much like any iterator, eg:
     $it->prev;          # previous element
     $it->last;          # last element
     $it->current;       # current element
-    $it->pop;           # return first element and remove it from $it
+    $it->shift;         # return first element and remove it from $it
 
     $it->all;           # all elements
     $it->slice(0,10);   # elements 0..9
@@ -343,18 +343,18 @@ reducing the L<size|Elastic::Model::View/size> parameter when scanning.
 
 When scrolling, there is a good chance that you want to load all of the results
 into memory.  However, when scanning through billions of docs, you don't want
-to do that. Instead of using C<next()> you should use C<pop()>:
+to do that. Instead of using C<next()> you should use C<shift()>:
 
-    while ( my $result = $results->pop ) {
+    while ( my $result = $results->shift ) {
         do_something_with($result)
     }
 
 This means, obviously, that C<prev()> won't work - there is no previous doc.
 You've thrown it away.
 
-When using C<pop()>, while the L<Elastic::Model::Results::Scrolled/size>
+When using C<shift()>, while the L<Elastic::Model::Results::Scrolled/size>
 attribute starts out the same as the L<Elastic::Model::Results::Scrolled/total>
-attribute, it will decrement by one for each C<pop()> call.
+attribute, it will decrement by one for each C<shift()> call.
 
 =head1 SEE ALSO
 

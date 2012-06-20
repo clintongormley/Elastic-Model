@@ -149,7 +149,7 @@ sub prev_result      { $_[0]->_as_result->( $_[0]->prev_element ) }
 sub current_result   { $_[0]->_as_result->( $_[0]->current_element ) }
 sub peek_next_result { $_[0]->_as_result->( $_[0]->peek_next_element ) }
 sub peek_prev_result { $_[0]->_as_result->( $_[0]->peek_prev_element ) }
-sub pop_result       { $_[0]->_as_result->( $_[0]->pop_element ) }
+sub shift_result     { $_[0]->_as_result->( $_[0]->shift_element ) }
 sub all_results      { $_[0]->_as_results->( $_[0]->all_elements ) }
 sub slice_results    { $_[0]->_as_results->( $_[0]->slice_elements ) }
 #===================================
@@ -162,7 +162,7 @@ sub prev_object      { $_[0]->_as_object->( $_[0]->prev_element ) }
 sub current_object   { $_[0]->_as_object->( $_[0]->current_element ) }
 sub peek_next_object { $_[0]->_as_object->( $_[0]->peek_next_element ) }
 sub peek_prev_object { $_[0]->_as_object->( $_[0]->peek_prev_element ) }
-sub pop_object       { $_[0]->_as_object->( $_[0]->pop_element ) }
+sub shift_object     { $_[0]->_as_object->( $_[0]->shift_element ) }
 sub all_objects      { $_[0]->_as_objects->( $_[0]->all_elements ) }
 sub slice_objects    { $_[0]->_as_objects->( $_[0]->slice_elements ) }
 #===================================
@@ -309,12 +309,12 @@ L<Elastic::model::Role::Iterator/"peek_next_element">.
 Creates an L<Elastic::Model::Result> object from the return value of
 L<Elastic::model::Role::Iterator/"peek_prev_element">.
 
-=head2 pop_result
+=head2 shift_result
 
-    $result = $results->pop_result
+    $result = $results->shift_result
 
 Creates an L<Elastic::Model::Result> object from the return value of
-L<Elastic::model::Role::Iterator/"pop_element">.
+L<Elastic::model::Role::Iterator/"shift_element">.
 
 =head2 all_results
 
@@ -393,12 +393,12 @@ L<Elastic::model::Role::Iterator/"peek_next_element">.
 Inflates a doc object from the return value of
 L<Elastic::model::Role::Iterator/"peek_prev_element">.
 
-=head2 pop_object
+=head2 shift_object
 
-    $object = $objects->pop_object
+    $object = $objects->shift_object
 
 Inflates a doc object from the return value of
-L<Elastic::model::Role::Iterator/"pop_element">.
+L<Elastic::model::Role::Iterator/"shift_element">.
 
 =head2 all_objects
 

@@ -366,7 +366,6 @@ sub _scroll {
     return $self->model->scrolled_results_class->new( search => $search );
 }
 
-
 #===================================
 sub delete {
 #===================================
@@ -480,7 +479,7 @@ Efficiently retrieve all posts, unsorted:
 
     $results = $posts->size(100)->scan('2m');
 
-    while (my $result = $results->pop_result)) {
+    while (my $result = $results->shift_result)) {
         do_something_with($result);
     );
 

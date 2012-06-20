@@ -124,8 +124,13 @@ sub prev      { $_[0]->wrapper->( $_[0]->prev_element ) }
 sub current   { $_[0]->wrapper->( $_[0]->current_element ) }
 sub peek_next { $_[0]->wrapper->( $_[0]->peek_next_element ) }
 sub peek_prev { $_[0]->wrapper->( $_[0]->peek_prev_element ) }
-sub pop       { $_[0]->wrapper->( $_[0]->pop_element ) }
+
 #===================================
+sub shift : method {
+#===================================
+    my $self = shift;
+    $self->wrapper->( $self->shift_element );
+}
 
 #===================================
 sub all {
@@ -202,11 +207,12 @@ sub peek_prev_element {
 }
 
 #===================================
-sub pop_element {
+sub shift_element {
 #===================================
     my $self = shift;
     $self->_i(-1);
-    CORE::pop @{ $self->elements };
+    CORE::shift @{ $self->elements };
+}
 }
 
 #===================================
@@ -417,9 +423,9 @@ Returns the next element (or undef), but doesn't move the iterator.
 
 Returns the previous element (or undef), but doesn't move the iterator.
 
-=head2 pop_element
+=head2 shift_element
 
-    $el = $iter->pop_element
+    $el = $iter->shift_element
 
 Returns the L</first_element> and removes it from L</elements>. L</size>
 will decrease by 1. Returns undef if there are no more elements.
@@ -467,7 +473,7 @@ You can set the L</index> to any value between C<0> and L</size>C<-1>.
     $iter->reset;
 
 Resets the iterator so that the next call to L</next_element> will return
-the first element. B<Note:> any calls to L</pop_element> means that those
+the first element. B<Note:> any calls to L</shift_element> means that those
 elements have been discarded.  L</reset> will not reload these.
 
 =head1 INFORMATIONAL ACCESSORS
@@ -607,11 +613,11 @@ Passes the result of L</peek_next_element> through the L</wrapper>.
 
 Passes the result of L</peek_prev_element> through the L</wrapper>.
 
-=head2 pop
+=head2 shift
 
-    $wrapped_el = $iter->pop
+    $wrapped_el = $iter->shift
 
-Passes the result of L</pop_element> through the L</wrapper>.
+Passes the result of L</shift_element> through the L</wrapper>.
 
 =head2 slice
 

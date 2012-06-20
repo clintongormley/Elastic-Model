@@ -54,7 +54,7 @@ before '_i' => sub {
 };
 
 #===================================
-before 'pop_element' => sub {
+before 'shift_element' => sub {
 #===================================
     my $self = shift;
     $self->_fetch_until(0);

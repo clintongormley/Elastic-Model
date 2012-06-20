@@ -264,11 +264,11 @@ See L<Elastic::Model::Role::Iterator/peek_next>.
 
 See L<Elastic::Model::Role::Iterator/peek_prev>.
 
-=head2 pop
+=head2 shift
 
-    $wrapped_el = $iter->pop
+    $wrapped_el = $iter->shift
 
-See L<Elastic::Model::Role::Iterator/pop>.
+See L<Elastic::Model::Role::Iterator/shift>.
 
 =head2 slice
 
@@ -326,11 +326,11 @@ See L<Elastic::Model::Role::Results/peek_next_result>.
 
 See L<Elastic::Model::Role::Results/peek_prev_result>.
 
-=head2 pop_result
+=head2 shift_result
 
-    $result = $results->pop_result
+    $result = $results->shift_result
 
-See L<Elastic::Model::Role::Results/pop_result>.
+See L<Elastic::Model::Role::Results/shift_result>.
 
 =head2 all_results
 
@@ -388,11 +388,11 @@ See L<Elastic::Model::Role::Results/peek_next_object>.
 
 See L<Elastic::Model::Role::Results/peek_prev_object>.
 
-=head2 pop_object
+=head2 shift_object
 
-    $object = $objects->pop_object
+    $object = $objects->shift_object
 
-See L<Elastic::Model::Role::Results/pop_object>.
+See L<Elastic::Model::Role::Results/shift_object>.
 
 =head2 all_objects
 
@@ -457,11 +457,11 @@ See L<Elastic::Model::Role::Iterator/peek_next_element>.
 
 See L<Elastic::Model::Role::Iterator/peek_prev_element>.
 
-=head2 pop_element
+=head2 shift_element
 
-    $el = $iter->pop_element
+    $el = $iter->shift_element
 
-See L<Elastic::Model::Role::Iterator/pop_element>.
+See L<Elastic::Model::Role::Iterator/shift_element>.
 
 =head2 slice_elements
 
