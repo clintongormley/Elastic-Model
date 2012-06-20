@@ -22,6 +22,7 @@ has 'uid' => (
     is      => 'ro',
     lazy    => 1,
     builder => '_build_uid',
+    handles => [ 'index', 'type', 'id', 'routing' ]
 );
 
 no Moose;

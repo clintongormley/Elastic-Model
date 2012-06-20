@@ -151,8 +151,14 @@ sub peek_next_result { $_[0]->_as_result->( $_[0]->peek_next_element ) }
 sub peek_prev_result { $_[0]->_as_result->( $_[0]->peek_prev_element ) }
 sub shift_result     { $_[0]->_as_result->( $_[0]->shift_element ) }
 sub all_results      { $_[0]->_as_results->( $_[0]->all_elements ) }
-sub slice_results    { $_[0]->_as_results->( $_[0]->slice_elements ) }
 #===================================
+
+#===================================
+sub slice_results {
+#===================================
+    my $self = shift;
+    $self->_as_results->( $self->slice_elements(@_) );
+}
 
 #===================================
 sub first_object     { $_[0]->_as_object->( $_[0]->first_element ) }
@@ -164,8 +170,14 @@ sub peek_next_object { $_[0]->_as_object->( $_[0]->peek_next_element ) }
 sub peek_prev_object { $_[0]->_as_object->( $_[0]->peek_prev_element ) }
 sub shift_object     { $_[0]->_as_object->( $_[0]->shift_element ) }
 sub all_objects      { $_[0]->_as_objects->( $_[0]->all_elements ) }
-sub slice_objects    { $_[0]->_as_objects->( $_[0]->slice_elements ) }
 #===================================
+
+#===================================
+sub slice_objects {
+#===================================
+    my $self = shift;
+    $self->_as_objects->( $self->slice_elements(@_) );
+}
 
 1;
 

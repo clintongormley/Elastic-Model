@@ -69,18 +69,11 @@ sub _fetch_until {
     my $i        = shift || 0;
     my $scroll   = $self->_scroll;
     my $elements = $self->elements;
-    while ( !$scroll->eof and $i > ( @$elements - 1 ) ) {
+    while ( $i >= @$elements and not $scroll->eof ) {
         push @$elements, $scroll->drain_buffer;
         $scroll->refill_buffer;
     }
 }
-
-#===================================
-before 'all_elements' => sub {
-#===================================
-    my $self = shift;
-    $self->_fetch_until( $self->size - 1 );
-};
 
 1;
 

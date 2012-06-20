@@ -5,10 +5,11 @@ use Elastic::Doc;
 #===================================
 has 'name' => (
 #===================================
-    is  => 'rw',
-    isa => 'Str',
+    is    => 'rw',
+    isa   => 'Str',
     multi => {
-        ngrams => {analyzer=>'edge_ngrams'}
+        ngrams    => { analyzer => 'edge_ngrams' },
+        untouched => { index    => 'not_analyzed' }
     }
 );
 

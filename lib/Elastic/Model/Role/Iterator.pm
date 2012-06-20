@@ -13,10 +13,7 @@ has 'elements' => (
     traits  => ['Array'],
     is      => 'ro',
     writer  => '_set_elements',
-    handles => {
-        'get_element'  => 'get',
-        'all_elements' => 'elements',
-    },
+    handles => { 'get_element' => 'get', },
     default => sub { [] },
 );
 
@@ -40,7 +37,7 @@ has 'wrapper' => (
     isa     => CodeRef,
     is      => 'rw',
     lazy    => 1,
-    default => sub {\&_pass_through},
+    default => sub { shift() },
 );
 
 #===================================
@@ -49,7 +46,7 @@ has 'multi_wrapper' => (
     isa     => CodeRef,
     is      => 'rw',
     lazy    => 1,
-    default => sub {\&_pass_through},
+    default => sub {@_},
 );
 
 #===================================
@@ -82,7 +79,7 @@ sub _decr_i {
 #===================================
     my $self = shift;
     my $i    = $self->_i - 1;
-    $self->_i( $i < 0 ? -1 : 0 );
+    $self->_i( $i < -1 ? $self->size - 1 : $i );
 }
 
 #===================================
@@ -97,11 +94,10 @@ sub index {
         my $index = my $original = shift;
         if ( defined $index ) {
             my $size = $self->size
-                or
-                $self->error("Index [$original] out of bounds. No values.");
+                or croak("Index ($original) out of bounds. No values.");
             $index += $size
                 if $index < 0;
-            $self->error( "Index [$original] out of bounds. "
+            croak(    "Index ($original) out of bounds. "
                     . "Values can be 0.."
                     . ( $size - 1 ) )
                 if $index >= $size || $index < 0;
@@ -165,7 +161,9 @@ sub last_element {
 sub current_element {
 #===================================
     my $self = shift;
-    return $self->get_element( $self->_i );
+    my $i    = $self->_i;
+    return undef if $i == -1;
+    return $self->get_element($i);
 }
 
 #===================================
@@ -213,16 +211,23 @@ sub shift_element {
     $self->_i(-1);
     CORE::shift @{ $self->elements };
 }
+
+#===================================
+sub all_elements {
+#===================================
+    my $self = shift;
+    $self->_fetch_until( $self->size - 1 );
+    @{ $self->elements };
 }
 
 #===================================
-sub even     { shift->_i % 2 }
-sub odd      { !shift->even }
-sub parity   { shift->even ? 'even' : 'odd' }
-sub is_first { shift->_i == 0 }
-sub is_last  { $_[0]->_i == $_[0]->size - 1 }
-sub has_next { $_[0]->i < $_[0]->size - 1 }
-sub has_prev { $_[0]->i > 0 }
+sub even     { my $i = shift->_i; $i < 0 ? undef : !!( $i % 2 ) }
+sub odd      { my $i = shift->_i; $i < 0 ? undef : !( $i % 2 ) }
+sub parity   { my $i = shift->_i; $i < 0 ? undef : $i % 2 ? 'even' : 'odd' }
+sub is_first { my $i = shift->_i; $i < 0 ? undef : $i == 0 }
+sub is_last  { my $i = $_[0]->_i; $i < 0 ? undef : $i == $_[0]->size - 1 }
+sub has_next { $_[0]->_i < $_[0]->size - 1 }
+sub has_prev { !!( $_[0]->_i == 0 ? 0 : $_[0]->size ) }
 #===================================
 
 #===================================
@@ -238,7 +243,7 @@ sub slice_elements {
         $last = $size - 1;
     }
     my @slice;
-    if ( $first < $size && $first <= $last ) {
+    if ( $first < $size ) {
         $self->_fetch_until($last);
         my $elements = $self->elements;
         @slice = @{$elements}[ $first .. $last ];
@@ -250,17 +255,13 @@ sub slice_elements {
 sub as_elements {
 #===================================
     my $self = shift;
-    $self->wrapper( \&_pass_through );
-    $self->multi_wrapper( \&_pass_through );
+    $self->wrapper( sub       { shift() } );
+    $self->multi_wrapper( sub {@_} );
     $self;
 }
 
 #===================================
-sub _pass_through {@_}
-#===================================
-
-#===================================
-sub _fetch_until {}
+sub _fetch_until { }
 #===================================
 
 # TODO: extra methods for iterator
