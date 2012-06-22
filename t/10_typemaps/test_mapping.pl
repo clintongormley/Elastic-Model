@@ -5,6 +5,7 @@ use warnings;
 use Test::More 0.96;
 use Test::Moose;
 use Test::Exception;
+use Test::Deep;
 
 use lib 't/lib';
 
@@ -42,7 +43,7 @@ sub test_mapping {
 
 #   use Data::Dump qw(pp); pp(eval {+{$name=> {$tm->find_mapper($attr)}}}||$@);
     if ( ref($test) eq 'HASH' ) {
-        is_deeply eval { +{ $tm->find_mapper($attr) } } || $@, $test,
+        cmp_deeply eval { +{ $tm->find_mapper($attr) } } || $@, $test,
             "Mapping:  $name";
     }
     else {

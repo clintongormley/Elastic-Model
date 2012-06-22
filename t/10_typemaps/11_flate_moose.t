@@ -100,6 +100,9 @@ our @fields     = (
         { foo => 'one', bar => 'two' }               #
     ],
 
+    'maybe_coderef' => qr/No ..flator found/,
+    'array_ref_coderef' => qr/No ..flator found/,
+    'hash_ref_coderef' => qr/No ..flator found/,
     'code_ref'    => qr/No ..flator found/,
     'glob_ref'    => qr/No ..flator found/,
     'regexp_ref'  => qr/No ..flator found/,
