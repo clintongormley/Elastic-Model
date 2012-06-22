@@ -155,7 +155,7 @@ sub _build_doc_class_wrappers {
     my $self       = shift;
     my $namespaces = Class::MOP::class_of($self)->namespaces;
     +{  map { $_ => $self->wrap_doc_class($_) }
-        map { values %{ $_->{types} } } values %$namespaces
+            map { values %{ $_->{types} } } values %$namespaces
     };
 }
 

@@ -82,8 +82,6 @@ sub mappings {
     +{ map { $_ => $model->map_class( $self->class_for_type($_) ) } @types };
 }
 
-__PACKAGE__->meta->make_immutable;
-
 1;
 
 __END__

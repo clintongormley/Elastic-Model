@@ -75,7 +75,7 @@ sub has_changed {
         my $attr = shift;
         my $old = $self->_old_value || {};
         if ( $attr eq "1" or @_ ) {
-            $old->{$attr} ||= shift
+            $old->{$attr} = shift()
                 unless $attr eq "1" || exists $old->{$attr};
             $self->_set_old_value($old);
             return 1;

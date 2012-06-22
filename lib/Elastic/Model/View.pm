@@ -780,6 +780,10 @@ the original object without having to retrieve the document separately. If you
 would like to just retrieve a subset of fields, you can specify them in
 L</fields>. See L<http://www.elasticsearch.org/guide/reference/api/search/fields.html>.
 
+B<Note:> If you do specify any fields, and you DON'T include C<'_source'> then the
+C<_source> field won't be returned, and you won't be able to retrieve the original
+object without requesting it from ElasticSearch in a separate step.
+
 =head2 script_fields
 
     $new_view = $view->script_fields(
