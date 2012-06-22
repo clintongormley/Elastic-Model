@@ -244,7 +244,7 @@ the text explanation using L</explain>, for instance:
              - fieldNorm(field=name, doc=0)                        |    1.0000
        - coord(1/2)                                                |    0.5000
 
-And here's an introduction to what the above numbers mean:
+And here's a brief explanation of what these numbers mean:
 L<http://www.lucenetutorial.com/advanced-topics/scoring.html>.
 
 =head2 result
