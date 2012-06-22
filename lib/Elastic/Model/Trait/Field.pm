@@ -13,6 +13,37 @@ use Carp;
 use namespace::autoclean;
 
 #===================================
+around [
+    '_inline_instance_get',   '_inline_instance_set',
+    '_inline_instance_clear', '_inline_instance_has'
+    ]
+#===================================
+    => sub {
+    my ( $orig, $attr, $instance, @args ) = @_;
+    my $inline = $attr->$orig( $instance, @args );
+    unless ( $attr->exclude ) {
+        $inline = <<"INLINE"
+    do {
+        $instance->_can_inflate && $instance->_inflate_doc;
+        $inline
+    }
+INLINE
+    }
+    return $inline;
+    };
+
+#===================================
+around [ 'get_value', 'set_value', 'clear_value', 'has_value' ]
+#===================================
+    => sub {
+    my ( $orig, $attr, $instance, @args ) = @_;
+    unless ( $attr->exclude ) {
+        $instance->_can_inflate && $instance->_inflate_doc;
+    }
+    return $attr->$orig( $instance, @args );
+    };
+
+#===================================
 has 'type' => (
 #===================================
     isa => FieldType,

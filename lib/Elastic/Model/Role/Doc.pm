@@ -291,11 +291,6 @@ Has the value of attribute C<$attr_name> changed?
 
     $bool = $doc->has_changed($attr_name);
 
-Mark an attribute as changed (this is done autmomatically thanks to
-L<Elastic::Model::Meta::Instance>):
-
-    $doc->has_changed($attr_name => $old_val);
-
 Mark the object as changed without specifying an attribute:
 
     $doc->has_changed(1);
