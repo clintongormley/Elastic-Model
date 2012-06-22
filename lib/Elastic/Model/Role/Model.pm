@@ -126,7 +126,6 @@ has 'current_scope' => (
 sub BUILD         { shift->doc_class_wrappers }
 sub _build_store  { $_[0]->store_class->new( es => $_[0]->es ) }
 sub _build_es     { ElasticSearch->new }
-sub _die_no_scope { croak "There is no current_scope" }
 #===================================
 
 #===================================
