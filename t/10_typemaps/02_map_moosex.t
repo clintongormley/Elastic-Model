@@ -24,11 +24,16 @@ our @mapping    = (
     'scalar_ref_str' => { type => 'string' },
     'array_ref_str'  => { type => 'string' },
     'subtype_str'    => { type => 'string' },
-    'enum'           => { type => 'string', index   => 'not_analyzed' },
-    'undef'          => { type => 'string', index   => 'not_analyzed' },
-    'regexp_ref'     => { type => 'string', index   => 'no' },
-    'num'            => { type => 'float' },
-    'int'            => { type => 'long' },
+    'enum'           => {
+        type                         => 'string',
+        index                        => 'not_analyzed',
+        omit_norms                   => 1,
+        omit_term_freq_and_positions => 1
+    },
+    'undef'      => { type => 'string', index => 'not_analyzed' },
+    'regexp_ref' => { type => 'string', index => 'no' },
+    'num'        => { type => 'float' },
+    'int'        => { type => 'long' },
     'type' => qr/No mapper found/,
 );
 
