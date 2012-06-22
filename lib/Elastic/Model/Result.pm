@@ -30,7 +30,7 @@ has 'uid' => (
 has 'source' => (
 #===================================
     is      => 'ro',
-    isa     => Maybe[HashRef],
+    isa     => Maybe [HashRef],
     lazy    => 1,
     builder => '_build_source',
 );
@@ -99,6 +99,42 @@ sub highlight {
     return @{$highlights};
 }
 
+#===================================
+sub explain {
+#===================================
+    my $self = shift;
+
+    my $explain = $self->result->{_explanation}
+        || return "No explanation\n";
+
+    my $text   = '';
+    my $indent = 0;
+    my @stack  = [$explain];
+
+    while (@stack) {
+        my @current = @{ shift @stack };
+        while ( my $next = shift @current ) {
+            my $spaces = ( ' ' x $indent ) . ' - ';
+            my $max    = 67 - $indent;
+            $max = 30 if $max < 30;
+            my $desc = $next->{description};
+            while ( length($desc) > $max ) {
+                $desc =~ s/^(.{30,${max}\b|.{${max}})\s*//;
+                $text .= sprintf "%-70s |\n", $spaces . $1;
+            }
+            $text .= sprintf "%-70s | % 9.4f\n", $spaces . $desc,
+                $next->{value};
+            if ( my $details = $next->{details} ) {
+                unshift @stack, [@current];
+                @current = @{$details};
+                $indent += 2;
+            }
+        }
+        $indent -= 2;
+    }
+    return $text;
+}
+
 1;
 
 __END__
@@ -119,6 +155,7 @@ __END__
     $field_value        = $result->field('field_name');
     $script_field_value = $result->field('script_field_name');
 
+    $explain            = $result->explain;
     $score              = $result->score;
     \%source_field      = $result->source;
     \%raw_result        = $result->result;
@@ -186,6 +223,30 @@ The relevance score of the result. Note: if you L<sort|Elastic::Model::View/sort
 on any value other than C<_score> then the L</score> will be zero, unless you
 also set L<Elastic::Model::View/track_scores> to a true value.
 
+=head2 explain
+
+    $explanation = $result->explain;
+
+If L<Elastic::Model::View/explain> is set to true, then you can retrieve
+the text explanation using L</explain>, for instance:
+
+    print $result->explain;
+
+     - product of:                                                 |    1.1442
+       - sum of:                                                   |    2.2885
+         - weight(name:aardwolf in 0), product of:                 |    2.2885
+           - queryWeight(name:aardwolf), product of:               |    0.6419
+             - idf(docFreq=1, maxDocs=26)                          |    3.5649
+             - queryNorm                                           |    0.1801
+           - fieldWeight(name:aardwolf in 0), product of:          |    3.5649
+             - tf(termFreq(name:aardwolf)=1)                       |    1.0000
+             - idf(docFreq=1, maxDocs=26)                          |    3.5649
+             - fieldNorm(field=name, doc=0)                        |    1.0000
+       - coord(1/2)                                                |    0.5000
+
+And here's an introduction to what the above numbers mean:
+L<http://www.lucenetutorial.com/advanced-topics/scoring.html>.
+
 =head2 result
 
     \%raw_result = $result->result
@@ -202,6 +263,5 @@ used to inflate your L</object()> without having to retrieve it in a separate
 step. B<Note:> If you set L<Elastic::Model::View/fields> and you don't include
 C<'_source'> then you will be unable to inflate your object without a separate
 (but automatic) step to retrieve it from ElasticSearch.
-
 
 =cut

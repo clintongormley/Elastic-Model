@@ -65,16 +65,21 @@ throws_ok
     qr/Missing/,
     'Result->highlight';
 
+like $result->explain, qr/No explanation/, 'Result->explain';
+
 ## Advanced result ##
 isa_ok $result = $view->queryb( { name => 'Aardwolf' } )    #
     ->filterb( -ids => 1 )                                  #
     ->fields('timestamp')                                   #
     ->script_fields( test => { script => " return 'xx'" } ) #
     ->highlight('name')                                     #
+    ->explain(1)                                            #
     ->first(), 'Elastic::Model::Result', 'AdvResults';
 
-cmp_deeply [ keys %{ $result->result } ],
-    bag(qw(_id _index _score _type _version fields highlight)),
+cmp_deeply [ keys %{ $result->result } ], bag(
+    qw(_id _index _score _type _version fields highlight
+        _explanation _node _shard)
+    ),
     'AdvResult->result';
 
 ok $result->score > 0, 'AdvResult->score';
@@ -114,6 +119,8 @@ is
     join( '', $result->highlight('name') ),
     '<em>Aardwolf</em>',
     'AdvResult->highlight(name)';
+
+like $result->explain, qr/product of:/, 'AdvResult->explain';
 
 done_testing;
 

@@ -875,7 +875,7 @@ L</track_scores> is true, these scores will be returned regardless.
 
 Set L</explain> to true to return debugging information explaining how
 each document's score was calculated. See
-L<Elastic::Model::Role::Results/explanation()> to view the output.
+L<Elastic::Model::Result/explain> to view the output.
 
 =head2 stats
 
