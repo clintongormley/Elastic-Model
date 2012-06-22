@@ -3,8 +3,8 @@
 use strict;
 use warnings;
 use Test::More 0.96;
-use Test::Moose;
 use Test::Deep;
+use Test::Exception;
 
 use lib 't/lib';
 
@@ -64,6 +64,9 @@ cmp_deeply $alias->aliased_to,
     { myapp2 => { index_routing => 'foo', search_routing => 'bar' } },
     'Alias removed';
 
+throws_ok sub { $ns->alias('myapp3')->aliased_to }, qr/not an alias/,
+    'index->aliased_to';
+
 ok $alias->to(), 'Delete alias';
 ok !$alias->is_alias, 'Alias deleted';
 
@@ -90,10 +93,9 @@ cmp_bag
 
 ok $ns->alias->to( 'myapp2', 'myapp3', 'myapp4' ), 'Alias to myapp2/3/4';
 cmp_bag
-[ $ns->all_domains ],
+    [ $ns->all_domains ],
     [ 'myapp1', 'myapp1_fixed', 'myapp2', 'myapp3', 'myapp4', 'myapp5' ],
     'Domains - all plus myapp5';
-
 
 done_testing;
 
