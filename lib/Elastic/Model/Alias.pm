@@ -11,8 +11,7 @@ no Moose;
 #===================================
 sub to {
 #===================================
-    my $self = shift;
-    my @args = ref $_[0] ? @{ shift() } : @_;
+    my $self    = shift;
 
     my $name    = $self->name;
     my $es      = $self->es;
@@ -20,7 +19,7 @@ sub to {
             map { $_ => { remove => { index => $_, alias => $name } } }
                 keys %{ $es->get_aliases( index => $name ) }
         ),
-        $self->_add_aliases(@args)
+        $self->_add_aliases(@_)
     );
 
     $es->aliases( actions => [ values %indices ] );
@@ -33,8 +32,7 @@ sub to {
 sub add {
 #===================================
     my $self    = shift;
-    my @args    = ref $_[0] ? @{ shift() } : @_;
-    my %indices = $self->_add_aliases(@args);
+    my %indices = $self->_add_aliases(@_);
     $self->es->aliases( actions => [ values %indices ] );
     $self->model->domain( $self->name )->clear_default_routing;
     return $self;
@@ -45,8 +43,7 @@ sub remove {
 #===================================
     my $self    = shift;
     my $name    = $self->name;
-    my @actions = map { { remove => { index => $_, alias => $name } } }
-        ref $_[0] ? @{ shift() } : @_;
+    my @actions = map { { remove => { index => $_, alias => $name } } } @_;
     $self->es->aliases( actions => \@actions );
     $self->model->clear_domain_namespace;
     return $self;

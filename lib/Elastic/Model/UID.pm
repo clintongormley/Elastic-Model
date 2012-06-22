@@ -67,8 +67,8 @@ no Moose;
 #===================================
 sub new_from_store {
 #===================================
-    my $class = shift;
-    my %params = ref $_[0] ? %{ shift() } : @_;
+    my $class  = shift;
+    my %params = %{ shift() };
     $class->new(
         from_store => 1,
         routing    => $params{fields}{routing},

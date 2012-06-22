@@ -73,11 +73,8 @@ sub alias {
 #===================================
 sub mappings {
 #===================================
-    my $self = shift;
-    my @types
-        = @_ == 0   ? $self->all_types
-        : ref $_[0] ? @{ shift() }
-        :             @_;
+    my $self  = shift;
+    my @types = @_ == 0 ? $self->all_types : @_;
     my $model = $self->model;
     +{ map { $_ => $model->map_class( $self->class_for_type($_) ) } @types };
 }

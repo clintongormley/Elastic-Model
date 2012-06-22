@@ -56,11 +56,12 @@ my ( $de, $in );
     my $saved     = $doc_class->new(
         name  => 'John',
         email => 'john@foo.com',
-        uid   => Elastic::Model::UID->new_from_store(
-            _index   => 'foo',
-            _type    => 'user',
-            _id      => 1,
-            _version => 1
+        uid   => Elastic::Model::UID->new_from_store( {
+                _index   => 'foo',
+                _type    => 'user',
+                _id      => 1,
+                _version => 1
+            }
         ),
     );
 

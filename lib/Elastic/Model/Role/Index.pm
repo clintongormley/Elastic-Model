@@ -40,8 +40,7 @@ sub _build_es { shift->model->es }
 #===================================
 sub index_config {
 #===================================
-    my $self     = shift;
-    my %args     = ref $_[0] eq 'HASH' ? %{ shift() } : @_;
+    my ( $self, %args ) = @_;
     my $settings = $args{settings} || {};
 
     my @types    = @{ $args{types} || [] };
@@ -59,8 +58,8 @@ sub index_config {
 #===================================
 sub delete  { shift->_index_action( 'delete_index',  @_ ) }
 sub refresh { shift->_index_action( 'refresh_index', @_ ) }
-sub open    { shift->_index_action( 'open_index',   @_ ) }
-sub close   { shift->_index_action( 'close_index',  @_ ) }
+sub open    { shift->_index_action( 'open_index',    @_ ) }
+sub close   { shift->_index_action( 'close_index',   @_ ) }
 sub exists { !!$_[0]->es->index_exists( index => $_[0]->name ) }
 #===================================
 
@@ -69,7 +68,7 @@ sub _index_action {
 #===================================
     my $self   = shift;
     my $action = shift;
-    my %args   = ref $_[0] eq 'HASH' ? %{ shift() } : @_;
+    my %args   = @_;
     $self->es->$action( %args, index => $self->name );
     return $self;
 }
@@ -78,11 +77,9 @@ sub _index_action {
 sub update_settings {
 #===================================
     my $self = shift;
-    my %settings = ref $_[0] eq 'HASH' ? %{ shift() } : @_;
-
     $self->es->update_index_settings(
         index    => $self->name,
-        settings => \%settings
+        settings => {@_}
     );
     return $self;
 }
@@ -134,11 +131,10 @@ sub update_mapping {
 #===================================
 sub delete_mapping {
 #===================================
-    my $self  = shift;
-    my $es    = $self->es;
-    my $name  = $self->name;
-    my @types = ref $_[0] eq 'ARRAY' ? @{ shift() } : @_;
-    $es->delete_mapping( index => $name, type => $_ ) for @types;
+    my $self = shift;
+    my $es   = $self->es;
+    my $name = $self->name;
+    $es->delete_mapping( index => $name, type => $_ ) for @_;
     return $self;
 }
 

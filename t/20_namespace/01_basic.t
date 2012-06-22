@@ -62,7 +62,7 @@ is $ns2->alias('foo')->name, 'foo', 'Alias2(foo)';
 ## method:mappings ##
 isa_ok my $all_mappings = $ns->mappings, 'HASH', 'All mappings';
 cmp_bag [ keys %$all_mappings ], [ 'user', 'post' ], 'Has all types';
-isa_ok my $user_mapping = $ns->mappings( ['user'] ), 'HASH', 'User mapping';
+isa_ok my $user_mapping = $ns->mappings('user'), 'HASH', 'User mapping';
 cmp_bag [ keys %$user_mapping ], ['user'], 'Has just user';
 cmp_deeply $user_mapping->{user}, $all_mappings->{user},
     'User mappings equal';

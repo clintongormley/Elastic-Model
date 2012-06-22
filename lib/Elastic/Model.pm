@@ -37,7 +37,7 @@ sub has_type_map { shift->set_class( 'type_map', @_ ) }
 sub override_classes {
 #===================================
     my $meta = shift;
-    my %classes = ref $_[0] eq 'HASHREF' ? %{ shift() } : @_;
+    my %classes = ref $_[0] eq 'HASH' ? %{ shift() } : @_;
     for ( keys %classes ) {
         croak "Unknown arg for classes ($_)"
             unless $meta->get_class($_);
