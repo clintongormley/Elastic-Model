@@ -8,6 +8,7 @@ use Class::MOP();
 use List::MoreUtils qw(uniq);
 use Moose::Util qw(does_role);
 use Scalar::Util qw(blessed);
+use Moose::Util::TypeConstraints qw(find_type_constraint);
 use namespace::autoclean;
 
 sub deflate_via (&) { deflator => $_[0] }
@@ -92,8 +93,7 @@ sub find {
 #===================================
     my ( $map, $type, $tc, $attr ) = @_;
 
-    die "No type constraint found"
-        unless $tc;
+    $tc ||= find_type_constraint('Any');
 
     my $types    = $type . 's';
     my $handlers = $map->$types;
