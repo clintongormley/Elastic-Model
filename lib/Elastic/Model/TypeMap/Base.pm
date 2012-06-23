@@ -69,11 +69,20 @@ sub find_mapper {
     my ( $map, $attr ) = @_;
     my $mapping;
     $mapping = $attr->mapping if $attr->can('mapping');
-    return $mapping if $mapping && %$mapping;
-    my %mapping
-        = eval { $map->find( 'mapper', $attr->type_constraint, $attr ); };
+    return %$mapping if $mapping && %$mapping;
+
+    my %mapping;
+    eval {
+        my @mapping = $map->find( 'mapper', $attr->type_constraint, $attr );
+        die "Expected an even number of elements "
+            . "to be returned by the mapper.\n"
+            if @mapping % 2;
+        %mapping = @mapping;
+    };
+
     die _type_error( 'mapper', $_[1], $@ )
         unless %mapping;
+
     return %mapping;
 }
 
