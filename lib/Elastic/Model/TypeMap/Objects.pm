@@ -51,13 +51,10 @@ sub _deflate_class {
     my ( $tc, $attr, $map ) = @_;
 
     my $class = $tc->name;
-    my $attrs = _class_attrs( $map, $class, $attr );
+    my $attrs = _class_attrs( $map, $class, $attr )
+        or return;
 
-    if ( my $handler = $map->deflators->{$class} ) {
-        return $handler->( @_, $attrs );
-    }
-
-    $attrs ? $map->class_deflator( $class, $attrs ) : undef;
+    return $map->class_deflator( $class, $attrs );
 }
 
 #===================================
@@ -78,12 +75,9 @@ sub _inflate_class {
         };
     }
 
-    my $attrs = _class_attrs( $map, $class, $attr );
-    if ( my $handler = $map->inflators->{$class} ) {
-        return $handler->( @_, $attrs );
-    }
+    my $attrs = _class_attrs( $map, $class, $attr )
+        or return;
 
-    return unless $attrs;
     my $attr_inflator = $map->class_inflator( $class, $attrs );
 
     return sub {
@@ -105,13 +99,10 @@ sub _map_class {
             && !$attr->enabled;
 
     my $class = $tc->name;
-    my $attrs = _class_attrs( $map, $class, $attr );
+    my $attrs = _class_attrs( $map, $class, $attr )
+        or return;
 
-    if ( my $handler = $map->mappers->{$class} ) {
-        return $handler->( @_, $attrs );
-    }
-
-    $attrs ? $map->class_mapping( $class, $attrs ) : ();
+    return $map->class_mapping( $class, $attrs );
 }
 
 #===================================
