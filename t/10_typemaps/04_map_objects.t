@@ -7,7 +7,6 @@ our $test_class = 'TypeTest::Objects';
 
 my $uid = uid();
 our @mapping = (
-
     'object'  => { type => 'object', enabled => 0 },
     'objectx' => { type => 'object', enabled => 0 },
 
@@ -82,8 +81,13 @@ our @mapping = (
         },
     },
 
-    'non_moose' => qr/not a Moose/,
+    'non_moose'   => qr/No mapper found/,
+    'not_defined' => qr/No mapper found/,
+    'bad_mapping' => qr/even number of elements/,
 
+    'custom'       => { type    => 'string' },
+    'custom_class' => { type    => 'integer' },
+    'no_tc'        => { enabled => 0, type => "object" },
 );
 
 do 't/10_typemaps/test_mapping.pl' or die $!;

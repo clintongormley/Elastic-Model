@@ -139,8 +139,10 @@ my ( $de, $in );
 
 {
     my $moose_obj = Moose::One->new(
-        name => 'one',
-        two  => Moose::Two->new( foo => 'two' )
+        name         => 'one',
+        two          => Moose::Two->new( foo => 'two' ),
+        custom       => 'foo',
+        custom_class => 10,
     );
 
     test_moose_attr(
@@ -186,13 +188,49 @@ my ( $de, $in );
     ok my $attr = $meta->find_attribute_by_name('non_moose_attr'),
         "Has attr: non_moose_attr";
 
-    throws_ok sub { $tm->find_deflator($attr) }, qr/not a Moose/,
+    throws_ok sub { $tm->find_deflator($attr) }, qr/No deflator found/,
         "Deflator: non_moose_attr";
-    throws_ok sub { $tm->find_inflator($attr) }, qr/not a Moose/,
+    throws_ok sub { $tm->find_inflator($attr) }, qr/No inflator found/,
         "Inflator: non_moose_attr";
 }
 
-# TODO: TEST ->deflator and custom deflators etc
+## NOT-DEFINED ##
+{
+    note '';
+    note 'Flation: not_defined_attr';
+    ok my $attr = $meta->find_attribute_by_name('not_defined_attr'),
+        "Has attr: not_defined_attr";
+
+    throws_ok sub { $tm->find_deflator($attr) }, qr/No deflator found/,
+        "Deflator: not_defined_attr";
+    throws_ok sub { $tm->find_inflator($attr) }, qr/No inflator found/,
+        "Inflator: not_defined_attr";
+
+}
+
+## OTHER ##
+{
+    note '';
+    note 'Flation: custom_attr';
+
+    ( $de, $in ) = flators('custom');
+    cmp_deeply $de->(20), 40, "Deflate custom";
+    cmp_deeply $in->(50), 25, "Inflate custom";
+
+    note '';
+    note 'Flation: custom_class_attr';
+
+    ( $de, $in ) = flators('custom_class');
+    cmp_deeply $de->(20),  80, "Deflate custom class";
+    cmp_deeply $in->(100), 25, "Inflate custom class";
+
+    note '';
+    note 'Flation: no_tc_attr';
+
+    ( $de, $in ) = flators('no_tc');
+    cmp_deeply $de->(20), 20, "Deflate no tc";
+    cmp_deeply $in->(20), 20, "Inflate no tc";
+}
 
 done_testing;
 
