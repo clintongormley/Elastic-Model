@@ -121,11 +121,8 @@ sub class_deflator {
 #===================================
     my ( $map, $class, $attrs ) = @_;
 
-    if ( my $handler = $map->deflators->{$class} ) {
-        return $handler->(@_);
-    }
-
     $attrs ||= $map->indexable_attrs($class);
+
     my %deflators = map { $_ => $map->find_deflator( $attrs->{$_} ) }
         keys %$attrs;
 
@@ -155,10 +152,6 @@ sub class_inflator {
 #===================================
     my ( $map, $class, $attrs ) = @_;
 
-    if ( my $handler = $map->inflators->{$class} ) {
-        return $handler->(@_);
-    }
-
     $attrs ||= $map->indexable_attrs($class);
     my %inflators = map { $_ => $map->find_inflator( $attrs->{$_} ) }
         keys %$attrs;
@@ -170,8 +163,6 @@ sub class_inflator {
             my $val = $inflators{$_}->( $hash->{$_} );
             $attr->set_raw_value( $obj, $val );
             $attr->_weaken_value($obj) if $attr->is_weak_ref;
-
-            # TODO: what about non ES objects?
         }
         return $obj;
     };

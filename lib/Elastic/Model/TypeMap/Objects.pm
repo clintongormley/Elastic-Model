@@ -2,7 +2,6 @@ package Elastic::Model::TypeMap::Objects;
 
 use strict;
 use warnings;
-
 use Elastic::Model::TypeMap::Base qw(:all);
 use Scalar::Util qw(reftype weaken);
 use Moose::Util qw(does_role);
@@ -15,10 +14,7 @@ has_type 'Moose::Meta::TypeConstraint::Class',
     inflate_via { _inflate_class(@_) },
     map_via { _map_class(@_) };
 
-#TODO: Moose role
-# dynamic-off, map known attr
-# all attributes
-# __CLASS__
+# TODO: Moose role
 
 #===================================
 has_type 'Moose::Meta::TypeConstraint::Role',
@@ -53,36 +49,26 @@ has_type 'Object',
 sub _deflate_class {
 #===================================
     my ( $tc, $attr, $map ) = @_;
-    return if $tc->is_a_type_of('MooseX::Types::UndefinedType');
 
     my $class = $tc->name;
-    if ( my $handler = $map->deflators->{$class} ) {
-        return $handler->(@_);
-    }
-
     my $attrs = _class_attrs( $map, $class, $attr );
 
-    # TODO: make sure ESDocs have UID, and make them a reference
+    if ( my $handler = $map->deflators->{$class} ) {
+        return $handler->( @_, $attrs );
+    }
 
-    return $map->class_deflator( $class, $attrs );
+    $attrs ? $map->class_deflator( $class, $attrs ) : undef;
 }
 
 #===================================
 sub _inflate_class {
 #===================================
     my ( $tc, $attr, $map ) = @_;
-    return if $tc->is_a_type_of('MooseX::Types::UndefinedType');
 
     my $class = $tc->name;
-
-    if ( my $handler = $map->inflators->{$class} ) {
-        return $handler->(@_);
-    }
-
-    my $model = $map->model;
-    weaken $model;
-
-    if ( $model->knows_class($class) ) {
+    if ( $map->model->knows_class($class) ) {
+        my $model = $map->model;
+        weaken $model;
         return sub {
             my $hash = shift;
             die "Missing UID\n" unless $hash->{uid};
@@ -93,6 +79,11 @@ sub _inflate_class {
     }
 
     my $attrs = _class_attrs( $map, $class, $attr );
+    if ( my $handler = $map->inflators->{$class} ) {
+        return $handler->( @_, $attrs );
+    }
+
+    return unless $attrs;
     my $attr_inflator = $map->class_inflator( $class, $attrs );
 
     return sub {
@@ -107,20 +98,20 @@ sub _inflate_class {
 sub _map_class {
 #===================================
     my ( $tc, $attr, $map ) = @_;
-    return if $tc->is_a_type_of('MooseX::Types::UndefinedType');
-
-    my $class = $tc->name;
-    if ( my $handler = $map->mappers->{$class} ) {
-        return $handler->(@_);
-    }
 
     return ( type => 'object', enabled => 0 )
         if $attr->can('has_enabled')
             && $attr->has_enabled
             && !$attr->enabled;
 
+    my $class = $tc->name;
     my $attrs = _class_attrs( $map, $class, $attr );
-    return $map->class_mapping( $class, $attrs );
+
+    if ( my $handler = $map->mappers->{$class} ) {
+        return $handler->( @_, $attrs );
+    }
+
+    $attrs ? $map->class_mapping( $class, $attrs ) : ();
 }
 
 #===================================
@@ -131,8 +122,7 @@ sub _class_attrs {
     $class = $map->model->class_for($class) || $class;
 
     my $meta = Class::MOP::class_of($class);
-    die "Class ($class) is not a Moose class\n"
-        unless $meta && $meta->isa('Moose::Meta::Class');
+    return unless $meta && $meta->isa('Moose::Meta::Class');
 
     my %attrs;
 
