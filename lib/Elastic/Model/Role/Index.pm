@@ -41,16 +41,18 @@ sub _build_es { shift->model->es }
 sub index_config {
 #===================================
     my ( $self, %args ) = @_;
-    my $settings = $args{settings} || {};
+    my %settings = %{ $args{settings} || {} };
 
     my @types    = @{ $args{types} || [] };
     my $mappings = $self->mappings(@types);
     my $meta     = Class::MOP::class_of( $self->model );
-    my $analysis = $meta->analysis_for_mappings($mappings);
+    if ( my $analysis = $meta->analysis_for_mappings($mappings) ) {
+        $settings{analysis} = $analysis;
+    }
 
     return {
         index    => $self->name,
-        settings => { %$settings, analysis => $analysis },
+        settings => \%settings,
         mappings => $mappings
     };
 }

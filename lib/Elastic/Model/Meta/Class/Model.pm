@@ -39,7 +39,7 @@ for my $k (qw(namespace char_filter analyzer filter tokenizer)) {
         for my $defn ( values %params ) {
             my $type = $defn->{type} || 'custom';
             return if $type eq 'custom' and $k eq 'analyzer';
-            croak "Unknown type '$type' in $k:\n" . pp( \%params ) . "\n"
+            croak "Unknown type ($type) in $k:\n" . pp( \%params ) . "\n"
                 unless $class->is_default( $k, $type );
         }
     };
@@ -76,7 +76,7 @@ our %DefaultAnalysis = (
     filter      => +{
         map { $_ => 1 }
             qw(
-            standard asciifolding length lowercase nGram edgeNGram
+            standard asciifolding length lowercase ngram edge_ngram
             porterStem shingle stop word_delimiter snowball kstem phonetic
             synonym dictionary_decompounder hyphenation_decompounder
             reverse elision trim truncate unique pattern_replace
@@ -86,7 +86,7 @@ our %DefaultAnalysis = (
     tokenizer => {
         map { $_ => 1 }
             qw(
-            edgeNGram keyword letter lowercase nGram standard
+            edge_ngram keyword letter lowercase ngram standard
             whitespace pattern uax_url_email path_hierarchy
             )
     },
@@ -108,7 +108,7 @@ sub is_default {
 #===================================
     my $self = shift;
     my $type = shift || '';
-    croak "Unknown type '$type' passed to is_default()"
+    croak "Unknown type ($type) passed to is_default()"
         unless exists $DefaultAnalysis{$type};
     my $name = shift or croak "No $type name passed to is_default";
     return exists $DefaultAnalysis{$type}{$name};
@@ -143,7 +143,7 @@ sub analysis_for_mappings {
                         || $self->is_default( $type, $name );
                 $defn{$name} = $self->$type($name)
                     or die
-                    "Unknown $type '$name' required by analyzer '$analyzer_name'";
+                    "Unknown $type ($name) required by analyzer '$analyzer_name'";
             }
         }
         $analysis{$type} = \%defn if %defn;
@@ -218,11 +218,11 @@ C<thai>, C<turkish>
 
 =head3 Default tokenizers
 
-L<edgeNGram|http://www.elasticsearch.org/guide/reference/index-modules/analysis/edgengram-tokenizer.html>,
+L<edge_ngram|http://www.elasticsearch.org/guide/reference/index-modules/analysis/edgengram-tokenizer.html>,
 L<keyword|http://www.elasticsearch.org/guide/reference/index-modules/analysis/keyword-tokenizer.html>,
 L<letter|http://www.elasticsearch.org/guide/reference/index-modules/analysis/letter-tokenizer.html>,
 L<lowercase|http://www.elasticsearch.org/guide/reference/index-modules/analysis/lowercase-tokenizer.html>,
-L<nGram|http://www.elasticsearch.org/guide/reference/index-modules/analysis/ngram-tokenizer.html>,
+L<ngram|http://www.elasticsearch.org/guide/reference/index-modules/analysis/ngram-tokenizer.html>,
 L<path_hierarchy|http://www.elasticsearch.org/guide/reference/index-modules/analysis/pathhierarchy-tokenizer.html>,
 L<pattern|http://www.elasticsearch.org/guide/reference/index-modules/analysis/pattern-tokenizer.html>,
 L<standard|http://www.elasticsearch.org/guide/reference/index-modules/analysis/standard-tokenizer.html>,
@@ -233,7 +233,7 @@ L<whitespace|http://www.elasticsearch.org/guide/reference/index-modules/analysis
 
 L<asciifolding|http://www.elasticsearch.org/guide/reference/index-modules/analysis/asciifolding-tokenfilter.html>,
 L<dictionary_decompounder|http://www.elasticsearch.org/guide/reference/index-modules/analysis/compound-word-tokenfilter.html>,
-L<edgeNGram|http://www.elasticsearch.org/guide/reference/index-modules/analysis/edgengram-tokenfilter.html>,
+L<edge_ngram|http://www.elasticsearch.org/guide/reference/index-modules/analysis/edgengram-tokenfilter.html>,
 L<elision|http://www.elasticsearch.org/guide/reference/index-modules/analysis/elision-tokenfilter.html>,
 L<hyphenation_decompounder|http://www.elasticsearch.org/guide/reference/index-modules/analysis/compound-word-tokenfilter.html>,
 L<icu_collation|http://www.elasticsearch.org/guide/reference/index-modules/analysis/icu-plugin.html>,
@@ -242,7 +242,7 @@ L<icu_normalizer|http://www.elasticsearch.org/guide/reference/index-modules/anal
 L<kstem|http://www.elasticsearch.org/guide/reference/index-modules/analysis/kstem-tokenfilter.html>,
 L<length|http://www.elasticsearch.org/guide/reference/index-modules/analysis/length-tokenfilter.html>,
 L<lowercase|http://www.elasticsearch.org/guide/reference/index-modules/analysis/lowercase-tokenfilter.html>,
-L<nGram|http://www.elasticsearch.org/guide/reference/index-modules/analysis/ngram-tokenfilter.html>,
+L<ngram|http://www.elasticsearch.org/guide/reference/index-modules/analysis/ngram-tokenfilter.html>,
 L<pattern_replace|http://www.elasticsearch.org/guide/reference/index-modules/analysis/pattern_replace-tokenfilter.html>,
 L<phonetic|http://www.elasticsearch.org/guide/reference/index-modules/analysis/phonetic-tokenfilter.html>,
 L<porterStem|http://www.elasticsearch.org/guide/reference/index-modules/analysis/porterstem-tokenfilter.html>,
