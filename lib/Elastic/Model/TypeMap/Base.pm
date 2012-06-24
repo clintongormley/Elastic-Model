@@ -286,9 +286,9 @@ sub attribute_mapping {
     my $mapping = $attr->can('mapping') && $attr->mapping
         || { $map->find_mapper($attr) };
 
-    my $type = $mapping->{type};
+    my $type = $mapping->{type} || '';
     if ( $attr->can('type') ) {
-        my $new_type = $attr->type;
+        my $new_type = $attr->type ;
         if ( $new_type and $new_type ne $type ) {
             delete $mapping->{enabled}
                 if $type eq 'object';

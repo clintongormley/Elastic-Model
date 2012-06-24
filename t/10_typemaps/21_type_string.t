@@ -57,6 +57,7 @@ our @mapping = (
         },
     },
 
+    mapping => { type => 'integer', store => 1 },
     bad_opt   => qr/doesn't understand 'precision_step'/,
     bad_multi => qr/doesn't understand 'format'/
 
