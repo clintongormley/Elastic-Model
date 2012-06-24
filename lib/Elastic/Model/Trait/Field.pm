@@ -439,7 +439,7 @@ This is the default for string fields (except for enums).
 
 
 Individual fields can be stored (ie have their original value stored on disk).
-This is not the same as whether the value is indexed or not (see L</"index")>.
+This is not the same as whether the value is indexed or not (see L</"index">).
 It just means that this individual value can be retrieved separately from the
 others. C<stored> defaults to C<'no'> but can be set to C<'yes'>.
 

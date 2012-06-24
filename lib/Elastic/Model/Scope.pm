@@ -257,7 +257,7 @@ and store it in the current scope.
 
 When we load a document that didn't exist in any live scope, or we create
 a new or update an existing document via L<Elastic::Model::Role::Doc/"save()">,
-we also store it in the current scope via L<store_object()>.
+we also store it in the current scope via L</store_object()>.
 
 =head3 Documents from search results
 

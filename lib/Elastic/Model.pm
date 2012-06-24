@@ -199,7 +199,7 @@ the C<pattern> tokenizer could be used to split text using a regex:
 
 =head3 has_filter
 
-Any terms/tokens produced by the L</"tokenizer"> can the be passed through
+Any terms/tokens produced by the L</"has_tokenizer"> can the be passed through
 multiple token filters.  For instance, each term could be broken down into
 "edge ngrams" (eg 'foo' => 'f','fo','foo') for partial matching.
 

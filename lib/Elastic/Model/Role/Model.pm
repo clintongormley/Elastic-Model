@@ -552,7 +552,7 @@ C<get_doc()> also accepts an optional C<$source> parameter which is
 used internally for inflating search results.
 See L<Elastic::Model::Scope> for a more detailed explanation.
 
-Any other args are passed on to L</Elastic::Model::Store::get_doc()>.
+Any other args are passed on to L<Elastic::Model::Store/get_doc()>.
 
 =head3 get_doc_source()
 
@@ -563,7 +563,7 @@ Calls L<Elastic::Model::Store/"get_doc()"> and returns the raw source hashref
 as stored in ElasticSearch for the doc with the corresponding
 L<$uid|Elastic::Model::UID>. Throws an error if it doesn't exist.
 
-Any other args are passed on to L</Elastic::Model::Store::get_doc()>.
+Any other args are passed on to L<Elastic::Model::Store/get_doc()>.
 
 =head3 save_doc()
 

@@ -235,7 +235,7 @@ mappings for the current namespace.  The generated analysis settings are merged
 into any C<%settings> that you provide. Mappings and analysis settings will be
 for all C<@types> known to the L</namespace> unless specified.
 
-This method is used by L</update_analyzers/()> and
+This method is used by L</update_analyzers()> and
 L<Elastic::Model::Index/create_index()>.
 
 =head2 update_settings()

@@ -111,7 +111,7 @@ of the three element types:
     $it->next_object;       # Object itself
     $it->next_element;      # Raw data
 
-But that is verbose. By default, L<first()>, L<next()> etc all return Result
+But that is verbose. By default, C<first()>, C<next()> etc all return Result
 objects, but you can change that:
 
     $it = $view->search;

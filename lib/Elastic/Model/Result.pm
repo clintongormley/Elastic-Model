@@ -188,8 +188,9 @@ without a separate (but automatic) step to retrieve it from ElasticSearch.
     $id         = $result->id      | $result->uid->id;
     $routing    = $result->routing | $result->uid->routing;
 
-The L<uid|Elastic::Model::UID> of the doc.  L</index>, L</type>, L</id>
-and L</routing> are provided for convenience.
+The L<uid|Elastic::Model::UID> of the doc.  L<index|Elastic::Model::UID/index>,
+L<type|Elastic::Model::UID/type>, L<id|Elastic::Model::UID/id>
+and L<routing|Elastic::Model::UID/routing> are provided for convenience.
 
 =head2 highlights
 
@@ -259,7 +260,7 @@ The raw result as returned by ElasticSearch.
 
 The C<_source> field (ie the hashref which represents your object in
 ElasticSearch). This value is returned by default with any search, and is
-used to inflate your L</object()> without having to retrieve it in a separate
+used to inflate your L</object> without having to retrieve it in a separate
 step. B<Note:> If you set L<Elastic::Model::View/fields> and you don't include
 C<'_source'> then you will be unable to inflate your object without a separate
 (but automatic) step to retrieve it from ElasticSearch.

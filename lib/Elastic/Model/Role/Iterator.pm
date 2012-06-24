@@ -551,7 +551,7 @@ unchanged.
     $code_ref = $iter->wrapper();
 
 A coderef that wraps all single-element wrapped accessors. Defaults to
-L<as_elements()>.
+L</as_elements()>.
 
 =head2 multi_wrapper
 
@@ -559,7 +559,7 @@ L<as_elements()>.
     $code_ref = $iter->multi_wrapper();
 
 A coderef that wraps all multi-element wrapped accessors. Defaults to
-L<as_elements()>.
+L</as_elements()>.
 
 =head2 as_elements()
 

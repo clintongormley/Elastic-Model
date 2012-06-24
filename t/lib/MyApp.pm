@@ -27,7 +27,7 @@ has_analyzer 'edge_ngrams' => (
 #===================================
 has_filter 'edge_ngrams_2_20' => (
 #===================================
-    type     => 'edgeNGram',
+    type     => 'edge_ngram',
     min_gram => 2,
     max_gram => 20,
 );
