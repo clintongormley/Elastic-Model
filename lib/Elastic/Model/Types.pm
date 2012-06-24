@@ -39,6 +39,50 @@ use MooseX::Types -declare => [ qw(
         )
 ];
 
+my @enums = (
+    FieldType,
+    [   'string', 'integer',   'long',   'float',
+        'double', 'short',     'byte',   'boolean',
+        'date',   'binary',    'object', 'nested',
+        'ip',     'geo_point', 'attachment'
+    ],
+    CoreFieldType,
+    [   'string', 'integer', 'long', 'float',
+        'double', 'short',   'byte', 'boolean',
+        'date',   'ip',      'geo_point'
+    ],
+    TermVectorMapping,
+    [   'no',           'yes',
+        'with_offsets', 'with_positions',
+        'with_positions_offsets'
+    ],
+    IndexMapping,
+    [ 'analyzed', 'not_analyzed', 'no' ],
+    DynamicMapping,
+    [ 'false', 'strict', 'true' ],
+    PathMapping,
+    [ 'just_name', 'full' ],
+    Replication,
+    [ 'sync', 'async' ],
+    Consistency,
+    [ 'quorum', 'one', 'all' ],
+    SearchType,
+    [   'query_then_fetch',     'query_and_fetch',
+        'dfs_query_then_fetch', 'dfs_query_and_fetch',
+        'scan',                 'count'
+    ],
+);
+
+while ( my $type = shift @enums ) {
+    my $vals = shift @enums;
+    subtype(
+        $type,
+        {   as      => enum($vals),
+            message => sub { "Allowed values are: " . join '|', @$vals }
+        }
+    );
+}
+
 #===================================
 class_type ES, { class => 'ElasticSearch' };
 #===================================
@@ -52,68 +96,6 @@ coerce ES, from ArrayRef, via {
     s/^:/127.0.0.1:/ for @servers;
     ElasticSearch->new( servers => \@servers );
 };
-
-#===================================
-enum FieldType, (
-#===================================
-    'string',    'integer', 'long',   'float',
-    'double',    'short',   'byte',   'boolean',
-    'binary',    'object',  'nested', 'ip',
-    'geo_point', 'attachment'
-);
-
-#===================================
-enum CoreFieldType, (
-#===================================
-    'string', 'integer', 'long', 'float',
-    'double', 'short',   'byte', 'boolean',
-);
-
-#===================================
-enum IndexMapping, (
-#===================================
-    'analyzed', 'not_analyzed', 'no'
-);
-
-#===================================
-enum TermVectorMapping, (
-#===================================
-    'no',           'yes',
-    'with_offsets', 'with_positions',
-    'with_positions_offsets'
-);
-
-#===================================
-enum DynamicMapping, (
-#===================================
-    'false', 'strict', 'true'
-);
-
-#===================================
-enum PathMapping, (
-#===================================
-    'just_name', 'full'
-);
-
-#===================================
-enum Replication, (
-#===================================
-    'sync', 'async'
-);
-
-#===================================
-enum Consistency, (
-#===================================
-    'quorum', 'one', 'all'
-);
-
-#===================================
-enum SearchType, (
-#===================================
-    'query_then_fetch',     'query_and_fetch',
-    'dfs_query_then_fetch', 'dfs_query_and_fetch',
-    'scan',                 'count'
-);
 
 #===================================
 subtype StoreMapping, as enum( [ 'yes', 'no' ] );
@@ -136,29 +118,30 @@ subtype MultiField, as Dict [
     term_vector                  => Optional [TermVectorMapping],
     geohash                      => Optional [Bool],
     lat_lon                      => Optional [Bool],
-    geohash_precision            => Optional [Int]
+    geohash_precision            => Optional [Int],
+    precision_step               => Optional [Int],
+    format                       => Optional [Str],
+
 ];
 
 #===================================
-subtype MultiFields,
+subtype MultiFields, as HashRef [MultiField];
 #===================================
-    as HashRef [MultiField];
 
 #===================================
-subtype SortArgs,
+subtype SortArgs, as ArrayRef;
 #===================================
-    as ArrayRef;
 coerce SortArgs, from HashRef, via { [$_] };
 coerce SortArgs, from Str,     via { [$_] };
 
 #===================================
-subtype HighlightArgs,
+subtype HighlightArgs, as HashRef;
 #===================================
-    as HashRef;
 coerce HighlightArgs, from Str, via { return { $_ => {} } };
 coerce HighlightArgs, from ArrayRef, via {
     my $args = $_;
     my %fields;
+
     while ( my $field = shift @$args ) {
         die "Expected a field name but got ($field)"
             if ref $field;
@@ -168,16 +151,14 @@ coerce HighlightArgs, from ArrayRef, via {
 };
 
 #===================================
-subtype Longitude,
+subtype Longitude, as Num,
 #===================================
-    as Num,
     where { $_ >= -180 and $_ <= 180 },
     message {"Longitude must be in the range -180 to 180"};
 
 #===================================
-subtype Latitude,
+subtype Latitude, as Num,
 #===================================
-    as Num,
     where { $_ >= -90 and $_ <= 90 },
     message {"Latitude must be in the range -90 to 90"};
 
