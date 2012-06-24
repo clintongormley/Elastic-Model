@@ -186,9 +186,10 @@ It is loaded automatically byL<Elastic::Model::TypeMap::Default>.
 
 =head2 Optional
 
-An undef value is stored as a JSON C<null>. A missing value is not set.
-The mapping depends on the content type, eg C<Optional[Int]>.
-An C<Optional> without a content type is not supported.
+Optional values are mapped, inflated and deflated according to their
+content type, eg C<Optional[Int]>. An C<Optional> type with no
+content type is mapped as C<<{ type => 'object', enabled => 'no' }>>
+and the value would be passed through unaltered when deflating/inflating.
 
 =head2 Tuple
 
@@ -206,7 +207,8 @@ A tuple is mapped as an object, with:
     }
 
 The C<%properties> mapping depends on the content types. A C<Tuple> without
-content types is not supported.
+content types is mapped as C<<{ type => 'object', enabled => 'no' }>>
+and the value would be passed through unaltered when deflating/inflating.
 
 =head2 Dict
 
@@ -219,9 +221,13 @@ A C<Dict> is mapped as an object, with:
     }
 
 The C<%properties> mapping depends on the content types. A C<Dict> without
-content types is not supported.
+content types is mapped as C<<{ type => 'object', enabled => 'no' }>>
+and the value would be passed through unaltered when deflating/inflating.
 
 =head2 Map
 
-TODO: This needs to be resolved - do we use dynamic templates for the fields?
-
+It is not advisable to allow arbitrary key names in indexed hashes, as you
+could end up generating many (and conflicting) field mappings.  For this reason,
+Maps are mapped as C<< { type => 'object', enabled => 0 } >>. In/deflation
+depends on the content type (eg C<Map[Str,Int>]). A C<Map> without a content type
+would pass through the value unaltered when inflating/deflatin.

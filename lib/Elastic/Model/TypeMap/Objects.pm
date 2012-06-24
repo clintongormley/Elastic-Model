@@ -130,11 +130,12 @@ sub _class_attrs {
     %attrs = map { $_->name => $_ }
         grep { !( $_->can('exclude') && $_->exclude ) } @inc_attr;
 
-    delete @attrs{@$exc} if $exc;
-
+    # TODO: does it ever make sense to remove the UID field?
     if ( my $uid = $meta->find_attribute_by_name('uid') ) {
         $attrs{uid} = $uid;
     }
+
+    delete @attrs{@$exc} if $exc;
 
     return \%attrs;
 }
@@ -146,13 +147,91 @@ sub _class_attrs {
 =head1 DESCRIPTION
 
 L<Elastic::Model::TypeMap::Objects> provides mapping, inflation and deflation
-for Moose-based classes and objects .
-It is loaded automatically byL<Elastic::Model::TypeMap::Default>.
+for Moose-based classes and objects.
+It is loaded automatically by L<Elastic::Model::TypeMap::Default>.
 
 =head1 TYPES
 
-=head2 Class
+=head2 Moose classes
 
-=head3 Non-Moose classes
+    has 'bar' => (
+        is  => 'rw,
+        isa => 'Bar'
+    );
 
-Non-Moose classes must provide custom mappings, deflators and inflators.
+If C<Bar> is a Moose class, then its attributes will be introspected and
+the mapping will look like:
+
+    {
+        type        => 'object',
+        dynamic     => 'strict',
+        properties  => {
+            ... mapping for Bar's attributes...
+        }
+    }
+
+By default, all attributes are included. You can control the attribute list
+with:
+
+    has 'bar' => (
+        is              => 'rw,
+        isa             => 'Bar',
+        include_attrs   => [],              # no attributes
+      | include_attrs   => ['foo','bar']    # just 'foo' and 'bar'
+      | exclude_attrs   => ['foo','bar']    # all except 'foo' and 'bar'
+    );
+
+You can control the mapping for individual attributes in Moose classes with
+the L<Elastic::Model::Trait::Field> trait:
+
+    package Bar;
+
+    use Moose;
+
+    has 'foo' => (
+        is              => 'rw,
+        isa             => 'Str',
+        trait           => ['Elastic::Model::Trait::Field'],
+        omit_norms      => 1
+    );
+
+
+=head2 Elastic::Doc classes
+
+Elastic::Doc classes work in exactly the same way as other Moose classes except
+
+=over
+
+=item *
+
+You don't need to specify the L<Elastic::Model::Trait::Field> trait - it is
+added automatically.
+
+=item *
+
+The L<UID|Elastic::Model::UID> field is always included, unless you specifically
+list it in C<exclude_attrs>.
+
+=back
+
+By default, all the attributes of an Elastic::Doc class will be included.
+For instance, if we have two classes: C<User> and C<Post>, and the C<Post> class
+has a C<user> attribute.  Because all the attributes of the C<$user> are
+also indexed in the C<$post> object, you can search for C<Posts>
+which have been written by a C<User> whose name is C<"john">.
+
+This also means that if a C<User> updates their name, then you need
+to reindex all of their C<Posts>.
+
+If you don't want to include any attributes, then you can just specify:
+C<< include_attrs => [] >>.  The L<UID|Elastic::Model::UID> will still be indexed,
+meaning that you can still do:
+
+    $user_name = $post->user->name;
+
+
+
+=head2 Moose Roles and non-Moose classes
+
+Moose roles and non-Moose classes must provide
+L<custom mappings, deflators and inflators|Elastic::Model::Trait::Field/CUSTOM MAPPING, INFLATION AND DEFLATION>

@@ -695,7 +695,7 @@ The C<precision_step> determines the number of terms generated for each
 value (defaults to 4). The more terms, the faster the lookup, but the more
 memory used.
 
-=head2 DATE KEYWORDS
+=head1 DATE KEYWORDS
 
 The following keywords apply only to fields of L</"type"> C<date>.
 Dates in ElasticSearch are stored internally as long values containing
@@ -986,7 +986,7 @@ TODO
 =head1 CUSTOM MAPPING, INFLATION AND DEFLATION
 
 The preferred way to specify the mapping and how to deflate and inflate
-an attribute is by specifyin an C<isa> type constraint and adding a
+an attribute is by specifying an C<isa> type constraint and adding a
 L<typemap entry|Elastic::Model::TypeMap::Default>.
 
 However, you can provide custom values with the following:
