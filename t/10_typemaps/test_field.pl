@@ -10,12 +10,12 @@ use Test::Deep;
 use lib 't/lib';
 
 BEGIN {
-    use_ok 'TypeTest' || print 'Bail out';
+    use_ok 'FieldTest' || print 'Bail out';
 }
 
 our ( $test_class, @mapping );
 
-my $model = new_ok 'TypeTest';
+my $model = new_ok 'FieldTest';
 isa_ok my $tm = $model->type_map, 'Elastic::Model::TypeMap::Base';
 
 note '';
@@ -41,15 +41,16 @@ sub test_mapping {
     ok my $attr = $meta->find_attribute_by_name($name), "Has attr: $name";
     return unless $attr;
 
-#   use Data::Dump qw(pp); pp(eval {+{$name=> {$tm->find_mapper($attr)}}}||$@);
+#use Data::Dump qw(pp); pp(eval {+{$name=> $tm->attribute_mapping($attr)}}||$@);
     if ( ref($test) eq 'HASH' ) {
         is_deeply
-            eval { +{ $tm->find_mapper($attr) } } || $@,
+            eval { $tm->attribute_mapping($attr) } || $@,
             $test,
             "Mapping:  $name";
     }
     else {
-        throws_ok sub { $tm->find_mapper($attr) }, $test, "$name fails ok";
+        throws_ok sub { $tm->attribute_mapping($attr) }, $test,
+            "$name fails ok";
     }
 }
 

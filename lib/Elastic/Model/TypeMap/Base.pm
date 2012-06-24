@@ -214,7 +214,10 @@ our %Allowed_Attrs = (
         'include_in_all' => 1,
         'multi'          => 1,
     },
-    binary => { 'index_name' => 1 },
+    binary => {
+        'index_name' => 1,
+        'store'      => 1
+    },
     object => {
         'dynamic'        => 1,
         'enabled'        => 1,
@@ -226,7 +229,6 @@ our %Allowed_Attrs = (
         'include_in_root'   => 1,
         'include_in_all'    => 1,
         'dynamic'           => 1,
-        'enabled'           => 1,
         'path'              => 1,
     },
     ip => {
@@ -237,11 +239,15 @@ our %Allowed_Attrs = (
         'boost'          => 1,
         'null_value'     => 1,
         'include_in_all' => 1,
+        'multi'          => 1,
     },
-    geopoint => {
+    geo_point => {
         'lat_lon'           => 1,
         'geohash'           => 1,
         'geohash_precision' => 1,
+        'index_name'        => 1,
+        'store'             => 1,
+        'multi'             => 1,
     },
 
     # TODO:   attachment => {}
@@ -252,16 +258,10 @@ our @All_Keys = uniq map { keys %$_ } values %Allowed_Attrs;
 $Allowed_Attrs{$_} = $Allowed_Attrs{integer}
     for qw(long float double short byte);
 
-# TODO handle custom mapping, deflator,inflator per class
-
 #===================================
 sub class_mapping {
 #===================================
     my ( $map, $class, $attrs ) = @_;
-
-    #    if ( my $handler = $map->mappers->{$class} ) {
-    #        return $handler->(@_);
-    #    }
 
     $attrs ||= $map->indexable_attrs($class);
 
@@ -286,7 +286,18 @@ sub attribute_mapping {
     my $mapping = $attr->can('mapping') && $attr->mapping
         || { $map->find_mapper($attr) };
 
-    my $type    = $mapping->{type}      or die "Missing field type";
+    my $type = $mapping->{type};
+    if ( $attr->can('type') ) {
+        my $new_type = $attr->type;
+        if ( $new_type and $new_type ne $type ) {
+            delete $mapping->{enabled}
+                if $type eq 'object';
+            $mapping->{type} = $type = $new_type;
+        }
+    }
+
+    die "Missing field type" unless $type;
+
     my $allowed = $Allowed_Attrs{$type} or die "Unknown field type ($type)";
 
     return $mapping unless does_role( $attr, 'Elastic::Model::Trait::Field' );
@@ -312,7 +323,20 @@ sub attribute_mapping {
         die "Multi-field name '$name' clashes with the attribute name\n"
             if $name eq $main;
         my $defn = $multi->{$name};
-        $defn->{type} ||= $type;
+        my $multi_type = $defn->{type} ||= $type;
+
+        $allowed = $Allowed_Attrs{$multi_type}
+            or die "Uknown field type ($type)";
+
+        for my $key ( keys %$defn ) {
+            die "Attribute has type '$multi_type', which doesn't "
+                . "understand '$key'\n"
+                unless $allowed->{$key} || $key eq 'type';
+        }
+
+        delete $defn->{analyzer}
+            if $defn->{index_analyzer} && $defn->{search_analyzer};
+
         $new{fields}{$name} = $defn;
     }
     return \%new;

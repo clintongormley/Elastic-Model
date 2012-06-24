@@ -1,0 +1,36 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+our $test_class = 'FieldTest::Boolean';
+
+our @mapping = (
+    'basic' => { type => 'boolean' },
+
+    'options' => {
+        boost          => 2,
+        include_in_all => 0,
+        index          => "no",
+        index_name     => "foo",
+        null_value     => "nothing",
+        store          => "yes",
+        type           => "boolean",
+    },
+
+    multi => {
+        type   => "multi_field",
+        fields => {
+            multi_attr => { boost => 2, type => "boolean" },
+            one        => { type  => "string" },
+        },
+    },
+
+    bad_opt   => qr/doesn't understand 'omit_norms'/,
+    bad_multi => qr/doesn't understand 'omit_term_freq_and_positions'/
+
+);
+
+do 't/10_typemaps/test_field.pl' or die $!;
+
+1;

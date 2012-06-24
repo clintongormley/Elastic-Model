@@ -46,8 +46,9 @@ around [ 'get_value', 'set_value', 'clear_value', 'has_value' ]
 #===================================
 has 'type' => (
 #===================================
-    isa => FieldType,
-    is  => 'ro'
+    isa       => FieldType,
+    is        => 'ro',
+    predicate => 'has_type'
 );
 
 #===================================
@@ -157,7 +158,6 @@ has 'term_vector' => (
     isa => TermVectorMapping,
     is  => 'ro'
 );
-sub omit_tfp { shift->omit_term_freq_and_positions(@_) }
 
 # dates
 
@@ -648,21 +648,21 @@ You can turn off norms with C<omit_norms> set to true.
 See L<http://www.lucidimagination.com/content/scaling-lucene-and-solr#d0e71>
 for more discussion of C<omit_norms>.
 
-=head2 omit_tfp / omit_term_freq_and_positions
+=head2 omit_term_freq_and_positions
 
     has 'status' => (
-        is          => 'ro',
-        isa         => 'Str',
-        analyzer    => 'keyword',
-        omit_tfp    => 1
+        is                              => 'ro',
+        isa                             => 'Str',
+        analyzer                        => 'keyword',
+        omit_term_freq_and_positions    => 1
     )
 
-C<omit_tfp> is a synonym for C<omit_term_freq_and_positions>. ElasticSearch
-normally stores the frequency and position of each term in analyzed text. If
-you don't need this information, then you can turn it off, and save space.
+ElasticSearch normally stores the frequency and position of each term in
+analyzed text. If you don't need this information, then you can turn it off,
+and save space.
 
 See L<http://www.lucidimagination.com/content/scaling-lucene-and-solr#d0e63>
-for more discussion of C<omit_tfp>.
+for more discussion of C<omit_term_freq_and_positions>.
 
 =head2 term_vector
 
