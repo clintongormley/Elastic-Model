@@ -5,6 +5,7 @@ perl:
 env: PERL_CPANM_OPT="--notest --force --skip-satisfied" ES="localhost:9200"
 before_install:
   - sudo service elasticsearch start
+  - "cpanm Dist::Zilla"
   - "dzil authordeps | cpanm"
 install: "dzil listdeps | xargs cpanm"
 script: "dzil test --release"
