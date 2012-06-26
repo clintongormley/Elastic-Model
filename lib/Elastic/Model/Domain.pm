@@ -95,7 +95,7 @@ sub get {
 }
 
 #===================================
-sub maybe_get { shift->get( @_, ignore_missing => 1 ) }
+sub try_get { shift->get( @_, ignore_missing => 1 ) }
 #===================================
 
 #===================================
@@ -107,7 +107,7 @@ sub delete {
     my $id   = shift or croak "No id passed to delete()";
     my %args = @_;
 
-    my $uid  = Elastic::Model::UID->new(
+    my $uid = Elastic::Model::UID->new(
         index   => $self->name,
         type    => $type,
         id      => $id,
@@ -117,7 +117,7 @@ sub delete {
 }
 
 #===================================
-sub maybe_delete { shift->delete( @_, ignore_missing => 1 ) }
+sub try_delete { shift->delete( @_, ignore_missing => 1 ) }
 #===================================
 
 #===================================
@@ -156,13 +156,13 @@ Retrieve a doc by ID:
 
     $user = $domain->get( $type => $id );
 
-    $user = $domain->maybe_get( $type => $id );      # return undef if missing
+    $user = $domain->try_get( $type => $id );      # return undef if missing
 
 Delete a doc by ID;
 
     $uid = $domain->delete( $type => $id );
 
-    $user = $domain->maybe_delete( $type => $id );   # return undef if missing
+    $user = $domain->try_delete( $type => $id );   # return undef if missing
 
 Create a view on the current domain:
 
@@ -237,10 +237,10 @@ Retrieves a doc of type C<$type> with ID C<$id> from index C<< $domain->name >>
 or throws an exception if the doc doesn't exist. See
 L<Elastic::Model::Store/get_doc()> for more parameters which can be passed.
 
-=head2 maybe_get()
+=head2 try_get()
 
-    $doc = $domain->maybe_get( $type => $id );
-    $doc = $domain->maybe_get( $type => $id, routing => $routing, ... );
+    $doc = $domain->try_get( $type => $id );
+    $doc = $domain->try_get( $type => $id, routing => $routing, ... );
 
 Retrieves a doc of type C<$type> with ID C<$id> from index C<< $domain->name >>
 or returns undef if the doc doesn't exist.
@@ -254,10 +254,10 @@ Deletes a doc of type C<$type> with ID C<$id> from index C<< $domain->name >>
 or throws an exception if the doc doesn't exist. See
 L<Elastic::Model::Store/delete_doc()> for more parameters which can be passed.
 
-=head2 maybe_delete()
+=head2 try_delete()
 
-    $uid = $domain->maybe_delete( $type => $id );
-    $uid = $domain->maybe_delete( $type => $id, routing => $routing, ... );
+    $uid = $domain->try_delete( $type => $id );
+    $uid = $domain->try_delete( $type => $id, routing => $routing, ... );
 
 Deletes a doc of type C<$type> with ID C<$id> from index C<< $domain->name >>
 or returns undef if the doc doesn't exist.

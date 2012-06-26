@@ -156,8 +156,8 @@ throws_ok sub { $routed->get( user => 1 ) }, qr/Missing/,
     'Routed without routing';
 
 ## Maybe get ##
-isa_ok $user = $routed->get( user => 2 ), 'MyApp::User', 'Maybe_get existing';
-is $myapp->maybe_get( user => 3 ), undef, 'Maybe_get missing';
+isa_ok $user = $routed->get( user => 2 ), 'MyApp::User', 'try_get existing';
+is $myapp->try_get( user => 3 ), undef, 'try_get missing';
 
 ## Change and save ##
 is $user->name('James'), 'James', 'Field updated';
@@ -182,8 +182,8 @@ throws_ok sub { $myapp->delete( user => 2 ) }, qr/Missing/,
     'Delete missing doc';
 throws_ok sub { $myapp->delete( user => 1, routing => 'foo' ) }, qr/Missing/,
     'Delete missing with routing';
-is $routed->maybe_delete( user => 1 ), undef, 'Delete maybe';
-ok my $uid = $myapp->maybe_delete( user => 2, routing => 'foo' ),
+is $routed->try_delete( user => 1 ), undef, 'Delete maybe';
+ok my $uid = $myapp->try_delete( user => 2, routing => 'foo' ),
     'Delete with routing';
 
 test_uid(
