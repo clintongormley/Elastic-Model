@@ -21,7 +21,7 @@ no Moose;
 sub BUILD {
 #===================================
     my $self   = shift;
-    my $result = $self->model->store->search( $self->search );
+    my $result = $self->model->search( $self->search );
 
     my $hits = $result->{hits};
     $self->_set_total( $hits->{total} );
