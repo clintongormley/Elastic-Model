@@ -39,7 +39,8 @@ sub get_object {
     $existing = $parent->get_object( $ns, $uid ) or return undef;
 
     my $new = Class::MOP::class_of($existing)
-        ->new_stub( $uid, $existing->_source );
+        ->new_stub( $existing->uid->clone, $existing->_source );
+
     return $self->store_object( $ns, $new );
 }
 

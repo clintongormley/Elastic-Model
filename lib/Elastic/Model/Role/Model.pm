@@ -289,7 +289,7 @@ sub get_doc {
     my $source = $args{source};
 
     my $object;
-    $object = $scope->get_object( $ns, $uid )
+    $object = $scope->get_object( $ns->name, $uid )
         if $scope && !$source;
 
     unless ($object) {
@@ -320,21 +320,21 @@ sub save_doc {
 #===================================
     my ( $self, %args ) = @_;
 
-    my $doc    = delete $args{doc};
-    my $uid    = $doc->uid;
-    my $action = $uid->from_store ? 'index_doc' : 'create_doc';
-    my $data   = $self->deflate_object($doc);
+    my $doc  = delete $args{doc};
+    my $uid  = $doc->uid;
+    my $data = $self->deflate_object($doc);
 
+    my $action = $uid->from_store ? 'index_doc' : 'create_doc';
     my $result = $self->store->$action( $uid, $data, %args );
+
     $uid->update_from_store($result);
     $doc->_set_source($data);
 
-    if ( my $scope = $self->current_scope ) {
-        my $ns = $self->namespace_for_domain( $uid->index );
-        return $scope->store_object( $ns->name, $doc );
-    }
-    return $doc;
+    my $scope = $self->current_scope
+        or return $doc;
 
+    my $ns = $self->namespace_for_domain( $uid->index );
+    return $scope->store_object( $ns->name, $doc );
 }
 
 #===================================

@@ -40,8 +40,9 @@ has version => (
 #===================================
 has routing => (
 #===================================
-    is  => 'ro',
-    isa => Maybe [Str],
+    is     => 'ro',
+    isa    => Maybe [Str],
+    writer => '_routing'
 );
 
 #===================================
@@ -92,10 +93,19 @@ sub update_from_uid {
 #===================================
     my $self = shift;
     my $uid  = shift;
-    $self->$_( $uid->$_ ) for qw( index routing version );
+    $self->_index( $uid->index );
+    $self->_routing( $uid->routing );
+    $self->_version( $uid->version );
     $self->_from_store(1);
     $self->_clear_cache_key;
     $self;
+}
+
+#===================================
+sub clone {
+#===================================
+    my $self = shift;
+    bless {%$self}, ref $self;
 }
 
 #===================================
