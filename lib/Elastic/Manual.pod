@@ -57,13 +57,23 @@ just keep on working.
 Start by reading L<Elastic::Manual::Intro> for a gentle introduction to
 L<Elastic::Model>.
 
-=head2 L<Elastic::Manual::Terminology>
+=head2 L<Elastic::Manual::DocClasses>
 
-A brief definition of some of the terms used by ElasticSearch and Elastic::Model.
+How to setup your Doc classes and their attributes.
+
+=head2 L<Elastic::Manual::QueryLanguage>
+
+Using the ElasticSearch Query DSL (and the L<ElasticSearch::SearchBuilder>
+syntax) to query your documents efficiently.
 
 =head2 L<Elastic::Manual::Searching>
 
 Which search method to use with a View, and how to iterate through the results.
+
+=head2 L<Elastic::Manual::Analysis>
+
+Controlling how your attributes are indexed so that they can be queried
+as you need.
 
 =head2 L<Elastic::Manual::Scaling>
 
@@ -73,6 +83,11 @@ massive scale.
 =head2 L<Elastic::Manual::Conflicts>
 
 Optimistic locking and dealing with version conflicts.
+
+=head2 L<Elastic::Manual::Terminology>
+
+A brief definition of some of the terms used by ElasticSearch and Elastic::Model.
+
 
 
 

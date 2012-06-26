@@ -1,0 +1,5 @@
+package Elastic::Manual::QueryLanguage;
+
+# ABSTRACT: How to use the ElasticSearch Query DSL
+
+=head1 TODO
