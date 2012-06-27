@@ -8,6 +8,7 @@ use Class::Load qw(load_class);
 use Moose::Util qw(does_role);
 use MooseX::Types::Moose qw(:all);
 use Elastic::Model::UID();
+use Elastic::Model::Deleted();
 use Scalar::Util qw(blessed refaddr weaken);
 use List::MoreUtils qw(uniq);
 
