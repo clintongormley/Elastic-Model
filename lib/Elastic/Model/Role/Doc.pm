@@ -44,13 +44,14 @@ has '_can_inflate' => (
 #===================================
 has '_source' => (
 #===================================
-    isa     => HashRef,
-    is      => 'ro',
-    traits  => ['Elastic::Model::Trait::Exclude'],
-    lazy    => 1,
-    exclude => 1,
-    builder => '_get_source',
-    writer  => '_set_source',
+    isa => Maybe [HashRef],
+    is => 'ro',
+    traits    => ['Elastic::Model::Trait::Exclude'],
+    lazy      => 1,
+    exclude   => 1,
+    builder   => '_get_source',
+    writer    => '_set_source',
+    predicate => '_has_source',
 );
 
 #===================================
@@ -100,14 +101,20 @@ sub old_value {
 sub _get_source {
 #===================================
     my $self = shift;
-    $self->model->get_doc_source( uid => $self->uid );
+    $self->model->get_doc_source(
+        uid            => $self->uid,
+        ignore_missing => 1,
+        @_
+    );
 }
 
 #===================================
 sub _inflate_doc {
 #===================================
-    my $self   = shift;
-    my $source = $self->_source;
+    my $self   = $_[0];
+    my $source = $self->_source
+        or return bless( $self, 'Elastic::Model::Deleted' )->croak;
+
     $self->_can_inflate(0);
     try {
         $self->model->inflate_object( $self, $source );
@@ -140,10 +147,21 @@ sub save {
 }
 
 #===================================
+#===================================
 sub delete {
 #===================================
     my $self = shift;
-    $self->model->delete_doc( $self, @_ );
+    $self->model->delete_doc( uid => $self->uid, @_ )
+        or return;
+    bless $self, 'Elastic::Model::Deleted';
+}
+
+#===================================
+sub has_been_deleted {
+#===================================
+    my $self = shift;
+    $self->uid->from_store or return 0;
+    return !( $self->_has_source ? $self->_get_source() : $self->_source );
 }
 
 1;

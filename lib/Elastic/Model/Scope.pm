@@ -32,8 +32,10 @@ sub get_object {
     my ( $self, $ns, $uid ) = @_;
     my $existing = $self->_objects->{$ns}{ $uid->cache_key };
 
-    return $existing
-        if $existing && $existing->uid->version >= ( $uid->version || 0 );
+    if ($existing) {
+        return if $existing->isa('Elastic::Model::Deleted');
+        return $existing if $existing->uid->version >= ( $uid->version || 0 );
+    }
 
     my $parent = $self->parent or return undef;
     $existing = $parent->get_object( $ns, $uid ) or return undef;
@@ -60,17 +62,40 @@ sub store_object {
 
     if ( my $existing = $objects->{$ns}{ $uid->cache_key } ) {
         return $existing if $existing->uid->version >= $uid->version;
+        unless ( $existing->isa('Elastic::Model::Deleted') ) {
 
-        if ( $existing->_can_inflate ) {
-            $existing->_set_source( $object->_source );
-            $existing->uid->update_from_uid($uid);
-            return $existing;
+            if ( $existing->_can_inflate ) {
+                $existing->_set_source( $object->_source );
+                $existing->uid->update_from_uid($uid);
+                return $existing;
+            }
         }
-
         $objects->{old}{ $uid->cache_key . refaddr $existing} = $existing;
+
     }
 
     $self->_objects->{$ns}{ $uid->cache_key } = $object;
+}
+
+# If the object exists in the current scope
+#    then rebless it into Elastic::Model::Deleted
+# Otherwise create a new Elastic::Model::Deleted object
+#    and store it in the current scope
+
+#===================================
+sub delete_object {
+#===================================
+    my ( $self, $ns, $uid ) = @_;
+
+    my $objects = $self->_objects;
+    if ( my $existing = $objects->{$ns}{ $uid->cache_key } ) {
+        bless $existing, 'Elastic::Model::Deleted';
+    }
+    else {
+        $objects->{$ns}{ $uid->cache_key }
+            = Elastic::Model::Deleted->new( uid => $uid );
+    }
+    return;
 }
 
 #===================================
