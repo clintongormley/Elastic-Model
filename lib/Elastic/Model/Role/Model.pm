@@ -14,8 +14,8 @@ use List::MoreUtils qw(uniq);
 
 use namespace::autoclean;
 my @wrapped_classes = qw(
-    domain namespace store view scope
-    results scrolled_results result
+    domain  namespace   store   view    scope
+    results scrolled_results    result
 );
 
 for my $class (@wrapped_classes) {
@@ -124,9 +124,9 @@ has 'current_scope' => (
 );
 
 #===================================
-sub BUILD         { shift->doc_class_wrappers }
-sub _build_store  { $_[0]->store_class->new( es => $_[0]->es ) }
-sub _build_es     { ElasticSearch->new }
+sub BUILD        { shift->doc_class_wrappers }
+sub _build_store { $_[0]->store_class->new( es => $_[0]->es ) }
+sub _build_es    { ElasticSearch->new }
 #===================================
 
 #===================================
