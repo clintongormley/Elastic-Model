@@ -3,7 +3,7 @@ package Elastic::Model::Role::Doc;
 use Moose::Role;
 
 use Elastic::Model::Trait::Exclude;
-use MooseX::Types::Moose qw(Bool HashRef);
+use MooseX::Types::Moose qw(Maybe Bool HashRef);
 use Elastic::Model::Types qw(Timestamp UID);
 use Scalar::Util qw(refaddr);
 use Try::Tiny;

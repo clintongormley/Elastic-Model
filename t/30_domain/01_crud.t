@@ -155,7 +155,7 @@ test_uid(
 throws_ok sub { $routed->get( user => 1 ) }, qr/Missing/,
     'Routed without routing';
 
-## Maybe get ##
+## Try get ##
 isa_ok $user = $routed->get( user => 2 ), 'MyApp::User', 'try_get existing';
 is $myapp->try_get( user => 3 ), undef, 'try_get missing';
 
