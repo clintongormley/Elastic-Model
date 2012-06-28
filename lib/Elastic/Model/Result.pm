@@ -104,10 +104,15 @@ sub explain {
 #===================================
     my $self = shift;
 
-    my $explain = $self->result->{_explanation}
+    my $result  = $self->result;
+    my $explain = $result->{_explanation}
         || return "No explanation\n";
 
-    my $text   = '';
+    my $text = sprintf
+        "Doc: [%s|%s|%s], Shard: [%s|%d]:\n",
+        map { defined $_ ? $_ : 'undef' }
+        @{$result}{qw(_index _type _id _node _shard)};
+
     my $indent = 0;
     my @stack  = [$explain];
 
@@ -233,6 +238,7 @@ the text explanation using L</explain>, for instance:
 
     print $result->explain;
 
+    Doc: [myapp|user|BS8mmGFhRdS5YcpeLkdw_g], Shard: [a7gbLmJWQE2EdIaP_Rnnew|4]:
      - product of:                                                 |    1.1442
        - sum of:                                                   |    2.2885
          - weight(name:aardwolf in 0), product of:                 |    2.2885
