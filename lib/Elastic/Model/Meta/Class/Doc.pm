@@ -48,7 +48,7 @@ You shouldn't need to use anything from this class directly.
     $mapping = $meta->type_mapping($mapping);
 
 Used to store custom mapping config for a class.  Use the
-L<Elastic::Doc/"type_mapping">  sugar instead of calling this method directly.
+L<Elastic::Doc/"has_type_mapping">  sugar instead of calling this method directly.
 
 =head1 METHODS
 

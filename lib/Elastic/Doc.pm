@@ -6,7 +6,7 @@ use namespace::autoclean;
 
 Moose::Exporter->setup_import_methods(
     base_class_roles => ['Elastic::Model::Role::Doc'],
-    with_meta        => ['type_mapping'],
+    with_meta        => ['has_type_mapping'],
     class_metaroles  => {
         class     => ['Elastic::Model::Meta::Class::Doc'],
         attribute => ['Elastic::Model::Trait::Field'],
@@ -15,7 +15,7 @@ Moose::Exporter->setup_import_methods(
 );
 
 #===================================
-sub type_mapping { shift->type_mapping(@_) }
+sub has_type_mapping { shift->type_mapping(@_) }
 #===================================
 
 1;
@@ -46,7 +46,7 @@ __END__
 
     use Elastic::Doc;
 
-    type_mapping {
+    has_type_mapping {
         _ttl => {                   # delete documents/object after 2 hours
             enabled => 1,
             default => '2h'
@@ -110,19 +110,19 @@ L<Elastic::Model::Meta::Instance>).
 
 =item *
 
-exporting the L</"type_mapping"> function to allow you to configure "type"
+exporting the L</"has_type_mapping"> function to allow you to configure "type"
 settings for ElasticSearch
 
 =back
 
 =head1 EXPORTED FUNCTIONS
 
-=head3 type_mapping
+=head3 has_type_mapping
 
-C<type_mapping> can bs used to specify any type-wide settings (ie not
+C<has_type_mapping> can bs used to specify any type-wide settings (ie not
 attr/field-specific). For instance:
 
-    type_mapping {
+    has_type_mapping {
         _source => {
             compress    => 1,
             includes    => ['path1.*','path2.*'],
@@ -136,8 +136,8 @@ attr/field-specific). For instance:
         date_detection      => 0,
     };
 
-B<Warning:> Use C<type_mapping> with caution. L<Elastic::Model> requires
-certain settings to be active to work correctly. TODO - explain more.
+B<Warning:> Use C<has_type_mapping> with caution. L<Elastic::Model> requires
+certain settings to be active to work correctly.
 
 See L<Mapping|http://www.elasticsearch.org/guide/reference/mapping/> and
 L<Root object type|http://www.elasticsearch.org/guide/reference/mapping/root-object-type.html>

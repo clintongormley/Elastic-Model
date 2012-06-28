@@ -784,7 +784,7 @@ The following keywords apply only to fields of L</"type"> C<object> and C<nested
 Hashrefs (and objects which have been serialised to hashrefs) are considered
 to be "objects", as in JSON objects. Your doc class is serialized to a
 JSON object/hash, which is known as the L<root_object|http://www.elasticsearch.org/guide/reference/mapping/root-object-type.html>.
-The mapping for the root object can be configured with L<Elastic::Doc/"type_mapping">.
+The mapping for the root object can be configured with L<Elastic::Doc/"has_type_mapping">.
 
 Your doc class may have attributes which are hash-refs, or objects, which
 may themselves contain hash-refs or objects. Multi-level data structures are
