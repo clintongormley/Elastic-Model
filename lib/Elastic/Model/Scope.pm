@@ -21,6 +21,7 @@ has 'parent' => (
 );
 
 # if the object exists in the current scope
+#   return undef if the object is Deleted
 #   return the object if its version is the same or higher
 #   otherwise return undef
 # otherwise, look for the same object in a parent scope
@@ -48,7 +49,7 @@ sub get_object {
 
 # if the object exists in the current scope
 #   return the same object if the version is the same or higher
-#   if the existing object has not already been looked at
+#   if the existing object is not Deleted and has not already been looked at
 #     then update it with current details, and return it
 #     else move the old version to 'old'
 # store the new version in current scope
@@ -111,111 +112,30 @@ __END__
 
 # ABSTRACT: Keeps objects alive and connected
 
-=head1 SYNOPSIS
-
 =head1 DESCRIPTION
 
-L<Elastic::Model::Scope> acts as an in-memory cache, and serves three
-futher purposes:
+L<Elastic::Model::Scope> is an optional in-memory cache, which serves three
+purposes:
 
-=head2 Keep objects alive
+=over
 
-If you have a C<post> object which has a C<user> attribute, and a C<user>
-object with a C<posts> attribute, then you will want to make eg the C<user>
-attribute a weak ref to avoid circular references.
+=item *
 
-But then you would have a problem:
+Keep weak-ref L<Elastic::Doc> attributes alive
 
-    sub add_post_to_user {
-        my ( $domain, $user_id, $content )= @_;
-        my $user = $domain->get( user => $user_id );
-        my $post = $domain->create(
-            post => {
-                content => $content,
-                user    => $user;
-            }
-        );
-        $user->add_post($post);
-        $user->save;
-        return $post;
-    }
+=item *
 
-    my $post = add_post_to_user($domain, 1234, 'my post content');
+Reuse L<Elastic::Doc> objects as singletons.
 
-    print $post->user->name;
-    # ERROR - user has disappeared!
+=item *
 
-Scopes keep all your doc class objects in scope, so that they don't disappear
-out from under you. So this would work:
+Multiple scopes allow you to have multiple versions of L<Elastic::Doc> objects
+live at the same time.
 
-    my $post;
-    {
-        my $scope = $domain->new_scope;
-        $post = add_post_to_user($domain, 1234, 'my post content');
+=back
 
-        print $post->user->name;
-        # Clint
-
-    }
-    # $scope has now disappeared
-
-    print $post->user->name;
-    # ERROR - user has disappeared!
-
-=head2 Singleton objects
-
-By default, each object is a singleton.  For instance, if you do:
-
-    my $foo = $domain->get( user => 123 );
-    my $bar = $domain->get( user => 123 );
-
-    print $bar->name;
-    # Clint
-
-    $foo->name('John');
-
-    print $bar->name;
-    # John
-
-    print refaddr($foo) == refaddr($bar) ? 'TRUE' : 'FALSE';
-    # TRUE
-
-C<$foo> and C<$bar> are the same object.
-
-=head2 Separate objects
-
-With any database, there are timing issues. Another process may change
-have changed C<user 123> between the first call to C<< $domain->get >> and the
-second.
-
-Also, because ElasticSearch has "real time get" (ie if you retrieve
-a document by ID, you will get the latest version that exists) but "NEAR real
-time search" (search docs are refreshed only once every second, so may
-contain an older version of a doc), you could find yourself in this situation:
-
-    $user = $domain->get(user => 123);
-    print $user->name;
-    # Clint
-
-    print $user->uid->version;
-    # 1
-
-    $user->name('John');
-    $user->save;
-
-    print $user->uid->version;
-    # 2
-
-    $results = $domain->view->type('user')->queryb({ name => 'Clint' });
-    # results contain user 123, version 1
-    # even though version 2 no longer matches the search
-
-Depending on your requirements, you may want the C<user 123> object in
-C<$results> to be the same as it was in version 1 (eg so that the search
-results that you show the user make sense), or you may want to use
-the most up to date version (ie version 2).
-
-This is where it is useful to have multiple scopes.
+See L<Elastic::Manual::Scoping> for a fuller discussion of when and how to use
+scoping.
 
 =head1 ATTRIBUTES
 
@@ -225,6 +145,8 @@ The parent scope of this scope, or UNDEF.
 
 =head1 METHODS
 
+The logic used in scopes is best explained by the examples below:
+
 =head2 get_object()
 
     $obj = $scope->get_object($domain_name, $uid);
@@ -233,11 +155,13 @@ When calling L<Elastic::Model::Domain/"get()"> or L<Elastic::Model::Role::Model/
 to retrieve an object from ElasticSearch, we first check to see if we can
 return the object from our in-memory cache by calling L</get_object()>:
 
-If an object with the same C<domain_name/type/id> exists in the CURRENT scope
+=head3 Getting an object that exists in the current scope
+
+If an object with the same C<namespace_name/type/id> exists in the CURRENT scope
 (and its version is as least as high as the requested version, if any) then
 we return the SAME object.
 
-    $scope = $domain->new_scope;
+    $scope = $model->new_scope;
     $one   = $domain->get( user => 123 );
     $two   = $domain->get( user => 123 );
 
@@ -249,69 +173,142 @@ we return the SAME object.
     print $one->name;
     # John
 
-    print refaddr($foo) == refaddr($bar) ? 'TRUE' : 'FALSE';
+    print refaddr($one) == refaddr($two) ? 'TRUE' : 'FALSE';
     # TRUE
+
+=head3 Getting an object that exists in a parent scope
 
 If an object with the same C<domain_name/type/id> exists in the PARENT scope
 (and its version is as least as high as the requested version, if any) then
 we return a CLONE of the object. (Note: we clone the original object as it was
 when loaded from ElasticSearch. Any unsaved changes are ignored.)
 
-    $scope_1  = $domain->new_scope;
-    $one      = $domain->get( user => 123 );
+    $scope_1 = $model->new_scope;
+    $one     = $domain->get( user => 123 );
 
     print $one->name;
     # Clint
 
     $one->name('John');
 
-    $scope_2  = $domain->new_scope;
-    $two      = $domain->get( user => 123 );
+    $scope_2 = $model->new_scope;
+    $two     = $domain->get( user => 123 );
 
     print $two->name;
     # Clint
 
-    print refaddr($foo) == refaddr($bar) ? 'TRUE' : 'FALSE';
+    print refaddr($one) == refaddr($two) ? 'TRUE' : 'FALSE';
     # FALSE
 
-Otherwise the calling method will fetch the document from ElasticSearch itself,
+Otherwise the calling method will fetch the object from ElasticSearch itself,
 and store it in the current scope.
+
+=head3 Getting an object that has been deleted
+
+If the object exists in the same scope or a parent scope, but it is
+an L<Elastic::Model::Deleted> object, then we return C<undef>.
 
 =head2 store_object()
 
-    $object = $scope->store_object($domain_name, $object);
+    $object = $scope->store_object($ns_name, $object);
 
-When we load a document that didn't exist in any live scope, or we create
-a new or update an existing document via L<Elastic::Model::Role::Doc/"save()">,
+When we load a object that doesn't exist in the current scope or in any of
+its parents, or we create-a-new or update-an-existing object via
+L<Elastic::Model::Role::Doc/"save()">,
 we also store it in the current scope via L</store_object()>.
 
-=head3 Documents from search results
+    $scope_1 = $model->new_scope;
+    $one     = $domain->get( user => 123 );
 
-Documents from search results are a bit special.  By default when we do a search
-in ElasticSearch, instead of just getting a UID back, we get back
-the whole object. Depending on timing, the version returned in search may be
-the same, older or newer than the version we have stored in our current scope.
-We don't try to retrieve the object from the scope, because we already have
-everything we need to create it.  But once we have created it, we do
-try to store it in the current scope:
+    print $one->name;
+    # Clint
 
-If an object with the same C<domain_name/type/id> DOESN'T exist in the
-current scope, then we store the new object in the current scope and return
-it.
+    $scope_2 = $model->new_scope;
+    $two     = $domain->get( user => 123 );
 
-If an object with the same C<domain_name/type/id> DOES exist in the
-current scope, then we compare versions: If the stored version is more recent
-than the new version, we return the stored object.
+    print $two->name;
+    # Clint
 
-Otherwise, we try to update the stored object (and therefore any instances
-of it that already exist in your application)    to the new version, but only
-if you haven't already looked at it! (You don't want your objects changing
-their values under you.)
+    print refaddr($one) == refaddr($two) ? 'TRUE' : 'FALSE';
+    # FALSE
 
-If you have looked at the stored version, then we move it to another
-cache for safe keeping, and store and return the new version.
+=head3 Storing an object in a new scope
 
-B<Note:> "Looking" at an object means calling any accessor on any attribute
-that is stored in ElasticSearch. This does not include the
-L<Elastic::Model::Role::Doc/"uid"> of the object.
+Now we update the C<$one> object, while B<< C<$scope_2> >> is current, and save it:
 
+    $one->name('John');
+    $one->save;
+
+Object C<$one> is now in C<$scope_1> AND C<$scope_2>.
+
+    $three   = $domain->get( user => 123 );
+
+    print $three->name;
+    # John
+
+    print refaddr($one) == refaddr($three) ? 'TRUE' : 'FALSE';
+    # TRUE
+
+
+Object C<$two> still exists, and is still kept alive, but will no longer be
+returned from C<$scope_2>.
+
+    print $two->name;
+    # Clint
+
+=head2 delete_object()
+
+    $scope->delete_object( $ns_name, $uid );
+
+When calling L<Elastic::Model::Role::Model/delete_doc()>,
+L<Elastic::Model::Domain/delete_doc()> or L<Elastic::Model::Role::Doc/delete()>
+we check to see if an object with the same UID (C<namespace_name/type/id>)
+exists in the current scope.
+
+If it does, we rebless it into L<Elastic::Model::Deleted>. Otherwise, we
+create a new L<Elastic::Model::Deleted> object with the C<$uid> and store
+that in the current scope.
+
+=head3 Deleting an object which exists in the current scope
+
+    $scope_1 = $model->new_scope;
+    $one     = $domain->get( user => 1 );
+
+    $domain->delete (user => 1 );
+
+    print $domain->isa('Elastic::Model::Deleted') ? 'TRUE' : 'FALSE';
+    # TRUE
+
+    print $one->name;                        # Throws an error,
+
+=head3 Deleting an object which doesn't exist in the current scope
+
+    $scope_1 = $model->new_scope;
+    $one     = $domain->get( user => 1 );
+
+    $scope_2 = $model->new_scope;
+
+    $domain->delete( user => 1);
+
+    $two     = $domain->get( user => 1 );    # Throws an error
+
+    print $one->name;
+    # Clint
+
+    undef $scope_2;
+    $two     = $domain->get( user => 1 );
+
+    print refaddr($one) == refaddr($two) ? 'TRUE' : 'FALSE';
+    # TRUE
+
+But, calling L<delete()|Elastic::Model::Role::Doc/delete()> on an object
+which isn't in the current scope still affects that object:
+
+    $scope_1 = $model->new_scope;
+    $one     = $domain->get( user => 1 );
+
+    $scope_2 = $model->new_scope;
+
+    $one->delete;
+
+    print $one->name;                        # Throws an error

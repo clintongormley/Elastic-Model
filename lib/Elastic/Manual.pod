@@ -84,6 +84,11 @@ massive scale.
 
 Optimistic locking and dealing with version conflicts.
 
+=head2 L<Elastic::Manual::Scoping>
+
+When and how to use L<Scopes|Elastic::Model::Scope>, an optional in-memory
+cache (but required if you use weak refs).
+
 =head2 L<Elastic::Manual::Terminology>
 
 A brief definition of some of the terms used by ElasticSearch and Elastic::Model.
