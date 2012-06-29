@@ -54,29 +54,29 @@ retrieving docs stored in ElasticSearch.
 
 =head1 BUILT-IN TYPE MAPS
 
-L<Elastic::Model::Typemap::Default> loads the following type-maps:
+L<Elastic::Model::TypeMap::Default> loads the following type-maps.
 
 =over
 
 =item *
 
-L<Elastic::Model::Typemap::Moose>
+L<Elastic::Model::TypeMap::Moose>
 
 =item *
 
-L<Elastic::Model::Typemap::Objects>
+L<Elastic::Model::TypeMap::Objects>
 
 =item *
 
-L<Elastic::Model::Typemap::Structured>
+L<Elastic::Model::TypeMap::Structured>
 
 =item *
 
-L<Elastic::Model::Typemap::ES>
+L<Elastic::Model::TypeMap::ES>
 
 =item *
 
-L<Elastic::Model::Typemap::Common>
+L<Elastic::Model::TypeMap::Common>
 
 =back
 
@@ -85,3 +85,7 @@ L<Elastic::Model::Typemap::Common>
 See L<Elastic::Model::TypeMap::Base> for instructions on how to define
 your own type-map classes.
 
+=head1 TWEAKING YOUR ATTRIBUTE MAPPING
+
+See L<Elastic::Model::Trait::Field> for keywords you can use in your
+attribute declarations to tweak the mapping of individual fields.
