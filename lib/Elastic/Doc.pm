@@ -6,7 +6,7 @@ use namespace::autoclean;
 
 Moose::Exporter->setup_import_methods(
     base_class_roles => ['Elastic::Model::Role::Doc'],
-    with_meta        => ['has_type_mapping'],
+    with_meta        => ['has_mapping'],
     class_metaroles  => {
         class     => ['Elastic::Model::Meta::Class::Doc'],
         attribute => ['Elastic::Model::Trait::Field'],
@@ -15,7 +15,7 @@ Moose::Exporter->setup_import_methods(
 );
 
 #===================================
-sub has_type_mapping { shift->type_mapping(@_) }
+sub has_mapping { shift->mapping(@_) }
 #===================================
 
 1;
@@ -46,7 +46,7 @@ __END__
 
     use Elastic::Doc;
 
-    has_type_mapping {
+    has_mapping {
         _ttl => {                   # delete documents/object after 2 hours
             enabled => 1,
             default => '2h'
@@ -110,19 +110,19 @@ L<Elastic::Model::Meta::Instance>).
 
 =item *
 
-exporting the L</"has_type_mapping"> function to allow you to customize the
+exporting the L</"has_mapping"> function to allow you to customize the
 special "meta-fields" in the type mapping in ElasticSearch
 
 =back
 
 =head1 EXPORTED FUNCTIONS
 
-=head3 has_type_mapping
+=head3 has_mapping
 
-C<has_type_mapping> can be used to customize the special "meta-fields" (ie not
+C<has_mapping> can be used to customize the special "meta-fields" (ie not
 attr/field-specific) in the type mapping. For instance:
 
-    has_type_mapping {
+    has_mapping {
         _source => {
             compress    => 1,
             includes    => ['path1.*','path2.*'],
@@ -136,7 +136,7 @@ attr/field-specific) in the type mapping. For instance:
         date_detection      => 0,
     };
 
-B<Warning:> Use C<has_type_mapping> with caution. L<Elastic::Model> requires
+B<Warning:> Use C<has_mapping> with caution. L<Elastic::Model> requires
 certain settings to be active to work correctly.
 
 See the "Fields" section in L<Mapping|http://www.elasticsearch.org/guide/reference/mapping/> and

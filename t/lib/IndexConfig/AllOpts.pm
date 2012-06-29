@@ -2,7 +2,7 @@ package IndexConfig::AllOpts;
 
 use Elastic::Doc;
 
-has_type_mapping { _all => { enabled => 0 } };
+has_mapping { _all => { enabled => 0 } };
 
 #===================================
 has 'string' => (

@@ -29,11 +29,11 @@ for my $class (@wrapped_classes) {
 }
 
 #===================================
-has 'type_map' => (
+has 'typemap' => (
 #===================================
     is      => 'ro',
     isa     => Str,
-    default => sub { shift->wrap_class('type_map') }
+    default => sub { shift->wrap_class('typemap') }
 );
 
 #===================================
@@ -380,7 +380,7 @@ sub deflator_for_class {
     return $self->deflators->{$class} ||= do {
         die "Class $class is not an Elastic class."
             unless does_role( $class, 'Elastic::Model::Role::Doc' );
-        $self->type_map->class_deflator($class);
+        $self->typemap->class_deflator($class);
     };
 }
 
@@ -402,7 +402,7 @@ sub inflator_for_class {
     return $self->inflators->{$class} ||= do {
         die "Class $class is not an Elastic class."
             unless does_role( $class, 'Elastic::Model::Role::Doc' );
-        $self->type_map->class_inflator($class);
+        $self->typemap->class_inflator($class);
     };
 }
 
@@ -419,8 +419,8 @@ sub map_class {
     my $meta = $class->original_class->meta;
 
     my %mapping = (
-        %{ $meta->type_mapping },
-        $self->type_map->class_mapping($class),
+        %{ $meta->mapping },
+        $self->typemap->class_mapping($class),
         dynamic           => 'strict',
         _timestamp        => { enabled => 1, path => 'timestamp' },
         numeric_detection => 1,
@@ -600,9 +600,9 @@ Passes C<%args> through to L<Elastic::Model::Store/"search()">
 
 =head2 Deflation, Inflation And Mapping
 
-=head3 type_map
+=head3 typemap
 
-    $typemap_class = $model->type_map;
+    $typemap_class = $model->typemap;
 
 Elastic::Model uses L<Elastic::Model::TypeMap::Default> (after
 L<wrapping|/wrap_class()> it) to figure out how
@@ -610,7 +610,7 @@ to deflate and inflate your objects, and how to configure (map) them in
 ElasticSearch.
 
 You can specify your own type-map class in your model configuration with
-L<has_type_map|Elastic::Model/Custom TypeMap>. See
+L<has_typemap|Elastic::Model/Custom TypeMap>. See
 L<Elastic::Model::TypeMap::Base> for instructions on how to define
 your own type-map classes.
 

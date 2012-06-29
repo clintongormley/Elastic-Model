@@ -14,7 +14,7 @@ BEGIN {
 }
 
 my $model = new_ok 'TypeTest';
-isa_ok my $tm = $model->type_map, 'Elastic::Model::TypeMap::Base';
+isa_ok my $tm = $model->typemap, 'Elastic::Model::TypeMap::Base';
 
 note '';
 note "Flation for TypeTest::ES";

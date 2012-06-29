@@ -14,7 +14,7 @@ has_namespace 'foo' => {
     user       => 'Foo::User',
 };
 
-has_type_map 'TypeTest::TypeMap';
+has_typemap 'TypeTest::TypeMap';
 
 no Elastic::Model;
 

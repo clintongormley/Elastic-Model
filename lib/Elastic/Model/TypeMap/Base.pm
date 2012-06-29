@@ -41,7 +41,7 @@ sub import {
     for (@args) {
         next if /^[:-]/;
         Class::MOP::load_class($_);
-        $callee->import_types( $_->type_map );
+        $callee->import_types( $_->typemap );
     }
 }
 
@@ -343,16 +343,16 @@ sub attribute_mapping {
 }
 
 #===================================
-sub deflators { shift->type_map->{deflator} }
-sub inflators { shift->type_map->{inflator} }
-sub mappers   { shift->type_map->{mapper} }
+sub deflators { shift->typemap->{deflator} }
+sub inflators { shift->typemap->{inflator} }
+sub mappers   { shift->typemap->{mapper} }
 #===================================
 
 #===================================
 sub _has_type {
 #===================================
     my ( $class, $type, %params ) = @_;
-    my $map = $class->type_map();
+    my $map = $class->typemap();
     for ( keys %params ) {
         $map->{$_}{$type} = $params{$_};
     }
@@ -375,7 +375,7 @@ sub indexable_attrs {
 }
 
 #===================================
-sub type_map {
+sub typemap {
 #===================================
     my $class = shift;
     $class = $class->original_class
@@ -393,7 +393,7 @@ sub import_types {
 #===================================
     my $class  = shift;
     my $import = shift;
-    my $map    = $class->type_map;
+    my $map    = $class->typemap;
     for (qw(deflator inflator mapper)) {
         my $types = $import->{$_} or next;
         @{ $map->{$_} }{ keys %$types } = values %$types;
@@ -429,7 +429,7 @@ Use your type map:
     use MyApp;
 
     my $model = MyApp->new(
-        type_map => 'MyApp::TypeMap'
+        typemap => 'MyApp::TypeMap'
     );
 
 =head1 DESCRIPTION
@@ -564,9 +564,9 @@ Returns a hashref of all inflators known to C<$class>.
 
 Returns a hashref of all mappers known to C<$class>.
 
-=head2 type_map
+=head2 typemap
 
-    $map = $class->type_map
+    $map = $class->typemap
 
 Returns a hashref containing the L</"deflators">, L</"inflators"> and
 L</"mappers"> known to C<$class>.

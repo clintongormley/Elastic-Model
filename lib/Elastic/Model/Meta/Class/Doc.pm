@@ -7,7 +7,7 @@ use Carp;
 use namespace::autoclean;
 
 #===================================
-has 'type_mapping' => (
+has 'mapping' => (
 #===================================
     isa     => HashRef,
     is      => 'rw',
@@ -43,12 +43,12 @@ You shouldn't need to use anything from this class directly.
 
 =head1 ATTRIBUTES
 
-=head2 type_mapping
+=head2 mapping
 
-    $mapping = $meta->type_mapping($mapping);
+    $mapping = $meta->mapping($mapping);
 
 Used to store custom mapping config for a class.  Use the
-L<Elastic::Doc/"has_type_mapping">  sugar instead of calling this method directly.
+L<Elastic::Doc/"has_mapping">  sugar instead of calling this method directly.
 
 =head1 METHODS
 

@@ -8,7 +8,7 @@ use namespace::autoclean;
 Moose::Exporter->setup_import_methods(
     class_metaroles => { class => ['Elastic::Model::Meta::Class::Model'] },
     with_meta       => [
-        qw(has_namespace has_type_map override_classes
+        qw(has_namespace has_typemap override_classes
             has_analyzer has_tokenizer has_filter has_char_filter)
     ],
     base_class_roles => ['Elastic::Model::Role::Model'],
@@ -30,7 +30,7 @@ sub has_namespace {
 }
 
 #===================================
-sub has_type_map { shift->set_class( 'type_map', @_ ) }
+sub has_typemap { shift->set_class( 'typemap', @_ ) }
 #===================================
 
 #===================================
@@ -82,7 +82,7 @@ L<Elastic::Model> module itself.
         post => 'MyApp::Post'
     };
 
-    has_type_map 'MyApp::TypeMap';
+    has_typemap 'MyApp::TypeMap';
 
     # Setup custom analyzers
 
@@ -141,7 +141,7 @@ in ElasticSearch.
 
 You can specify your own TypeMap using:
 
-    has_type_map 'MyApp::TypeMap';
+    has_typemap 'MyApp::TypeMap';
 
 See L<Elastic::Model::TypeMap::Base> for instructions on how to define
 your own type-map classes.
