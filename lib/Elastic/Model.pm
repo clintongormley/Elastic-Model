@@ -187,6 +187,9 @@ Character filters can change the text before it gets tokenized, for instance:
         mappings    => ['ph=>f','qu=>q']
     );
 
+See L<Elastic::Model::Meta::Class::Model/Default character filters> for a list
+of the built-in character filters.
+
 =head3 has_tokenizer
 
 A tokenizer breaks up the text into individual tokens or terms. For instance,
@@ -196,6 +199,9 @@ the C<pattern> tokenizer could be used to split text using a regex:
         type        => 'pattern',
         pattern     => '\W+',          # splits on non-word chars
     );
+
+See L<Elastic::Model::Meta::Class::Model/Default tokenizers> for a list
+of the built-in tokenizers.
 
 =head3 has_filter
 
@@ -208,6 +214,9 @@ multiple token filters.  For instance, each term could be broken down into
         min_gram    => 1,
         max_gram    => 10,
     );
+
+See L<Elastic::Model::Meta::Class::Model/Default token filters> for a list
+of the built-in character token filters.
 
 =head3 has_analyzer
 
@@ -223,6 +232,9 @@ For instance:
         tokenizer   => ['my_word_tokenizer'],
         filter      => ['lowercase','stop','my_ngrams']
     );
+
+See L<Elastic::Model::Meta::Class::Model/Default analyzers> for a list
+of the built-in analyzers.
 
 =head2 Overriding Core Classes
 
@@ -275,6 +287,10 @@ C<result> C<--------------> L<Elastic::Model::Result>
 =head1 SEE ALSO
 
 =over
+
+=item *
+
+L<Elastic::Model::Role::Model>
 
 =item *
 
