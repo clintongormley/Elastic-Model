@@ -184,7 +184,7 @@ __END__
 
 =head1 DESCRIPTION
 
-Holds information about your model: domains and their types,
+Holds static information about your model: namespaces and their types,
 and char_filters, tokenizers, filters and analyzers for analysis.
 
 You shouldn't need to use this class directly. Everything you need should

@@ -60,5 +60,5 @@ L<Elastic::Doc/"has_mapping">  sugar instead of calling this method directly.
 Creates a stub instance of the class, which auto-inflates when any accessor
 is called.  If the C<$source> param is defined, then it is used to inflate
 the attributes of the instance, otherwise the attributes are fetched from
-ElasticSearch.
+ElasticSearch when an attribute is accessed.
 
