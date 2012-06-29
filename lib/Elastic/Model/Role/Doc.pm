@@ -140,8 +140,8 @@ sub save {
 
     if ( $self->has_changed || !$self->uid->from_store ) {
         $self->touch;
-        $self->model->save_doc( doc => $self, @_ );
-        $self->_clear_old_value;
+        $self->model->save_doc( doc => $self, @_ )
+            and $self->_clear_old_value;
     }
     $self;
 }

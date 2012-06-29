@@ -325,8 +325,10 @@ sub save_doc {
     my $uid  = $doc->uid;
     my $data = $self->deflate_object($doc);
 
-    my $action = $uid->from_store ? 'index_doc' : 'create_doc';
-    my $result = $self->store->$action( $uid, $data, %args );
+    my $action      = $uid->from_store ? 'index_doc' : 'create_doc';
+    my $on_conflict = delete $args{on_conflict};
+    my $result      = eval { $self->store->$action( $uid, $data, %args ) }
+        or return $self->_handle_error( $@, $on_conflict, $doc );
 
     $uid->update_from_store($result);
     $doc->_set_source($data);
@@ -336,6 +338,31 @@ sub save_doc {
 
     my $ns = $self->namespace_for_domain( $uid->index );
     return $scope->store_object( $ns->name, $doc );
+}
+
+#===================================
+sub _handle_error {
+#===================================
+    my ( $self, $error, $on_conflict, $original ) = @_;
+    $error ||= 'Unknown error';
+
+    die $error
+        unless $on_conflict
+            and $error =~ /ElasticSearch::Error::Conflict/;
+
+    my $current_version = $error->{-vars}{current_version}
+        or die "Missing current_version from ElasticSearch::Error::Conflict";
+
+    my $uid = Elastic::Model::UID->new(
+        %{ $original->uid->read_params },
+        version    => $current_version,
+        from_store => 1
+    );
+
+    my $new = $self->get_doc( uid => $uid );
+    $on_conflict->( $original, $new );
+
+    return;
 }
 
 #===================================
@@ -585,6 +612,8 @@ Any C<%args> are passed on to L<index_doc()|Elastic::Model::Store/"index_doc()">
 L<create_doc()|Elastic::Model::Store/"create_doc()">.
 
 If there is a L</current_scope> then the object is also stored there.
+
+Also see the L<Elastic::Model::Role::Doc/on_conflict> parameter.
 
 =head3 delete_doc()
 
