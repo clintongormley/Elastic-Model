@@ -105,15 +105,14 @@ __END__
 
     \%indices = $alias->aliased_to;
 
-=head1 CONSUMES
-
-L<Elastic::Model::Role::Index>
+See also L<Elastic::Model::Role::Index/SYNOPSIS>.
 
 =head1 DESCRIPTION
 
 L<Elastic::Model::Alias> objects are used to create and administer
 L<index aliases|Elastic::Manual::Terminology/Alias> in an ElasticSearch cluster.
 
+See L<Elastic::Model::Role::Index> for more about usage.
 See L<Elastic::Manual::Scaling> for more about how aliases can be used in your
 application.
 
@@ -171,54 +170,35 @@ The listed index names are removed from alias L</name>.
 Returns a hashref of the current settings for an alias, suitable for passing to
 L</to()>. The keys are index names, and the values are the alias settings.
 
-
 =head1 IMPORTED ATTRIBUTES
 
-=head2 namespace
+Attributes imported from L<Elastic::Model::Role::Index>
 
-See L<Elastic::Model::Role::Index/namespace>
+=head2 L<namespace|Elastic::Model::Role::Index/namespace>
 
-=head2 name
-
-See L<Elastic::Model::Role::Index/name>
+=head2 L<name|Elastic::Model::Role::Index/name>
 
 =head1 IMPORTED METHODS
 
-=head2 close()
+Methods imported from L<Elastic::Model::Role::Index>
 
-See L<Elastic::Model::Role::Index/close()>
+=head2 L<close()|Elastic::Model::Role::Index/close()>
 
-=head2 open()
+=head2 L<open()|Elastic::Model::Role::Index/open()>
 
-See L<Elastic::Model::Role::Index/open()>
+=head2 L<refresh()|Elastic::Model::Role::Index/refresh()>
 
-=head2 refresh()
+=head2 L<delete()|Elastic::Model::Role::Index/delete()>
 
-See L<Elastic::Model::Role::Index/refresh()>
+=head2 L<update_analyzers()|Elastic::Model::Role::Index/update_analyzers()>
 
-=head2 delete()
+=head2 L<update_settings()|Elastic::Model::Role::Index/update_settings()>
 
-See L<Elastic::Model::Role::Index/delete()>
+=head2 L<delete_mapping()|Elastic::Model::Role::Index/delete_mapping()>
 
-=head2 update_analyzers()
+=head2 L<is_alias()|Elastic::Model::Role::Index/is_alias()>
 
-See L<Elastic::Model::Role::Index/update_analyzers()>
-
-=head2 update_settings()
-
-See L<Elastic::Model::Role::Index/update_settings()>
-
-=head2 delete_mapping()
-
-See L<Elastic::Model::Role::Index/delete_mapping()>
-
-=head2  is_alias()
-
-See L<Elastic::Model::Role::Index/is_alias()>
-
-=head2 is_index()
-
-See L<Elastic::Model::Role::Index/is_index()>
+=head2 L<is_index()|Elastic::Model::Role::Index/is_index()>
 
 =head1 SEE ALSO
 

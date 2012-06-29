@@ -161,10 +161,11 @@ __END__
 
     $bool = $admin->is_alias;
     $bool = $admin->is_index;
+    $bool = $admin->exists;
 
 =head1 DESCRIPTION
 
-L<Elastic::Model::Role::Index> is a role which provides admin methods which are
+L<Elastic::Model::Role::Index> is a role which provides admin methods
 common to indices and aliases.  It is consumed by L<Elastic::Model::Index>
 and L<Elastic::Model::Alias>.
 
@@ -177,7 +178,8 @@ relate to each other.
 
     $name = $admin->name;
 
-The name of the index or alias to be administered. This defaults to the name
+The name of the index or alias to be administered. This defaults to the
+L<name|Elastic::Model::Namespace/name>
 of the L</namespace> but can be overridden when creating a new
 L<Elastic::Model::Index> or L<Elastic::Model::Alias> object, eg:
 
@@ -267,7 +269,7 @@ L</namespace>.
 =head2 update_mapping()
 
     $admin = $admin->update_mapping();
-    $admin = $admin->update_mapping( \@type_names );
+    $admin = $admin->update_mapping( @type_names );
 
 Type mappings B<cannot be changed> on an existing index, but they B<can be
 added to>.  L</update_mapping()> will generate a new type mapping from your
@@ -277,11 +279,11 @@ L</name>.
 You can optionally specify a list of types to update, otherwise it will
 update all types known to the L</namespace>.
 
-    $admin->update_mapping( ['user','post']);
+    $admin->update_mapping( 'user','post');
 
 =head2 delete_mapping();
 
-    $admin = $admin->delete_mapping( \@types );
+    $admin = $admin->delete_mapping( @types );
 
 Deletes the type mapping B<AND THE DOCUMENTS> for the listed types in the index
 (or the indices pointed to by alias) L</name>.

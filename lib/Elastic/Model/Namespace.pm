@@ -229,6 +229,14 @@ Returns all domain names known to the namespace. It does this by retrieving
 all indices and aliases associated with the namespace L</name> and the
 L</fixed_domains> (if any).
 
+=head2 mappings()
+
+    \%mapping = $namespace->mappings();
+    \%mapping = $namespace->mappings(@type_names);
+
+Generates the type mappings for the specified list of types, or, for all
+types known to the namespace if not specified.
+
 =head1 SEE ALSO
 
 =over
@@ -250,7 +258,4 @@ L<Elastic::Model::Index>
 L<Elastic::Model::Alias>
 
 =back
-
-
-
 
