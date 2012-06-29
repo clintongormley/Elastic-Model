@@ -175,6 +175,8 @@ __END__
 
 =head1 SYNOPSIS
 
+=head2 Creating a doc
+
     $doc = $domain->new_doc(
         user => {
             id      => 123,                 # auto-generated if not specified
@@ -186,9 +188,15 @@ __END__
     $doc->save;
     $uid = $doc->uid;
 
-    $doc = $domain->get($uid);
+=head2 Retrieving a doc
+
+    $doc = $domain->get( user => 123 );
+    $doc = $model->get_doc( uid => $uid );
+
+=head2 Updating a doc
 
     $doc->name('John');
+
     print $doc->has_changed();              # 1
     print $doc->has_changed('name');        # 1
     print $doc->has_changed('email');       # 0
@@ -196,6 +204,12 @@ __END__
 
     $doc->save;
     print $doc->has_changed();              # 0
+
+=head2 Deleting a doc
+
+    $doc->delete;
+    print $doc->has_been_deleted            # 1
+
 
 =head1 DESCRIPTION
 
@@ -205,7 +219,7 @@ that you want to be stored in ElasticSearch), when you include this line:
     use Elastic::Doc;
 
 This document explains the changes that are made to your class by applying the
-L<Elastic::Model::Role::Doc> role.  For other effects, see L<Elastic::Doc>.
+L<Elastic::Model::Role::Doc> role.  Also see L<Elastic::Doc>.
 
 =head1 ATTRIBUTES
 
@@ -228,6 +242,7 @@ The UID is created when you create your document, eg:
         }
     );
 
+
 =over
 
 =item *
@@ -246,6 +261,13 @@ C<id> : is optional - if you don't provide it, then it will be
 auto-generated when you save it to ElasticSearch.
 
 =back
+
+B<Note:> the C<namespace_name/type/ID> of a document must be unique.
+ElasticSearch can enforce uniqueness for a single index, but when your
+L<namespace|Elastic::Model::Namespace> contains multiple indices, it is up
+to you to ensure uniqueness.  Either leave the ID blank, in which case
+ElasticSearch will generate a unique ID, or ensure that the way you
+generate IDs will not cause a collision.
 
 =head2 timestamp
 
@@ -278,23 +300,106 @@ C<_old_value>. See L</"old_value()"> and L</"has_changed()">.
 
 =head2 save()
 
-    $doc->save(%args);
+    $doc->save( %args );
 
-Saves the C<$doc> to ElasticSearch. If the doc was previously loaded from
-ElasticSearch, then it uses L<Elastic::Model::Role::Store/"index_doc()">
-otherwise it uses L<Elastic::Model::Role::Store/"create_doc()">, which
-will throw an exception if a doc with the same UID already exists.
+Saves the C<$doc> to ElasticSearch. If this is a new doc, and a doc with the
+same type and ID already exists in the same index, then ElasticSearch
+will throw an exception.
+
+If the doc was previously loaded from ElasticSearch, then that doc will be
+updated. However, because ElasticSearch uses
+L<optimistic locking|http://en.wikipedia.org/wiki/Optimistic_locking>
+(ie the doc version number is incremented on every change), it is possible that
+another process has already updated the C<$doc> while the current process has
+been working, in which case it will throw a conflict error.
+
+For instance:
+
+
+    ONE                         TWO
+    --------------------------------------------------
+                                get doc 1-v1
+    get doc 1-v1
+                                save doc 1-v2
+    save doc1-v2
+     -> # conflict error
+
+=head3 on_conflict
+
+If you don't care, and you just want to overwrite what is stored in ElasticSearch
+with the current values, then use L</overwrite()> instead of L</save()>. If you
+DO care, then you can handle this situation gracefully, using the
+C<on_conflict> parameter:
+
+    $doc->save(
+        on_conflict => sub {
+            my ($original_doc,$new_doc) = @_;
+            # resolve conflict
+
+        }
+    );
 
 The doc will only be saved if it has changed. If you want to force saving
 on a doc that hasn't changed, then you can do:
 
     $doc->touch->save;
 
-TODO: VERSIONING.
+=head2 overwrite()
+
+    $doc->overwrite( %args );
+
+L</overwrite()> is exactly the same as L</save()> except it will overwrite
+any previous doc, regardless of whether another process has updated the same
+doc in the meantime.
 
 =head2 delete()
 
-TODO: NOT YET IMPLEMENTED
+    $doc->delete;
+
+This will delete the current doc.  If the doc has already been updated
+to a new version by another process, it will throw a conflict error.  You
+can override this and delete the document anyway with:
+
+    $doc->delete( version => 0 );
+
+The C<$doc> will be reblessed into the L<Elastic::Model::Deleted> class,
+and any attempt to access its attributes will throw an error.
+
+=head2 has_been_deleted()
+
+    $bool = $doc->has_been_deleted();
+
+As a rule, you shouldn't delete docs that are currently in use elsewhere in
+your application, otherwise you have to wrap all of your code in C<eval>s
+to ensure that you're not accessing a stale doc.
+
+However, if you do need to delete current docs, then L</has_been_deleted()>
+helps you to determine if the current doc is live or not.  For instance, you
+might have an L</on_conflic> handler which looks like this:
+
+    $doc->save(
+        on_conflict => sub {
+            my ($original, $new) = @_;
+
+            return $original->overwrite
+                if $new->has_been_deleted;
+
+            for my $attr ( keys %{ $old->old_value }) {
+                $new->$attr( $old->$attr ):
+            }
+
+            $new->save
+        }
+    );
+
+B<Note:> L</has_been_deleted> tried to fetch the document from ElasticSearch,
+so (1) it is as costly as calling L<Elastic::Model::Domain/get()> and
+(2) it only represents the truth at that moment in time - another process
+may already have recreated or deleted the document.
+
+It is a much better approach to remove docs from the main flow of your
+application (eg, set a C<status> attribute to C<"deleted">) then physically
+delete the docs only after some time has passed.
 
 =head2 touch()
 
@@ -316,11 +421,10 @@ Mark the object as changed without specifying an attribute:
 
     $doc->has_changed(1);
 
-
 =head2 old_value()
 
-    $old_val  = $doc->old_value($attr_name);
-    $old_vals = $doc->old_value();
+    $old_val    = $doc->old_value($attr_name);
+    \%old_vals  = $doc->old_value();
 
 Returns the original value that an attribute had before being changed.  If
 called without an attribute name, it returns a hashref whose key names
@@ -335,13 +439,9 @@ here so that you don't override them without knowing what you are doing:
 
 Inflates the attribute values from the hashref stored in L</"_source">.
 
-=head3 _get_source
+=head3 _get_source / _set_source / _has_source
 
-Loads the raw doc source from ElasticSearch.
-
-=head3 _set_source
-
-Writer for L</"_source">.
+The raw doc source from ElasticSearch.
 
 =head3 _set_old_value / _clear_old_value / _has_old_value
 
