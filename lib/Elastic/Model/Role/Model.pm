@@ -440,18 +440,20 @@ __END__
 
     use MyApp;
 
-    my $es     = ElasticSearch->new( servers => 'es.domain.com:9200' );
-    my $model  = MyApp->new( es => $es );
+    my $es         = ElasticSearch->new( servers => 'es.domain.com:9200' );
+    my $model      = MyApp->new( es => $es );
 
-    my $domain = $model->domain('my_domain');
-    my $users  = $model->view->type('user');
+    my $namespace  = $model->namespace('myapp');
+    my $domain     = $model->domain('my_domain');
+    my $view       = $model->view();
 
-    my $scope  = $model->new_scope;
-
-    # do stuff with your model
-
+    my $scope      = $model->new_scope;
 
 =head1 DESCRIPTION
+
+A "Model" is the Boss Object, which ties an instance of your application to
+a particular ElasticSearch cluster. You can have multiple instances of your
+Model class which connect to different clusters.
 
 C<Elastic::Model::Role::Model> is applied to your Model class when you
 include the line:
@@ -475,63 +477,62 @@ connection to C<localhost:9200>.
 
     $model = MyApp->new();   # localhost:9200
 
+=head2 namespace()
+
+    $namespace = $model->namespace($name);
+
+Returns the L<Elastic::Model::Namespace> instance corresponding to
+C<$name>. The namespace must have been configured via
+L<Elastic::Model/has_namespace>.
+
+Use a C<$namespace> to create, delete and update
+L<indices|Elastic::Manual::Terminology/Index> and
+L<index aliases|Elastic::Manual::Terminology/Alias>.
+
 =head2 domain()
 
     $domain = $model->domain($name);
 
-Returns an L<Elastic::Model::Domain> instance corresponding to the C<$name>,
-which can be the L<Elastic::Model::Domain/"name">, an
-L<Elastic::Model::Domain/"sub_domain">, one of the
-L<Elastic::Model::Domain/"archive_indices"> or any alias or index that
-is aliased to any listed domain name, sub-domain name or archive-index.
+Returns an L<Elastic::Model::Domain> instance where C<$name> is the name
+of an L<index|Elastic::Manual::Terminology/Index> or
+L<index alias|Elastic::Manual::Terminology/Alias> (which points at a single
+index) and is known to one of the L</namespaces>.
 
-=head2 new_scope()
-
-    $scope = $model->new_scope();
-
-Creates a new L<scope|Elastic::Model::Scope> (in-memory cache). If there is an
-existing scope, then the new scope inherits from the existing scope.
-
-    $scope = $model->new_scope();   # scope_1
-    $scope = $model->new_scope();   # scope_2, inherits from scope_1
-    undef $scope;                   # scope_2 and scope_1 are destroyed
-
-See L<Elastic::Model::Scope> to read more about how scopes work.
+Use a C<$domain> to create, retrieve, update or delete individual
+objects/documents.
 
 =head2 view()
 
     $view = $model->view(%args);
 
-Creates a new L<view|Elastic::Model::View>. Any args are passed on to
+Creates a new L<Elastic::Model::View> instance. Any args are passed on to
 L<Elastic::Model::View/"new()">.
 
+Use a C<$view> to query your documents.  Views can be multi-domain and
+multi-type.
+
+
+
+=head2 new_scope()
+
+    $scope = $model->new_scope();
+
+Creates a new L<Elastic::Model::Scope> instance (in-memory cache). If there is
+an existing scope, then the new scope inherits from the existing scope.
+
+    $scope = $model->new_scope();   # scope_1
+    $scope = $model->new_scope();   # scope_2, inherits from scope_1
+    undef $scope;                   # scope_2 and scope_1 are destroyed
+
+Scopes are optional unless you have attributes which are weakened.
+
+See L<Elastic::Model::Scoping> and L<Elastic::Model::Scope> to read more about
+how scopes work.
 
 =head1 OTHER METHODS AND ATTRIBUTES
 
 These methods and attributes, while public, are usually used only by internal
 modules. They are documented here for completeness.
-
-=head2 Miscellaneous
-
-=head3 namespace_for_domain()
-
-    $namespace = $model->namespace_for_domain($domain_name)
-
-Returns the L<Elastic::Model::Namespace> object which corresponds to the
-C<$domain_name>.  If the index (or alias) name is not yet known to the
-C<$model>, it will update the known domain list from the namespace objects.
-
-=head3 es
-
-    $es = $model->es
-
-Returns the L<ElasticSearch> instance that was passed to L</"new()">.
-
-=head3 store
-
-    $store = $model->store
-
-Returns the L<Elastic::Model::Store> instance.
 
 =head2 CRUD
 
@@ -544,10 +545,11 @@ method.
     $doc = $model->get_doc(uid => $uid, ignore_missing => 1, ...);
 
 C<get_doc()> tries to retrieve the object corresponding to the
-L<$uid|Elastic::Model::UID>, first from the current
-L<scope|Elastic::Model::Scope> or any of its parents, then failing that,
-from the L<store|Elastic::Model::Store>. If it finds the doc, then
-it stores it in the current scope, otherwise it throws an error.
+L<$uid|Elastic::Model::UID>, first from the L</current_scope> (if there is one)
+or from any of its parents. Failing that, it tries to retrieve the doc
+from the L</store>. If it finds the doc, then
+it stores it in the current scope (again, if there is one), otherwise it
+throws an error.
 
 C<get_doc()> also accepts an optional C<$source> parameter which is
 used internally for inflating search results.
@@ -576,18 +578,22 @@ method.
 Saves C<$doc> to ElasticSearch by calling
 L<Elastic::Model::Store/"index_doc()"> (if the C<$doc> was originally loaded
 from ElasticSearch), or L<Elastic::Model::Store/"create_doc()">, which
-will throw an error if a doc with the same L<$uid|Elastic::Model::UID> already
+will throw an error if a doc with the same C<index|type|id> already
 exists.
 
 Any C<%args> are passed on to L<index_doc()|Elastic::Model::Store/"index_doc()"> or
 L<create_doc()|Elastic::Model::Store/"create_doc()">.
+
+If there is a L</current_scope> then the object is also stored there.
 
 =head3 delete_doc()
 
     $uid = $model->delete_doc(uid => $uid, ignore_missing => 1, ...)
 
 Calls L<Elastic::Model::Store/delete_doc()> and returns the updated
-L<Elastic::Model::UID> object.
+L<Elastic::Model::UID> object. Throws an error if it doesn't exist.
+If there is a L</current_scope> then an L<Elastic::Model::Deleted> object
+is stored there.
 
 =head3 search()
 
@@ -597,6 +603,36 @@ method.
     $results = $model->search(%args)
 
 Passes C<%args> through to L<Elastic::Model::Store/"search()">
+
+
+=head2 Miscellaneous
+
+=head3 namespaces
+
+    \%namespaces = $model->namespaces;
+
+A hashref whose keys are the namespace names, and whose values are the
+corresponding L<Elastic::Model::Namespace> instances.
+
+=head3 namespace_for_domain()
+
+    $namespace = $model->namespace_for_domain($domain_name)
+
+Returns the L<Elastic::Model::Namespace> object which corresponds to the
+C<$domain_name>.  If the index (or alias) name is not yet known to the
+C<$model>, it will update the known domain list from the namespace objects.
+
+=head3 es
+
+    $es = $model->es
+
+Returns the L<ElasticSearch> instance that was passed to L</"new()">.
+
+=head3 store
+
+    $store = $model->store
+
+Returns the L<Elastic::Model::Store> instance.
 
 =head2 Deflation, Inflation And Mapping
 
@@ -781,9 +817,9 @@ the values are the wrapped class names.
 
 Returns the name of the wrapped class which corresponds to C<$class>.
 
-=head3 known_class()
+=head3 knows_class()
 
-    $bool = $model->known_class($class);
+    $bool = $model->knows_class($class);
 
 Returns a true or false value to signal whether doc C<$class> has been wrapped.
 
