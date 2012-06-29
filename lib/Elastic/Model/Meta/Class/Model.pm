@@ -187,7 +187,8 @@ __END__
 Holds information about your model: domains and their types,
 and char_filters, tokenizers, filters and analyzers for analysis.
 
-You shouldn't need to touch anything in this class.
+You shouldn't need to use this class directly. Everything you need should
+be accessible via L<Elastic::Model> or L<Elastic::Model::Role::Model>.
 
 =head1 METHODS
 
@@ -197,7 +198,6 @@ You shouldn't need to touch anything in this class.
 
 Returns C<true> if C<$name> is a C<$type> (analyzer, tokenizer,
 filter, char_filter) available in ElasticSearch by default.
-
 
 =head3 Default analyzers
 
@@ -270,11 +270,23 @@ L<mapping|http://www.elasticsearch.org/guide/reference/index-modules/analysis/ma
 Used to generate the C<analysis> settings for an index, based on which
 analyzers are used in the C<mappings> for all C<types> in the index.
 
+=head2 wrapped_class_name()
+
+    $new_class = $meta->wrapped_class_name($old_class);
+
+Generates a semi-anonymous classname with the format
+C<Elastic::Model::__WRAPPED_::$n>
+
 =head1 ATTRIBUTES
 
-=head2 domains
+=head2 namespaces
 
-A hash ref containing all domains plus their configuration, eg:
+    \%namespaces    = $meta->namespaces;
+    \%namespace     = $meta->namespace($name);
+    $bool           = $meta->has_namespace($name);
+    @names          = $meta->all_namespaces;
+
+A hash ref containing all namespaces plus their configuration, eg:
 
     {
         myapp => {
@@ -284,27 +296,12 @@ A hash ref containing all domains plus their configuration, eg:
         }
     }
 
-=head3 domains()
-
-    $domains = $meta->domains();
-
-=head3 domain()
-
-    $config = $meta->domain($name)
-
-=head3 has_domain()
-
-    $bool = $meta->has_domain($name)
-
-=head3 add_domain()
-
-    $meta->add_domain($name => $config);
-
-=head3 all_domains()
-
-    @names = $meta->all_domains
-
 =head2 analyzers
+
+    \%analyzers     = $meta->analyzers;
+    \%analyzer      = $meta->analyzer($name);
+    $bool           = $meta->has_analyzer($name);
+    @names          = $meta->all_analyzers;
 
 A hash ref containing all analyzers plus their configuration, eg:
 
@@ -316,29 +313,12 @@ A hash ref containing all analyzers plus their configuration, eg:
         }
     }
 
-Accessors:
-
-=head3 analyzers()
-
-    $analyzers = $meta->analyzers();
-
-=head3 analyzer()
-
-    $config = $meta->analyzer($name)
-
-=head3 has_analyzer()
-
-    $bool = $meta->has_analyzer($name)
-
-=head3 add_analyzer()
-
-    $meta->add_analyzer($name => $config);
-
-=head3 all_analyzers()
-
-    @names = $meta->all_analyzers
-
 =head2 tokenizers
+
+    \%tokenizers    = $meta->tokenizers;
+    \%tokenizer     = $meta->tokenizer($name);
+    $bool           = $meta->has_tokenizer($name);
+    @names          = $meta->all_tokenizers;
 
 A hash ref containing all tokenizers plus their configuration, eg:
 
@@ -349,29 +329,12 @@ A hash ref containing all tokenizers plus their configuration, eg:
         }
     }
 
-Accessors:
-
-=head3 tokenizers()
-
-    $tokenizers = $meta->tokenizers();
-
-=head3 tokenizer()
-
-    $config = $meta->tokenizer($name)
-
-=head3 has_tokenizer()
-
-    $bool = $meta->has_tokenizer($name)
-
-=head3 add_tokenizer()
-
-    $meta->add_tokenizer($name => $config);
-
-=head3 all_tokenizers()
-
-    @names = $meta->all_tokenizers
-
 =head2 filters
+
+    \%filters       = $meta->filters;
+    \%filter        = $meta->filter($name);
+    $bool           = $meta->has_filter($name);
+    @names          = $meta->all_filters;
 
 A hash ref containing all filters plus their configuration, eg:
 
@@ -383,30 +346,12 @@ A hash ref containing all filters plus their configuration, eg:
         }
     }
 
-Accessors:
-
-=head3 filters()
-
-    $filters = $meta->filters();
-
-
-=head3 filter()
-
-    $config = $meta->filter($name)
-
-=head3 has_filter()
-
-    $bool = $meta->has_filter($name)
-
-=head3 add_filter()
-
-    $meta->add_filter($name => $config);
-
-=head3 all_filters()
-
-    @names = $meta->all_filters
-
 =head2 char_filters
+
+    \%char_filters  = $meta->char_filters;
+    \%char_filter   = $meta->char_filter($name);
+    $bool           = $meta->has_char_filter($name);
+    @names          = $meta->all_char_filters;
 
 A hash ref containing all char_filters plus their configuration, eg:
 
@@ -417,33 +362,5 @@ A hash ref containing all char_filters plus their configuration, eg:
         }
     }
 
-Accessors:
-
-=head3 char_filters()
-
-    $char_filters = $meta->char_filters();
-
-=head3 char_filter()
-
-    $config = $meta->char_filter($name)
-
-=head3 has_char_filter()
-
-    $bool = $meta->has_char_filter($name)
-
-=head3 add_char_filter()
-
-    $meta->add_char_filter($name => $config);
-
-=head3 all_char_filters()
-
-    @names = $meta->all_char_filters
-
-=head2 wrapped_class_name()
-
-    $new_class = $meta->wrapped_class_name($old_class);
-
-Generates a semi-anonymous classname with the format
-C<Elastic::Model::__WRAPPED_::$n>
 
 
