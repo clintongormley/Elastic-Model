@@ -39,7 +39,7 @@ sub _get_default_routing {
 #===================================
     my $self    = shift;
     my $name    = $self->name;
-    my $aliases = $self->es->get_aliases( index => $name );
+    my $aliases = $self->model->es->get_aliases( index => $name );
 
     croak "Domain ($name) doesn't exist either as an index or an alias"
         unless %$aliases;
@@ -127,10 +127,6 @@ sub view {
     $self->model->view( domain => $self->name, @_ );
 }
 
-#===================================
-sub es { shift->model->es }
-#===================================
-
 1;
 
 __END__
@@ -139,11 +135,11 @@ __END__
 
 =head1 SYNOPSIS
 
-Get a domain instance:
+=head2 Get a domain instance
 
     $domain = $model->domain('myapp');
 
-Create a new doc/object
+=head2 Create a new doc/object
 
     $user = $domain->new_doc( user => \%args );
     $user->save;
@@ -152,48 +148,49 @@ Create a new doc/object
 
     $user = $domain->create( user => \%args);
 
-Retrieve a doc by ID:
+=head2 Retrieve a doc by ID
 
     $user = $domain->get( $type => $id );
 
     $user = $domain->try_get( $type => $id );      # return undef if missing
 
-Delete a doc by ID;
+=head2 Delete a doc by ID;
 
     $uid = $domain->delete( $type => $id );
 
     $user = $domain->try_delete( $type => $id );   # return undef if missing
 
-Create a view on the current domain:
+=head2 Create a view on the current domain
 
     $view = $domain->view(%args);
 
 =head1 DESCRIPTION
 
-A "domain" is an L<index|Elastic::Manual::Terminology/Index> or an
-L<alias|Elastic::ManuaL::Terminology/Alias> (which points to one or more
-indices). You use a domain to create new docs/objects or to retrieve
-docs/obects by C<type>/C<id>.
 
-B<NOTE:> You can only create a doc in a domain that is either a single index,
-or an alias which points to a single index.
+
+A "domain" is like a database handle used for CRUD (creating, updating or deleting)
+individual objects or L<documents|Elastic::Manual::Terminology/Document>.
+The C<< $domain->name >> can be the name of an
+L<index|Elastic::Manual::Terminology/Index> or an
+L<index alias|Elastic::Manual::Terminology/Alias>. A domain can only belong to
+a single L<namespace|Elastic::Manual::Terminology/Namespace>.
+
+B<NOTE:> If C<< $domain->name >> is an alias, it can only point to a single
+index.
 
 =head1  ATTRIBUTES
 
 =head2 name
 
-A domain name must be the name of an index, or an index alias.
+A C<< $domain->name >> must be either the name of an
+L<index|Elastic::Manual::Terminology/Index> or of an
+L<index alias|Elastic::Manual::Terminology/Alias> which points to a single
+index. The index or alias must exist, and must be known to the
+L<namespace|Elastic::Model::Namespace>.
 
 =head2 namespace
 
-An L<Elastic::Model::Namespace> object which maps
-L<types|Elastic::Manual::Terminology/Type> to your doc classes.
-
-=head2 es
-
-    $es = $domain->es
-
-Returns the connection to ElasticSearch.
+The L<Elastic::Model::Namespace> object to which this domain belongs.
 
 =head1 INSTANTIATOR
 
@@ -218,7 +215,12 @@ Instead you should use L<Elastic::Model::Role::Model/"domain()">:
 C<new_doc()> will create a new object in the class that maps to type C<$type>,
 passing C<%args> to C<new()> in the associated class. For instance:
 
-    $user = $domain->new_doc( user => { name => 'Clint' });
+    $user = $domain->new_doc(
+        user => {
+            id   => 1,
+            name => 'Clint',
+        }
+    );
 
 =head2 create()
 
@@ -235,7 +237,7 @@ This is the equivalent of:
 
 Retrieves a doc of type C<$type> with ID C<$id> from index C<< $domain->name >>
 or throws an exception if the doc doesn't exist. See
-L<Elastic::Model::Store/get_doc()> for more parameters which can be passed.
+L<Elastic::Model::Role::Store/get_doc()> for more parameters which can be passed.
 
 =head2 try_get()
 
@@ -252,7 +254,7 @@ or returns undef if the doc doesn't exist.
 
 Deletes a doc of type C<$type> with ID C<$id> from index C<< $domain->name >>
 or throws an exception if the doc doesn't exist. See
-L<Elastic::Model::Store/delete_doc()> for more parameters which can be passed.
+L<Elastic::Model::Role::Store/delete_doc()> for more parameters which can be passed.
 
 =head2 try_delete()
 
