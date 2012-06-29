@@ -100,7 +100,7 @@ L<Elastic::Model::Meta::Doc> to its metaclass
 
 =item *
 
-adding keywords to your attribute definitions, to give you control over how
+adding keywords to your attribute declarations, to give you control over how
 they are indexed (see L<Elastic::Model::Trait::Field>)
 
 =item *
@@ -110,8 +110,8 @@ L<Elastic::Model::Meta::Instance>).
 
 =item *
 
-exporting the L</"has_type_mapping"> function to allow you to configure "type"
-settings for ElasticSearch
+exporting the L</"has_type_mapping"> function to allow you to customize the
+special "meta-fields" in the type mapping in ElasticSearch
 
 =back
 
@@ -119,8 +119,8 @@ settings for ElasticSearch
 
 =head3 has_type_mapping
 
-C<has_type_mapping> can bs used to specify any type-wide settings (ie not
-attr/field-specific). For instance:
+C<has_type_mapping> can be used to customize the special "meta-fields" (ie not
+attr/field-specific) in the type mapping. For instance:
 
     has_type_mapping {
         _source => {
@@ -139,7 +139,48 @@ attr/field-specific). For instance:
 B<Warning:> Use C<has_type_mapping> with caution. L<Elastic::Model> requires
 certain settings to be active to work correctly.
 
-See L<Mapping|http://www.elasticsearch.org/guide/reference/mapping/> and
+See the "Fields" section in L<Mapping|http://www.elasticsearch.org/guide/reference/mapping/> and
 L<Root object type|http://www.elasticsearch.org/guide/reference/mapping/root-object-type.html>
 for more information about what options can be configured.
 
+=head1 SEE ALSO
+
+=over
+
+=item *
+
+L<Elastic::Model::Role::Doc>
+
+=item *
+
+L<Elastic::Model>
+
+=item *
+
+L<Elastic::Meta::Trait::Field>
+
+=item *
+
+L<Elastic::Model::TypeMap::Default>
+
+=item *
+
+L<Elastic::Model::TypeMap::Moose>
+
+=item *
+
+L<Elastic::Model::TypeMap::Objects>
+
+=item *
+
+L<Elastic::Model::TypeMap::Structured>
+
+=item *
+
+L<Elastic::Model::TypeMap::ES>
+
+=item *
+
+L<Elastic::Model::TypeMap::Common>
+
+=back
