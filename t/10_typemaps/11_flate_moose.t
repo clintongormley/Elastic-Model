@@ -100,15 +100,15 @@ our @fields     = (
         { foo => 'one', bar => 'two' }               #
     ],
 
-    'maybe_coderef' => qr/No ..flator found/,
+    'maybe_coderef'     => qr/No ..flator found/,
     'array_ref_coderef' => qr/No ..flator found/,
-    'hash_ref_coderef' => qr/No ..flator found/,
-    'code_ref'    => qr/No ..flator found/,
-    'glob_ref'    => qr/No ..flator found/,
-    'regexp_ref'  => qr/No ..flator found/,
-    'file_handle' => qr/No ..flator found/,
-    'union'       => qr/No ..flator found/,
-    'type'        => qr/No ..flator found/,
+    'hash_ref_coderef'  => qr/No ..flator found/,
+    'code_ref'          => qr/No ..flator found/,
+    'glob_ref'          => qr/No ..flator found/,
+    'regexp_ref'        => qr/No ..flator found/,
+    'file_handle'       => qr/No ..flator found/,
+    'union'             => qr/No ..flator found/,
+    'type'              => qr/No ..flator found/,
 
 );
 

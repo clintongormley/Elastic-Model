@@ -11,7 +11,7 @@ no Moose;
 #===================================
 sub to {
 #===================================
-    my $self    = shift;
+    my $self = shift;
 
     my $name    = $self->name;
     my $es      = $self->es;

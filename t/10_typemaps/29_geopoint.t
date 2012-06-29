@@ -20,8 +20,8 @@ our @mapping = (
     multi => {
         type   => "multi_field",
         fields => {
-            multi_attr => { type => "geo_point" },
-            one => { geohash_precision => 2, type => "geo_point" },
+            multi_attr => { type              => "geo_point" },
+            one        => { geohash_precision => 2, type => "geo_point" },
         },
     },
 

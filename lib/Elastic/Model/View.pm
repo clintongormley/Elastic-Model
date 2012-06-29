@@ -334,7 +334,7 @@ sub _build_domains {
     my $self       = shift;
     my $namespaces = $self->model->namespaces;
     [   map { $_, @{ $namespaces->{$_}->fixed_domains } }
-            sort keys %$namespaces
+        sort keys %$namespaces
     ];
 }
 

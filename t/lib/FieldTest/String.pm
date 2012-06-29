@@ -71,12 +71,10 @@ has 'multi_attr' => (
 #===================================
 has 'mapping_attr' => (
 #===================================
-    is => 'ro',
-    isa => 'Str',
-    type =>'integer',
-    mapping => {
-        store =>1
-    }
+    is      => 'ro',
+    isa     => 'Str',
+    type    => 'integer',
+    mapping => { store => 1 }
 );
 
 #===================================

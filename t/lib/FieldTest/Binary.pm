@@ -23,7 +23,7 @@ has 'options_attr' => (
 has 'multi_attr' => (
 #===================================
     is    => 'ro',
-    isa => Binary,
+    isa   => Binary,
     multi => { one => { type => 'string' }, }
 );
 
@@ -31,7 +31,7 @@ has 'multi_attr' => (
 has 'bad_opt_attr' => (
 #===================================
     is         => 'ro',
-    isa => Binary,
+    isa        => Binary,
     omit_norms => 1,
 );
 

@@ -23,7 +23,6 @@ ok $index->create, 'Create index myapp3';
 
 test_domain( $index, 'Index', 'myapp3' );
 
-
 ## TEST SINGLE INDEX ALIAS ##
 ok $index->create, 'Recreate index myapp3';
 
@@ -38,7 +37,6 @@ ok $ns->index('myapp4')->create, 'Create index myapp4';
 ok $alias->to( 'myapp3', 'myapp4' ), 'Alias myapp to myapp3 and myapp4';
 
 test_domain( $alias, 'Multi-alias', 'myapp' );
-
 
 done_testing;
 
@@ -130,7 +128,8 @@ SKIP: {
         ok $index->close, "Close $desc";
 
         ok $index->update_settings(
-            "analysis.analyzer.edge_ngrams.tokenizer" => "keyword" ),
+            "analysis.analyzer.edge_ngrams.tokenizer" => "keyword"
+            ),
             "Set $desc tokenizer to keyword";
         is get_tokenizer($name), "keyword", "$desc tokenizer is keyword";
 

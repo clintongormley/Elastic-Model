@@ -21,7 +21,7 @@ note '';
 note "Core classes";
 
 my %classes = (
-    typemap               => 'Elastic::Model::TypeMap::Default',
+    typemap                => 'Elastic::Model::TypeMap::Default',
     namespace_class        => 'Elastic::Model::Namespace',
     domain_class           => 'Elastic::Model::Domain',
     store_class            => 'Elastic::Model::Store',

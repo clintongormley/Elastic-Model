@@ -16,7 +16,7 @@ has 'es' => (
 #===================================
 sub search          { shift->es->search(@_) }
 sub scrolled_search { shift->es->scrolled_search(@_) }
-sub delete_by_query { shift->es->delete_by_query(@_)}
+sub delete_by_query { shift->es->delete_by_query(@_) }
 #===================================
 
 #===================================

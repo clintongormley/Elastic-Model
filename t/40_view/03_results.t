@@ -89,14 +89,14 @@ test_single(
 $it = $view->search;
 test_multi( 'all',   [], [ 1 .. 10 ] );
 test_multi( 'slice', [], [ 1 .. 10 ] );
-test_multi( 'slice', [ 0,  5 ],  [ 1 .. 5 ] );
-test_multi( 'slice', [ 5,  2 ],  [ 6 .. 7 ] );
-test_multi( 'slice', [ 0,  15 ], [ 1 .. 10 ] );
-test_multi( 'slice', [ 5,  15 ], [ 6 .. 10 ] );
-test_multi( 'slice', [ -4, 3 ],  [ 7 .. 9 ] );
-test_multi( 'slice', [ 5,  -2 ], [] );
-test_multi( 'slice', [ -5, -2 ], [] );
-test_multi('slice',[1000,10],[]);
+test_multi( 'slice', [ 0,    5 ],  [ 1 .. 5 ] );
+test_multi( 'slice', [ 5,    2 ],  [ 6 .. 7 ] );
+test_multi( 'slice', [ 0,    15 ], [ 1 .. 10 ] );
+test_multi( 'slice', [ 5,    15 ], [ 6 .. 10 ] );
+test_multi( 'slice', [ -4,   3 ],  [ 7 .. 9 ] );
+test_multi( 'slice', [ 5,    -2 ], [] );
+test_multi( 'slice', [ -5,   -2 ], [] );
+test_multi( 'slice', [ 1000, 10 ], [] );
 
 ## Size / Total ##
 is $it->size,  10,  'Size';
@@ -111,19 +111,19 @@ is $it->total, 196, 'Total after shift';
 $it = $view->search;
 
 $it->index(undef);
-is $it->_i, -1, 'Index i undef';
-is $it->index,undef, 'Index index undef';
+is $it->_i,    -1,    'Index i undef';
+is $it->index, undef, 'Index index undef';
 $it->index(0);
-is $it->_i, '0', 'Index i 0';
+is $it->_i,    '0', 'Index i 0';
 is $it->index, '0', 'Index index 0';
 $it->index(1);
-is $it->_i, 1, 'Index i 1';
+is $it->_i,    1, 'Index i 1';
 is $it->index, 1, 'Index index 1';
 $it->index(-1);
-is $it->_i, 9, 'Index i -1';
+is $it->_i,    9, 'Index i -1';
 is $it->index, 9, 'Index index -1';
 
-throws_ok sub { $it->index(-1000)}, qr/out of bounds/, 'Index out of bounds';
+throws_ok sub { $it->index(-1000) }, qr/out of bounds/, 'Index out of bounds';
 
 $it->reset;
 is $it->_i, -1, 'Reset';
@@ -183,14 +183,14 @@ is $it->parity,   'odd', 'Prev: Parity';
 is $it->has_next, 1,     'Prev: Has next';
 is $it->has_prev, 1,     'Prev: Has prev';
 
-$it->shift for 1..10;
+$it->shift for 1 .. 10;
 is $it->is_first, undef, 'Empty: Is first';
 is $it->is_last,  undef, 'Empty: Is last';
 is $it->even,     undef, 'Empty: Is even';
 is $it->odd,      undef, 'Empty: Is odd';
 is $it->parity,   undef, 'Empty: Parity';
-is $it->has_next, '',     'Empty: Has next';
-is $it->has_prev, '',     'Empty: Has prev';
+is $it->has_next, '',    'Empty: Has next';
+is $it->has_prev, '',    'Empty: Has prev';
 
 done_testing;
 
@@ -291,8 +291,8 @@ sub test_multi {
 
     @res = $it->$re_method(@$args);
     cmp_deeply [
-        map      { $_->id }
-            grep { $_->isa('Elastic::Model::Result') } @res
+        map  { $_->id }
+        grep { $_->isa('Elastic::Model::Result') } @res
         ],
         $ids,
         "$re_method$desc";
@@ -311,8 +311,8 @@ sub test_multi {
     $it->as_results;
     @res = $it->$name(@$args);
     cmp_deeply [
-        map      { $_->id }
-            grep { $_->isa('Elastic::Model::Result') } @res
+        map  { $_->id }
+        grep { $_->isa('Elastic::Model::Result') } @res
         ],
         $ids,
         "$name$desc as results";

@@ -41,12 +41,11 @@ sub wait_for_es {
     sleep $_[0] if $_[0];
 }
 
-
 #===================================
 sub create_users {
 #===================================
     my $model = shift;
-    my $ns = $model->namespace('myapp');
+    my $ns    = $model->namespace('myapp');
     $ns->index('myapp2')->create;
     $ns->index('myapp3')->create;
     $ns->alias->to( 'myapp2', 'myapp3' );

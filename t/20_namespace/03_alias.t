@@ -50,7 +50,8 @@ ok $alias->to('myapp3'), 'Re-alias to only myapp3';
 cmp_deeply $alias->aliased_to, { myapp3 => {} }, 'Is re-aliased';
 
 ok $alias->add(
-    myapp2 => { index_routing => 'foo', search_routing => 'bar' } ),
+    myapp2 => { index_routing => 'foo', search_routing => 'bar' }
+    ),
     'Add alias';
 cmp_deeply $alias->aliased_to,
     {
