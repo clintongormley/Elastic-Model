@@ -54,14 +54,16 @@ sub has_char_filter { shift->add_char_filter( shift, {@_} ) }
 
 1;
 
-# ABSTRACT: A NoSQL object-persistence framework for Moose using ElasticSearch as a backend.
+# ABSTRACT: A NoSQL document store with full text search for Moose objects using ElasticSearch as a backend.
 
 =head1 DESCRIPTION
 
-Elastic::Model is a NoSQL object-persistence framework for Moose using
-ElasticSearch as a backend.  It aims to Do the Right Thing with minimal
-extra code, but allows you to benefit from the full power of ElasticSearch
-as soon as you are ready to use it.
+Elastic::Model is a framework to store your Moose objects, which uses
+ElasticSearch as a NoSQL document store and flexible search engine.
+
+It is designed to make it easy to start using ElasticSearch with minimal extra
+code, but allows you full access to the rich feature set available in
+ElasticSearch as soon as you are ready to use it.
 
 =head1 INTRODUCTION TO Elastic::Model
 
