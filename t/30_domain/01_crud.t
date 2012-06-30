@@ -24,11 +24,11 @@ ok $ns->alias('routed')->to( myapp2 => { routing => 'foo' } ),
 ok $ns->alias('multi')->to( 'myapp2', 'myapp3' );
 
 ## Basics - myapp ##
-isa_ok my $myapp = $model->domain('myapp'), 'Elastic::Model::Domain',
+isa_ok my $domain = $model->domain('myapp'), 'Elastic::Model::Domain',
     'Got domain myapp';
 
-is $myapp->name, 'myapp', 'myapp has name';
-is $myapp->namespace->name, 'myapp', 'myapp has namespace:myapp';
+is $domain->name, 'myapp', 'myapp has name';
+is $domain->namespace->name, 'myapp', 'myapp has namespace:myapp';
 
 ## Basics - routed ##
 isa_ok my $routed = $model->domain('routed'), 'Elastic::Model::Domain',
@@ -37,7 +37,7 @@ is $routed->name, 'routed', 'routed has name';
 is $routed->namespace->name, 'myapp', 'routed has namespace:myapp';
 
 ## Default routing ##
-is $myapp->_default_routing, '', 'myapp has no default routing';
+is $domain->_default_routing, '', 'myapp has no default routing';
 is $model->domain('myapp2')->_default_routing, '', 'Routing for index domain';
 is $routed->_default_routing, 'foo', 'routed has default routing';
 throws_ok sub { $model->domain('myapp1_fixed')->_default_routing },
@@ -46,11 +46,11 @@ throws_ok sub { $model->domain('multi')->_default_routing },
     qr/more than one index/, 'Multi-index alias';
 
 ## new_doc - myapp ##
-throws_ok sub { $myapp->new_doc }, qr/No type/, 'new_doc no type';
-throws_ok sub { $myapp->new_doc('foo') }, qr/Unknown type/,
+throws_ok sub { $domain->new_doc }, qr/No type/, 'new_doc no type';
+throws_ok sub { $domain->new_doc('foo') }, qr/Unknown type/,
     'new_doc Unknown type';
 
-isa_ok my $user = $myapp->new_doc(
+isa_ok my $user = $domain->new_doc(
     user => {
         id    => 1,
         name  => 'Clint',
@@ -113,9 +113,9 @@ test_uid(
 );
 
 ## Get - myapp - user##
-throws_ok sub { $myapp->get() }, qr/No type/, 'Get no type';
-throws_ok sub { $myapp->get('user') }, qr/No id/, 'Get no ID';
-isa_ok $user= $myapp->get( user => 1 ), 'MyApp::User', 'Get user myapp';
+throws_ok sub { $domain->get() }, qr/No type/, 'Get no type';
+throws_ok sub { $domain->get('user') }, qr/No id/, 'Get no ID';
+isa_ok $user= $domain->get( user => 1 ), 'MyApp::User', 'Get user myapp';
 
 test_uid(
     $user->uid,
@@ -130,10 +130,10 @@ test_uid(
     }
 );
 
-throws_ok sub { $myapp->get( user => 2 ) }, qr/Missing/,
+throws_ok sub { $domain->get( user => 2 ) }, qr/Missing/,
     'Myapp without routing';
 
-is $myapp->get( user => 2, routing => 'foo' )->uid->id, 2,
+is $domain->get( user => 2, routing => 'foo' )->uid->id, 2,
     'Myapp with routing';
 
 ## Get - routed ##
@@ -157,7 +157,7 @@ throws_ok sub { $routed->get( user => 1 ) }, qr/Missing/,
 
 ## Try get ##
 isa_ok $user = $routed->get( user => 2 ), 'MyApp::User', 'try_get existing';
-is $myapp->try_get( user => 3 ), undef, 'try_get missing';
+is $domain->try_get( user => 3 ), undef, 'try_get missing';
 
 ## Change and save ##
 is $user->name('James'), 'James', 'Field updated';
@@ -176,14 +176,14 @@ test_uid(
 );
 
 ## Delete ##
-throws_ok sub { $myapp->delete }, qr/No type/, 'Delete no type';
-throws_ok sub { $myapp->delete('foo') }, qr/No id/, 'Delete no id';
-throws_ok sub { $myapp->delete( user => 2 ) }, qr/Missing/,
+throws_ok sub { $domain->delete }, qr/No type/, 'Delete no type';
+throws_ok sub { $domain->delete('foo') }, qr/No id/, 'Delete no id';
+throws_ok sub { $domain->delete( user => 2 ) }, qr/Missing/,
     'Delete missing doc';
-throws_ok sub { $myapp->delete( user => 1, routing => 'foo' ) }, qr/Missing/,
+throws_ok sub { $domain->delete( user => 1, routing => 'foo' ) }, qr/Missing/,
     'Delete missing with routing';
 is $routed->try_delete( user => 1 ), undef, 'Delete maybe';
-ok my $uid = $myapp->try_delete( user => 2, routing => 'foo' ),
+ok my $uid = $domain->try_delete( user => 2, routing => 'foo' ),
     'Delete with routing';
 
 test_uid(
