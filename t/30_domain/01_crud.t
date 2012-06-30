@@ -175,6 +175,10 @@ test_uid(
     }
 );
 
+## Exists ##
+is $domain->exists( user => 1 ), '1', 'User exists';
+is $domain->exists( user => 5 ), '',  'User does not exist';
+
 ## Delete ##
 throws_ok sub { $domain->delete }, qr/No type/, 'Delete no type';
 throws_ok sub { $domain->delete('foo') }, qr/No id/, 'Delete no id';

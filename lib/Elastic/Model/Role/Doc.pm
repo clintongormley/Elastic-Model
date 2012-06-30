@@ -46,12 +46,11 @@ has '_source' => (
 #===================================
     isa => Maybe [HashRef],
     is => 'ro',
-    traits    => ['Elastic::Model::Trait::Exclude'],
-    lazy      => 1,
-    exclude   => 1,
-    builder   => '_get_source',
-    writer    => '_set_source',
-    predicate => '_has_source',
+    traits  => ['Elastic::Model::Trait::Exclude'],
+    lazy    => 1,
+    exclude => 1,
+    builder => '_get_source',
+    writer  => '_set_source',
 );
 
 #===================================
@@ -163,8 +162,9 @@ sub delete {
 sub has_been_deleted {
 #===================================
     my $self = shift;
-    $self->uid->from_store or return 0;
-    return !( $self->_has_source ? $self->_get_source() : $self->_source );
+    my $uid  = $self->uid;
+    $uid->from_store or return 0;
+    !$self->model->doc_exists( uid => $uid, @_ );
 }
 
 1;
@@ -339,6 +339,8 @@ C<on_conflict> parameter:
         }
     );
 
+See L</has_been_deleted()> for a fuller example of an L</on_conflict> callback.
+
 The doc will only be saved if it has changed. If you want to force saving
 on a doc that hasn't changed, then you can do:
 
@@ -374,8 +376,8 @@ your application, otherwise you have to wrap all of your code in C<eval>s
 to ensure that you're not accessing a stale doc.
 
 However, if you do need to delete current docs, then L</has_been_deleted()>
-helps you to determine if the current doc is live or not.  For instance, you
-might have an L</on_conflic> handler which looks like this:
+checks if the doc exists in ElasticSearch.  For instance, you
+might have an L</on_conflict> handler which looks like this:
 
     $doc->save(
         on_conflict => sub {
@@ -391,11 +393,6 @@ might have an L</on_conflic> handler which looks like this:
             $new->save
         }
     );
-
-B<Note:> L</has_been_deleted> tried to fetch the document from ElasticSearch,
-so (1) it is as costly as calling L<Elastic::Model::Domain/get()> and
-(2) it only represents the truth at that moment in time - another process
-may already have recreated or deleted the document.
 
 It is a much better approach to remove docs from the main flow of your
 application (eg, set a C<status> attribute to C<"deleted">) then physically
@@ -439,7 +436,7 @@ here so that you don't override them without knowing what you are doing:
 
 Inflates the attribute values from the hashref stored in L</"_source">.
 
-=head3 _get_source / _set_source / _has_source
+=head3 _get_source / _set_source
 
 The raw doc source from ElasticSearch.
 

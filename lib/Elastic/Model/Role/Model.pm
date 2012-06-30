@@ -3,7 +3,7 @@ package Elastic::Model::Role::Model;
 use Moose::Role;
 use Carp;
 use Elastic::Model::Types qw(ES);
-use ElasticSearch 0.53 ();
+use ElasticSearch 0.54 ();
 use Class::Load qw(load_class);
 use Moose::Util qw(does_role);
 use MooseX::Types::Moose qw(:all);
@@ -317,6 +317,15 @@ sub get_doc_source {
 }
 
 #===================================
+sub doc_exists {
+#===================================
+    my ( $self, %args ) = @_;
+    my $uid = delete $args{uid}
+        or croak "No UID passed to doc_exists()";
+    return $self->store->doc_exists( $uid, %args );
+}
+
+#===================================
 sub save_doc {
 #===================================
     my ( $self, %args ) = @_;
@@ -594,6 +603,13 @@ as stored in ElasticSearch for the doc with the corresponding
 L<$uid|Elastic::Model::UID>. Throws an error if it doesn't exist.
 
 Any other args are passed on to L<Elastic::Model::Store/get_doc()>.
+
+=head3 doc_exists()
+
+    $bool = $model->doc_exists( uid => $uid, %args );
+
+Calls L<Elastic::Model::Role::Store/doc_exists()> to check whether the doc
+exists.
 
 =head3 save_doc()
 

@@ -99,6 +99,22 @@ sub try_get { shift->get( @_, ignore_missing => 1 ) }
 #===================================
 
 #===================================
+sub exists {
+#===================================
+    my $self = shift;
+    my $type = shift or croak "No type passed to exists()";
+    my $id   = shift or croak "No id passed to exists()";
+    my %args = @_;
+    my $uid  = Elastic::Model::UID->new(
+        index   => $self->name,
+        type    => $type,
+        id      => $id,
+        routing => delete $args{routing} || $self->_default_routing,
+    );
+    $self->model->doc_exists( uid => $uid, %args );
+}
+
+#===================================
 sub delete {
 #===================================
     my $self = shift;
@@ -154,7 +170,11 @@ __END__
 
     $user = $domain->try_get( $type => $id );      # return undef if missing
 
-=head2 Delete a doc by ID;
+=head2 Check if a doc exists
+
+    $bool = $domain->exists( $type => $id );
+
+=head2 Delete a doc by ID
 
     $uid = $domain->delete( $type => $id );
 
@@ -165,8 +185,6 @@ __END__
     $view = $domain->view(%args);
 
 =head1 DESCRIPTION
-
-
 
 A "domain" is like a database handle used for CRUD (creating, updating or deleting)
 individual objects or L<documents|Elastic::Manual::Terminology/Document>.
@@ -246,6 +264,15 @@ L<Elastic::Model::Role::Store/get_doc()> for more parameters which can be passed
 
 Retrieves a doc of type C<$type> with ID C<$id> from index C<< $domain->name >>
 or returns undef if the doc doesn't exist.
+
+=head2 exists()
+
+    $bool = $domain->exists( $type => $id );
+    $bool = $domain->exists( $type => $id, routing => $routing, ... );
+
+Checks if a doc of type C<$type> with ID C<$id> exists in
+index C<< $domain->name >>. See L<Elastic::Model::Role::Store/doc_exists()>
+for more parameters which can be passed.
 
 =head2 delete()
 

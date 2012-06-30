@@ -31,6 +31,13 @@ sub get_doc {
 }
 
 #===================================
+sub doc_exists {
+#===================================
+    my ( $self, $uid, %args ) = @_;
+    return !!$self->es->exists( %{ $uid->read_params }, %args, );
+}
+
+#===================================
 sub create_doc { shift->_write_doc( 'create', @_ ) }
 sub index_doc  { shift->_write_doc( 'index',  @_ ) }
 #===================================
@@ -81,6 +88,13 @@ Returns the connection to ElasticSearch.
 Retrieves the doc specified by the L<$uid|Elastic::Model::UID> from
 ElasticSearch, by calling L<ElasticSearch/"get()">. Throws an exception
 if the document does not exist.
+
+=head2 doc_exists()
+
+    $bool = $store->doc_exists($uid, %args);
+
+Checks whether the doc exists in ElastciSearch. Any C<%args> are passed through
+to L<ElasticSearch/exists()>.
 
 =head2 create_doc()
 

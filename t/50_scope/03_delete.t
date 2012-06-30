@@ -95,9 +95,7 @@ undef $scope_1;
 $scope_1 = create_scope('Scope_1');
 isa_ok $user_1 = $model->get_doc( uid => $uid ), 'MyApp::User',
     'Model get U1';
-is $user_1->_has_source,      '',  'U1 has no _source';
-is $user_1->has_been_deleted, '',  'UID has not been deleted';
-is $user_1->_has_source,      '1', 'U1 has _source';
+is $user_1->has_been_deleted, '', 'UID has not been deleted';
 my $source = $user_1->_source;
 
 # object inflated with source should still work even though
@@ -109,7 +107,6 @@ $scope_1 = create_scope('Scope_1');
 
 isa_ok $user_1 = $model->get_doc( uid => $uid, source => $source ),
     'MyApp::User', 'Model get U1 with source';
-is $user_1->_has_source,      1,       'U1 has source';
 is $user_1->has_been_deleted, 1,       'U1 has been deleted';
 is $user_1->name,             'Clint', 'Name works';
 
