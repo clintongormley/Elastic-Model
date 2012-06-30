@@ -28,11 +28,13 @@ What YOU need to do is: B<Be specific about the type constraint for each attribu
 For instance,  if you have an attribute called C<count>, then specify the
 type constraint C<< isa => 'Int' >>.
 That way, we know how to define the field in ElasticSearch, and how to deflate
-and inflate the value. If you were to assign C<count> the type constraint
-C<PositiveInt>, although we don't know about that constraint, we do know
-about C<Int>, from which C<PostiveInt> derives, so we could
-still handle the field correctly.
+and inflate the value.
 
+Type constraints can inherit their mapping, inflator and deflator from
+their parent type-constraints.  For instance, if you were to assign
+C<count> the type constraint C<PositiveInt>, although we don't know about that
+constraint, we do know about its parent, C<Int>, so we could
+still handle the field correctly.
 
 Type maps are used to define:
 

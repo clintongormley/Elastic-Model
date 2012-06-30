@@ -408,7 +408,7 @@ __END__
 
 =head1 SYNOPSIS
 
-Define your own type map:
+=head2 Define your own type map
 
     package MyApp::TypeMap;
 
@@ -422,15 +422,18 @@ Define your own type map:
         map_via     { type => 'string' };
 
 
-Use your type map:
+=head2 Use your type map by declaring it in your Model
 
-    package main;
+    package MyApp;
 
-    use MyApp;
+    use Elastic::Model;
 
-    my $model = MyApp->new(
-        typemap => 'MyApp::TypeMap'
-    );
+    has_namespace 'myapp', {
+        user => 'MyApp::User',
+        post => 'MyApp::Post'
+    };
+
+    has_typemap 'MyApp::TypeMap';
 
 =head1 DESCRIPTION
 
@@ -443,11 +446,13 @@ What YOU need to do is: B<Be specific about the type constraint for each attribu
 For instance,  if you have an attribute called C<count>, then specify the
 type constraint C<< isa => 'Int' >>.
 That way, we know how to define the field in ElasticSearch, and how to deflate
-and inflate the value. If you were to assign C<count> the type constraint
-C<PositiveInt>, although we don't know about that constraint, we do know
-about C<Int>, from which C<PostiveInt> derives, so we could
-still handle the field correctly.
+and inflate the value.
 
+Type constraints can inherit their mapping, inflator and deflator from
+their parent type-constraints.  For instance, if you were to assign
+C<count> the type constraint C<PositiveInt>, although we don't know about that
+constraint, we do know about its parent, C<Int>, so we could
+still handle the field correctly.
 
 Type maps are used to define:
 
@@ -487,6 +492,7 @@ and load any other typemaps that you want to inherit from:
 
     use Elastic::Model::TypeMap::Base qw(
         Elastic::Model::TypeMap::Default
+        Useful::TypeMap::From::CPAN
     );
 
 Now you can define your type maps:
