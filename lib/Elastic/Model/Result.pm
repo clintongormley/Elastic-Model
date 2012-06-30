@@ -174,24 +174,25 @@ L<Elastic::Model::Results> or L<Elastic::Model::Results::Scrolled>.
 
 =head2 object
 
-    $object     = $result->object();
+    $object = $result->object();
 
 The object associated with the result.  By default, the L</source> field is
-returned in search results, meaning that we can inflate the object just from
+returned in search results, meaning that we can inflate the object directly from
 the search results.  B<Note:> If you set L<Elastic::Model::View/fields> and you
 don't include C<'_source'> then you will be unable to inflate your object
 without a separate (but automatic) step to retrieve it from ElasticSearch.
 
+Also see L<Elastic::Manual::Scoping>.
 
 =head2 uid
 
 =head2 index, type, id, routing
 
-    $uid        = $result->uid;
-    $index      = $result->index   | $result->uid->index;
-    $type       = $result->type    | $result->uid->type;
-    $id         = $result->id      | $result->uid->id;
-    $routing    = $result->routing | $result->uid->routing;
+    $uid     = $result->uid;
+    $index   = $result->index   | $result->uid->index;
+    $type    = $result->type    | $result->uid->type;
+    $id      = $result->id      | $result->uid->id;
+    $routing = $result->routing | $result->uid->routing;
 
 The L<uid|Elastic::Model::UID> of the doc.  L<index|Elastic::Model::UID/index>,
 L<type|Elastic::Model::UID/type>, L<id|Elastic::Model::UID/id>
@@ -258,7 +259,7 @@ L<http://www.lucenetutorial.com/advanced-topics/scoring.html>.
 
     \%raw_result = $result->result
 
-The raw result as returned by ElasticSearch.
+The raw result hashref as returned by ElasticSearch.
 
 =head2 source
 
