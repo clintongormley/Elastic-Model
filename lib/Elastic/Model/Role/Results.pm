@@ -192,56 +192,24 @@ to those provided by L<Elastic::Model::Role::Iterator> to better handle
 result sets from ElasticSearch.  It is used by L<Elastic::Model::Results>
 and by L<Elastic::Model::Results::Scrolled>.
 
-Depending on your requirements, you may prefer to iterate through your
-results as L<Elastic::Model::Result> objects (which includes all data returned
-for each result, eg highlighted snippets) or as just the doc objects themselves.
-
-For instance, if you wanted to show search results to a user, you could use
-L</as_results()> to do:
-
-    $results = $view->type('post')
-                    ->queryb({ content => 'perl moose' })
-                    ->highlight({ fields => { content => {} }})
-                    ->search
-                    ->as_results;
-
-    print "Showing ".$results->size." of ".$results->total;
-
-    while (my $result = $results->next) {
-        print "Post title: " . $result->object->title;
-        print "Highlights:"  . join ', ', $result->highlight('short_text');
-    }
-
-But if you wanted to iterate through all user objects with C<status == pending>,
-you could use L</as_objects()> to do:
-
-    $users  =  $view->type('user')
-                    ->filterb( status => 'pending' )
-                    ->scan
-                    ->as_objects;
-
-    while (my $user = $users->next) {
-        $user->status('approved');
-        $user->save;
-    }
-
+See those modules for more complete documentation. This module just
+documents the attributes and methods added in L<Elastic::Model::Role::Results>
 
 =head1 ATTRIBUTES
 
-=head2 search
+=head2 size
 
-    \%search_args = $results->search
+    $size = $results->size
 
-Contains the hash ref of the search request passed to
-L<Elastic::Model::Role::Store/search()>
+The number of L</elements> in the C<$results> object;
 
 =head2 total
 
     $total_matching = $results->total
 
 The total number of matching docs found by ElasticSearch.  This is
-distinct from the L<Elastic::Model::Role::Iterator/"size"> which
-contains the number of results RETURNED by ElasticSearch.
+distinct from the L</size> which contains the number of results RETURNED
+by ElasticSearch.
 
 =head2 max_score
 
@@ -254,176 +222,96 @@ L</max_score>.
 
 =head2 facets
 
+=head2 facet
+
     $facets = $results->facets
+    $facet  = $results->facet($facet_name)
 
-The facet results, if any were requested with L<Elastic::Model::View/facets>.
+Facet results, if any were requested with L<Elastic::Model::View/facets>.
 
-=head1 RESULT ACCESSORS
+=head2 elements
+
+    \@elements = $results->elements;
+
+An array ref containing all of the data structures that we can iterate over.
+
+=head2 search
+
+    \%search_args = $results->search
+
+Contains the hash ref of the search request passed to
+L<Elastic::Model::Role::Store/search()>
+
+=head1 WRAPPERS
 
 =head2 as_results()
 
     $results = $results->as_results;
 
-L</as_results()> sets the L<Elastic::Model::Role::Iterator/"WRAPPED ACCESSORS">
-to return L<Elastic::Model::Result> objects, with all the extra result
-metadata.
-
-Regardless of what the current L<Elastic::Model::Role::Iterator/wrapper>
-is set to, you can retrieve L<Elastic::Model::Result> objects with
-the following methods:
-
-=head2 first_result
-
-    $result = $results->first_result
-
-Creates an L<Elastic::Model::Result> object from the return value of
-L<Elastic::model::Role::Iterator/"first_element">.
-
-=head2 last_result
-
-    $result = $results->last_result
-
-Creates an L<Elastic::Model::Result> object from the return value of
-L<Elastic::model::Role::Iterator/"last_element">.
-
-=head2 next_result
-
-    $result = $results->next_result
-
-Creates an L<Elastic::Model::Result> object from the return value of
-L<Elastic::model::Role::Iterator/"next_element">.
-
-=head2 prev_result
-
-    $result = $results->prev_result
-
-Creates an L<Elastic::Model::Result> object from the return value of
-L<Elastic::model::Role::Iterator/"prev_element">.
-
-=head2 current_result
-
-    $result = $results->current_result
-
-Creates an L<Elastic::Model::Result> object from the return value of
-L<Elastic::model::Role::Iterator/"current_element">.
-
-=head2 peek_next_result
-
-    $result = $results->peek_next_result
-
-Creates an L<Elastic::Model::Result> object from the return value of
-L<Elastic::model::Role::Iterator/"peek_next_element">.
-
-=head2 peek_prev_result
-
-    $result = $results->peek_prev_result
-
-Creates an L<Elastic::Model::Result> object from the return value of
-L<Elastic::model::Role::Iterator/"peek_prev_element">.
-
-=head2 shift_result
-
-    $result = $results->shift_result
-
-Creates an L<Elastic::Model::Result> object from the return value of
-L<Elastic::model::Role::Iterator/"shift_element">.
-
-=head2 all_results
-
-    @results = $results->all_results
-
-Creates L<Elastic::Model::Result> objects from the return value of
-L<Elastic::model::Role::Iterator/"all_elements">.
-
-=head2 slice_results
-
-    @results = $results->slice_results
-
-Creates L<Elastic::Model::Result> objects from the return value of
-L<Elastic::model::Role::Iterator/"slice_elements">.
-
-
-=head1 OBJECT ACCESSORS
+Sets the "short" accessors (eg L<Elastic::Model::Role::Iterator/next> or
+L<Elastic::Model::Role::Iterator/prev>) to return
+L<Elastic::Model::Result> objects.
 
 =head2 as_objects()
 
     $objects = $objects->as_objects;
 
-L</as_objects()> sets the L<Elastic::Model::Role::Iterator/"WRAPPED ACCESSORS">
-to return just the doc object (eg C<MyApp::User> without all the result
-metadata.
+Sets the "short" accessors (eg L<Elastic::Model::Role::Iterator/next> or
+L<Elastic::Model::Role::Iterator/prev>) to return the object itself,
+eg C<MyApp::User>
 
-Regardless of what the current L<Elastic::Model::Role::Iterator/wrapper>
-is set to, you can retrieve just doc objects with the following methods:
+=head1 RESULT ACCESSORS
+
+Each of the methods listed below takes the result of the related
+C<_element> accessor in L<Elastic::Model::Role::Iterator> and wrap it
+in an L<Elastic::Model::Result> object. For instance:
+
+    $result = $results->next_result;
+
+=head2 first_result
+
+=head2 last_result
+
+=head2 next_result
+
+=head2 prev_result
+
+=head2 current_result
+
+=head2 peek_next_result
+
+=head2 peek_prev_result
+
+=head2 shift_result
+
+=head2 all_results
+
+=head2 slice_results
+
+=head1 OBJECT ACCESSORS
+
+Each of the methods listed below takes the result of the related
+C<_element> accessor in L<Elastic::Model::Role::Iterator> and inflate the
+related object (eg a C<MyApp::User> object). For instance:
+
+    $object = $results->next_object;
 
 =head2 first_object
 
-    $object = $objects->first_object
-
-Inflates a doc object from the return value of
-L<Elastic::model::Role::Iterator/"first_element">.
-
 =head2 last_object
-
-    $object = $objects->last_object
-
-Inflates a doc object from the return value of
-L<Elastic::model::Role::Iterator/"last_element">.
 
 =head2 next_object
 
-    $object = $objects->next_object
-
-Inflates a doc object from the return value of
-L<Elastic::model::Role::Iterator/"next_element">.
-
 =head2 prev_object
-
-    $object = $objects->prev_object
-
-Inflates a doc object from the return value of
-L<Elastic::model::Role::Iterator/"prev_element">.
 
 =head2 current_object
 
-    $object = $objects->current_object
-
-Inflates a doc object from the return value of
-L<Elastic::model::Role::Iterator/"current_element">.
-
 =head2 peek_next_object
-
-    $object = $objects->peek_next_object
-
-Inflates a doc object from the return value of
-L<Elastic::model::Role::Iterator/"peek_next_element">.
 
 =head2 peek_prev_object
 
-    $object = $objects->peek_prev_object
-
-Inflates a doc object from the return value of
-L<Elastic::model::Role::Iterator/"peek_prev_element">.
-
 =head2 shift_object
-
-    $object = $objects->shift_object
-
-Inflates a doc object from the return value of
-L<Elastic::model::Role::Iterator/"shift_element">.
 
 =head2 all_objects
 
-    @objects = $objects->all_objects
-
-Inflates doc objects from the return value of
-L<Elastic::model::Role::Iterator/"all_elements">.
-
 =head2 slice_objects
-
-    @objects = $objects->slice_objects
-
-Inflates doc objects from the return value of
-L<Elastic::model::Role::Iterator/"slice_elements">.
-
-

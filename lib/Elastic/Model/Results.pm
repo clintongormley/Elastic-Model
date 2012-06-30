@@ -42,63 +42,86 @@ __END__
 
 =head1 SYNOPSIS
 
+=head2 Retrieve a list of objects
+
 Twenty most recently updated active users:
 
     $users = $model->view
-                   ->index('my_domain')
-                   ->type('user')
-                   ->filterb({ status => 'active' })
-                   ->sort({ timestamp => 'desc'})
-                   ->size(20)
+                   ->index  ( 'my_domain' )
+                   ->type   ( 'user' )
+                   ->filterb( 'status'    => 'active' )
+                   ->sort   ( 'timestamp' => 'desc'   )
+                   ->size   ( 20 )
                    ->search
                    ->as_objects;
 
-    while (my $user = $users->next) {
-        $user->do_something()
+    while ( my $user = $users->next ) {
+        say $user->name;
     }
+
+=head2 Retrieve search results
 
 Ten most relevant posts for keywords C<perl moose> created since the beginning
 of 2012, with highlighted snippets, plus the most popular tags:
 
-    $keywords = 'perl moose';
-    $results  = $model  ->view
-                        ->index('my_domain')
-                        ->type('posts')
-                        ->queryb({ content => $keywords })
-                        ->filterb({ created => { gt => '2012-01-01' }})
-                        ->highlight({ fields => { content => {}}})
-                        ->facets({ tags => { terms => { field => 'tags' }}})
-                        ->search;
+    $results  = $model->view
+                      ->index    ( 'my_domain' )
+                      ->type     ( 'posts' )
+                      ->queryb   ( 'content' => 'perl moose'  )
+                      ->filterb  ( 'created' => { gt => '2012-01-01' } )
+                      ->highlight( 'content' )
+                      ->facets   ( 'tags' => { terms => { field => 'tags' }} )
+                      ->search;
 
-    printf "Showing %d of %d matching docs\n", $results->size, $results->total;
+    printf  "Showing %d of %d matching docs\n".
+             $results->size, $results->total;
 
-    say "Popular tags: ";
+=head2 Highlights
 
-    my $tags = $results->facets('tags');
-
-    printf "%s (%d) \n", $_->{term}, $_->{count};
-        for @{$tags->{terms}};
-
-    printf "And %d more... \n", $tags->{other};
-
-    while (my $result = $results->next) {
+    while ( my $result = $results->next ) {
         say "Title:"      . $result->object->title;
         say "Highlights:" .join ', ', $result->highlight('content');
     }
 
+=head2 Facets
+
+    my $tags  = $results->facet('tags');
+    my $terms = $tags->{terms};
+
+    say "Popular tags: ";
+    for ( @$terms ) {
+        say "$_->{term}:  $_->{count}";
+    }
+
+    printf "And $tags->{other} more... ", ;
 
 =head1 DESCRIPTION
 
 An L<Elastic::Model::Results> object is returned when you call
 L<Elastic::Model::View/search()>, and is intended for searches that retrieve
-a maximum of L<Elastic::Model::View/size> results in a single request.
+a maximum of L<size|Elastic::Model::View/size> results in a single request.
 
-By default, the short L<Elastic::Model::Role::Iterator/"WRAPPED ACCESSORS">
-return L<Elastic::Model::Result> objects, but you can change this by
-calling L<Elastic::Model::Role::Results/as_objects()>.
+A C<$results> object can iterate through L<Elastic::Model::Result> objects
+(with all the result metadata), or just the DocClass object itself
+(eg C<MyApp::User>). For instance, you can do:
+
+    $result = $results->next_result;
+    $object = $results->next_object;
+
+Or you can set the default type to return:
+
+    $results->as_objects;
+    $object = $results->next;
+
+    $results->as_results;
+    $result = $results->next;
+
+By default, the short accessors return L<Elastic::Model::Result> objects.
 
 Most attributes and accessors in this class come from
 L<Elastic::Model::Role::Results> and L<Elastic::Model::Role::Iterator>.
+
+Also, see L<Elastic::Manual::Searching>.
 
 =head1 ATTRIBUTES
 
@@ -108,96 +131,125 @@ L<Elastic::Model::Role::Results> and L<Elastic::Model::Role::Iterator>.
 
 The number of milliseconds that the request took to run.
 
-=head2 search
+=head2 size
 
-    \%search_args = $results->search
+    $size = $results->size
 
-See L<Elastic::Model::Role::Results/search>.
+The number of L</elements> in the C<$results> object;
 
 =head2 total
 
     $total_matching = $results->total
 
-See L<Elastic::Model::Role::Results/total>.
+The total number of matching docs found by ElasticSearch.  This is
+distinct from the L</size> which contains the number of results RETURNED
+by ElasticSearch.
 
 =head2 max_score
 
     $max_score = $results->max_score
 
-See L<Elastic::Model::Role::Results/max_score>.
+The highest score (relevance) found by ElasticSearch. B<Note:> if you
+are sorting by a field other than C<_score> then you will need
+to set L<Elastic::Model::View/track_scores> to true to retrieve the
+L</max_score>.
 
 =head2 facets
 
-    $facets = $results->facets
+=head2 facet
 
-See L<Elastic::Model::Role::Results/facets>.
+    $facets = $results->facets
+    $facet  = $results->facet($facet_name)
+
+Facet results, if any were requested with L<Elastic::Model::View/facets>.
+
+=head2 elements
+
+    \@elements = $results->elements;
+
+An array ref containing all of the data structures that we can iterate over.
+
+=head2 search
+
+    \%search_args = $results->search
+
+Contains the hash ref of the search request passed to
+L<Elastic::Model::Role::Store/search()>
 
 =head1 ITERATOR CONTROL
 
 =head2 index
 
-    $index = $iter->index;      # index of the current element, or undef
-    $iter->index(0);            # set the current element to the first element
-    $iter->index(-1);           # set the current element to the last element
-    $iter->index(undef);        # resets the iterator, no current element
+    $index = $results->index;      # index of the current element, or undef
+    $results->index(0);            # set the current element to the first element
+    $results->index(-1);           # set the current element to the last element
+    $results->index(undef);        # resets the iterator, no current element
 
-See L<Elastic::Model::Role::Iterator/index>.
+L</index> contains the current index of the iterator.  Before you start
+iterating, it will return undef.
 
 =head2 reset
 
-    $iter->reset;
+    $results->reset;
 
-See L<Elastic::Model::Role::Iterator/reset>.
+Resets the iterator so that the next call to L</next> will return
+the first element. B<Note:> any calls to L</shift> means that those
+elements have been discarded.  L</reset> will not reload these.
 
 =head1 INFORMATIONAL ACCESSORS
 
 =head2 size
 
-    $size = $iter->size;
+    $size = $results->size;
 
-See L<Elastic::Model::Role::Iterator/size>.
+Returns the number of L</elements>.
 
 =head2 even
 
-    $bool = $iter->even
+    $bool = $results->even
 
-See L<Elastic::Model::Role::Iterator/even>.
+Is the current L</index> even?
 
 =head2 odd
 
-    $bool = $iter->odd
+    $bool = $results->odd
 
-See L<Elastic::Model::Role::Iterator/odd>.
+Is the current L</index> odd?
 
 =head2 parity
 
-    $parity = $iter->parity
+    $parity = $results->parity
 
-See L<Elastic::Model::Role::Iterator/parity>.
+Returns C<'odd'> or C<'even'>. Useful for alternating the colour of rows:
+
+    while ( my $el = $results->next ) {
+        my $css_class = $el->parity;
+        # display row
+    }
 
 =head2 is_first
 
-    $bool = $iter->is_first
+    $bool = $results->is_first
 
-See L<Elastic::Model::Role::Iterator/is_first>.
+Is the L</current> element the first element?
 
 =head2 is_last
 
-    $bool = $iter->is_last
+    $bool = $results->is_last
 
-See L<Elastic::Model::Role::Iterator/is_last>.
+Is the L</current> element the last element?
 
 =head2 has_next
 
-    $bool = $iter->has_next
+    $bool = $results->has_next
 
-See L<Elastic::Model::Role::Iterator/has_next>.
+Is there a L</next> element?
 
 =head2 has_prev
 
-    $bool = $iter->has_prev
+    $bool = $results->has_prev
 
-See L<Elastic::Model::Role::Iterator/has_prev>.
+Is there a L</prev> element?
 
 =head1 WRAPPERS
 
@@ -205,273 +257,164 @@ See L<Elastic::Model::Role::Iterator/has_prev>.
 
     $results = $results->as_results;
 
-See L<Elastic::Model::Role::Results/as_results()>. This is the default.
+Sets the "short" accessors (eg L</next>, L</prev>) to return
+L<Elastic::Model::Result> objects.
 
 =head2 as_objects()
 
     $objects = $objects->as_objects;
 
-See L<Elastic::Model::Role::Results/as_objects()>.
-
+Sets the "short" accessors (eg L</next>, L</prev>) to return the object itself,
+eg C<MyApp::User>
 
 =head2 as_elements()
 
-    $iter->as_elements()
+    $results->as_elements()
 
-See L<Elastic::Model::Role::Iterator/as_elements()>.
-
-=head1 WRAPPED ACCESSORS
-
-=head2 first
-
-    $wrapped_el = $iter->first
-
-See L<Elastic::Model::Role::Iterator/first>.
-
-=head2 next
-
-    $wrapped_el = $iter->next;
-
-See L<Elastic::Model::Role::Iterator/next>.
-
-=head2 prev
-
-    $wrapped_el = $iter->prev;
-
-See L<Elastic::Model::Role::Iterator/prev>.
-
-=head2 current
-
-    $wrapped_el = $iter->current;
-
-See L<Elastic::Model::Role::Iterator/current>.
-
-=head2 last
-
-    $wrapped_el = $iter->last
-
-See L<Elastic::Model::Role::Iterator/last>.
-
-=head2 peek_next
-
-    $wrapped_el = $iter->peek_next
-
-See L<Elastic::Model::Role::Iterator/peek_next>.
-
-=head2 peek_prev
-
-    $wrapped_el = $iter->peek_prev
-
-See L<Elastic::Model::Role::Iterator/peek_prev>.
-
-=head2 shift
-
-    $wrapped_el = $iter->shift
-
-See L<Elastic::Model::Role::Iterator/shift>.
-
-=head2 slice
-
-    @wrapped_els = $iter->slice
-
-See L<Elastic::Model::Role::Iterator/slice>.
-
-=head2 all
-
-    @wrapped_els = $iter->all
-
-See L<Elastic::Model::Role::Iterator/all>.
-
-=head1 RESULT ACCESSORS
-
-=head2 first_result
-
-    $result = $results->first_result
-
-See L<Elastic::Model::Role::Results/first_result>.
-
-=head2 last_result
-
-    $result = $results->last_result
-
-See L<Elastic::Model::Role::Results/last_result>.
-
-=head2 next_result
-
-    $result = $results->next_result
-
-See L<Elastic::Model::Role::Results/next_result>.
-
-=head2 prev_result
-
-    $result = $results->prev_result
-
-See L<Elastic::Model::Role::Results/prev_result>.
-
-=head2 current_result
-
-    $result = $results->current_result
-
-See L<Elastic::Model::Role::Results/current_result>.
-
-=head2 peek_next_result
-
-    $result = $results->peek_next_result
-
-See L<Elastic::Model::Role::Results/peek_next_result>.
-
-=head2 peek_prev_result
-
-    $result = $results->peek_prev_result
-
-See L<Elastic::Model::Role::Results/peek_prev_result>.
-
-=head2 shift_result
-
-    $result = $results->shift_result
-
-See L<Elastic::Model::Role::Results/shift_result>.
-
-=head2 all_results
-
-    @results = $results->all_results
-
-See L<Elastic::Model::Role::Results/all_results>.
-
-=head2 slice_results
-
-    @results = $results->slice_results
-
-See L<Elastic::Model::Role::Results/slice_results>.
-
-=head1 OBJECT ACCESSORS
-
-=head2 first_object
-
-    $object = $objects->first_object
-
-See L<Elastic::Model::Role::Results/first_object>.
-
-=head2 last_object
-
-    $object = $objects->last_object
-
-See L<Elastic::Model::Role::Results/last_object>.
-
-=head2 next_object
-
-    $object = $objects->next_object
-
-See L<Elastic::Model::Role::Results/next_object>.
-
-=head2 prev_object
-
-    $object = $objects->prev_object
-
-See L<Elastic::Model::Role::Results/prev_object>.
-
-=head2 current_object
-
-    $object = $objects->current_object
-
-See L<Elastic::Model::Role::Results/current_object>.
-
-=head2 peek_next_object
-
-    $object = $objects->peek_next_object
-
-See L<Elastic::Model::Role::Results/peek_next_object>.
-
-=head2 peek_prev_object
-
-    $object = $objects->peek_prev_object
-
-See L<Elastic::Model::Role::Results/peek_prev_object>.
-
-=head2 shift_object
-
-    $object = $objects->shift_object
-
-See L<Elastic::Model::Role::Results/shift_object>.
-
-=head2 all_objects
-
-    @objects = $objects->all_objects
-
-See L<Elastic::Model::Role::Results/all_objects>.
-
-=head2 slice_objects
-
-    @objects = $objects->slice_objects
-
-See L<Elastic::Model::Role::Results/slice_objects>.
-
+Sets the "short" accessors (eg L</next>, L</prev>) to return the raw result
+returned by ElasticSearch.
 
 =head1 ELEMENT ACCESSORS
 
-=head2 elements
+All of the accessors below have 4 forms:
 
-    \@elements = $iter->elements;
+=over
 
-See L<Elastic::Model::Role::Iterator/elements>.
+=item *
 
-=head2 first_element
+Result, eg C<next_result> which returns the full result metadata as an
+L<Elastic::Model::Result> object.
 
-    $el = $iter->first_element;
+=item *
 
-See L<Elastic::Model::Role::Iterator/first_element>.
+Object, eg C<next_object> which returns the original matching object, eg
+an instance of C<MyApp::User>
 
-=head2 next_element
+=item *
 
-    $el =  $iter->next_element;
+Element, eg C<next_element> which returns the raw hashref from ElasticSearch
 
-See L<Elastic::Model::Role::Iterator/next_element>.
+=item *
 
-=head2 prev_element
+Short, which can return any one of the above, depending on which
+L<Wrapper|/WRAPPERS> is currently in effect.
 
-    $el =  $iter->prev_element;
+=back
 
-See L<Elastic::Model::Role::Iterator/prev_element>.
+Typically you would select the type that you need, then use the short
+accessors, eg:
 
-=head2 current_element
+    $results->as_objects;
 
-    $el =  $iter->current_element;
+    while (my $object = $result->next ) {...}
 
-See L<Elastic::Model::Role::Iterator/current_element>.
+=head2 first
 
-=head2 last_element
+    $el = $results->first
 
-    $el = $iter->last_element;
+Returns the first element, and resets the iterator so that a call
+to L</next> will return the second element. If there is
+no first element, it returns undef.
 
-See L<Elastic::Model::Role::Iterator/last_element>.
+Also C<first_result>, C<first_object>, C<first_element>
 
-=head2 peek_next_element
+=head2 next
 
-    $el = $iter->peek_next_element;
+    $el = $results->next;
 
-See L<Elastic::Model::Role::Iterator/peek_next_element>.
+Returns the next element, and advances the iterator by one.  If there is
+no next element, it returns undef.  If the next element is the last
+element, then it will work like this:
 
-=head2 peek_prev_element
+    $results->next;        # returns last element
+    $results->next;        # returns undef, and resets iterator
+    $results->next;        # returns first element
 
-    $el = $iter->peek_prev_element;
+Also C<next_result>, C<next_object>, C<next_element>
 
-See L<Elastic::Model::Role::Iterator/peek_prev_element>.
+=head2 prev
 
-=head2 shift_element
+    $el = $results->prev
 
-    $el = $iter->shift_element
+Returns the previous element, and moves the iterator one step in reverse.  If
+there is no previous element, it returns undef.  If the previous element is the
+first element, then it will work like this:
 
-See L<Elastic::Model::Role::Iterator/shift_element>.
+    $results->prev;        # returns prev element
+    $results->prev;        # returns undef, and resets iterator to end
+    $results->prev;        # returns last element
 
-=head2 slice_elements
+Also C<prev_result>, C<prev_object>, C<prev_element>
 
-    @els = $iter->slice($offset,$length);
+=head2 current
 
-See L<Elastic::Model::Role::Iterator/slice_elements>.
+    $el = $results->current
 
-=head2 all_elements
+Returns the current element, or undef
 
-    @elements = $iter->all_elements
+Also C<current_result>, C<current_object>, C<current_element>
 
-See L<Elastic::Model::Role::Iterator/all_elements>.
+=head2 last
+
+    $el = $results->last
+
+Returns the last element, and resets the iterator so that a call
+to L</next> will return undef, and a second call to
+L</next> will return the first element If there is
+no last element, it returns undef.
+
+Also C<last_result>, C<last_object>, C<last_element>
+
+=head2 peek_next
+
+    $el = $results->peek_next
+
+Returns the next element (or undef), but doesn't move the iterator.
+
+Also C<peek_next_result>, C<peek_next_object>, C<peek_next_element>
+
+=head2 peek_prev
+
+    $el = $results->peek_prev
+
+Returns the previous element (or undef), but doesn't move the iterator.
+
+Also C<peek_prev_result>, C<peek_prev_object>, C<peek_prev_element>
+
+=head2 shift
+
+    $el = $results->shift
+
+Returns the L</first> element and removes it from from the list. L</size>
+will decrease by 1. Returns undef if there are no more elements.
+
+Also C<shift_result>, C<shift_object>, C<shift_element>
+
+=head2 slice
+
+    @els = $results->slice($offset,$length);
+
+Returns a list of (max) C<$length> elements, starting at C<$offset> (which
+is zero-based):
+
+    $results->slice();             # all elements;
+    $results->slice(5);            # elements 5..size
+    $results->slice(-5);           # elements size-5..size
+    $results->slice(0,10);         # elements 0..9
+    $results->slice(5,10);         # elements 5..14
+
+If your iterator only contains 5 elements:
+
+    $results->slice(3,10);         # elements 3..4
+    $results->slice(10,10);        # an empty list
+
+Also C<slice_results>, C<slice_objects>, C<slice_elements>
+
+=head2 all
+
+    @els = $results->all
+
+Returns all L</elements> as a list.
+
+Also C<all_results>, C<all_objects>, C<all_elements>
 

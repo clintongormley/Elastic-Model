@@ -357,193 +357,19 @@ L<Elastic::Model::Role::Iterator> is a generic iterator role which is
 applied to L<Elastic::Model::Results> and L<Elastic::Model::Results::Scrolled>
 via L<Elastic::Model::Role::Results>.
 
-=head1 ELEMENT ACCESSORS
+=head1 ATTRIBUTES
 
 =head2 elements
 
-    \@elements = $iter->elements;
+    \@elements = $iter->elements
 
 An array ref containing all of the data structures that we can iterate over.
 
-=head2 first_element
-
-    $el = $iter->first_element;
-
-Returns the first element, and resets the iterator so that a call
-to L</next_element> will return the second element. If there is
-no first element, it returns undef.
-
-=head2 next_element
-
-    $el =  $iter->next_element;
-
-Returns the next element, and advances the iterator by one.  If there is
-no next element, it returns undef.  If the current element is the last
-element, then it will work like this:
-
-    $iter->next_element;        # returns last element
-    $iter->next_element;        # returns undef, and resets iterator
-    $iter->next_element;        # returns first element
-
-=head2 prev_element
-
-    $el =  $iter->prev_element;
-
-Returns the previous element, and moves the iterator one step in reverse.  If
-there is no previous element, it returns undef.  If the current element is the
-first element, then it will work like this:
-
-    $iter->prev_element;        # returns prev element
-    $iter->prev_element;        # returns undef, and resets iterator to end
-    $iter->prev_element;        # returns last element
-
-=head2 current_element
-
-    $el =  $iter->current_element;
-
-Returns the current element, or undef
-
-=head2 last_element
-
-    $el = $iter->last_element;
-
-Returns the last element, and resets the iterator so that a call
-to L</next_element> will return undef, and a second call to
-L</next_element> will return the first element If there is
-no last element, it returns undef.
-
-=head2 peek_next_element
-
-    $el = $iter->peek_next_element;
-
-Returns the next element (or undef), but doesn't move the iterator.
-
-=head2 peek_prev_element
-
-    $el = $iter->peek_prev_element;
-
-Returns the previous element (or undef), but doesn't move the iterator.
-
-=head2 shift_element
-
-    $el = $iter->shift_element
-
-Returns the L</first_element> and removes it from L</elements>. L</size>
-will decrease by 1. Returns undef if there are no more elements.
-
-=head2 slice_elements
-
-    @els = $iter->slice($offset,$length);
-
-Returns a list of (max) C<$length> elements, starting at C<$offset> (which
-is zero-based):
-
-    $iter->slice();             # all elements;
-    $iter->slice(5);            # elements 5..size
-    $iter->slice(-5);           # elements size-5..size
-    $iter->slice(0,10);         # elements 0..9
-    $iter->slice(5,10);         # elements 5..14
-
-If your iterator only contains 5 elements:
-
-    $iter->slice(3,10);         # elements 3..4
-    $iter->slice(10,10);        # an empty list
-
-=head2 all_elements
-
-    @elements = $iter->all_elements
-
-Returns all L</elements> as a list.
-
-=head1 ITERATOR CONTROL
-
-=head2 index
-
-    $index = $iter->index;      # index of the current element, or undef
-    $iter->index(0);            # set the current element to the first element
-    $iter->index(-1);           # set the current element to the last element
-    $iter->index(undef);        # resets the iterator, no current element
-
-L</index> contains the current index of the iterator.  Before you start
-iterating, it will return undef.
-
-You can set the L</index> to any value between C<0> and L</size>C<-1>.
-
-=head2 reset
-
-    $iter->reset;
-
-Resets the iterator so that the next call to L</next_element> will return
-the first element. B<Note:> any calls to L</shift_element> means that those
-elements have been discarded.  L</reset> will not reload these.
-
-=head1 INFORMATIONAL ACCESSORS
-
 =head2 size
 
-    $size = $iter->size;
+    $size = $iter->size
 
-Returns the number of L</elements>.
-
-=head2 even
-
-    $bool = $iter->even
-
-Is the iterator even?
-
-=head2 odd
-
-    $bool = $iter->odd
-
-Is the iterator odd?
-
-=head2 parity
-
-    $parity = $iter->parity
-
-Returns C<'odd'> or C<'even'>. Useful for alternating the colour of rows:
-
-    while (my $el = $iter->next_element) {
-        my $css_class = $el->parity;
-        # display row
-    }
-
-=head2 is_first
-
-    $bool = $iter->is_first
-
-Is the iterator currently pointing at the first element?
-
-=head2 is_last
-
-    $bool = $iter->is_last
-
-Is the iterator currently pointing at the last element?
-
-=head2 has_next
-
-    $bool = $iter->has_next
-
-Is there a L</next_element>?
-
-=head2 has_prev
-
-    $bool = $iter->has_prev
-
-Is there a L</prev_element>?
-
-=head1 WRAPPERS
-
-All of the accessors ending in C<_element> or C<_elements> returns the
-raw data structure stored in L</elements>.
-
-The "short" accessors (eg L</first>, L</next>) pass the result of the
-"long" accessors (eg L</first_element>, L</next_element>) through
-the L</wrapper> (or L</multi_wrapper> for accessors with multiple return values),
-allowing the wrapper to transform the raw data in some way.
-
-The default for the "short" accessors is just to return the value
-unchanged.
+The number of elements in L</elements>.
 
 =head2 wrapper
 
@@ -561,6 +387,94 @@ L</as_elements()>.
 A coderef that wraps all multi-element wrapped accessors. Defaults to
 L</as_elements()>.
 
+=head1 ITERATOR CONTROL
+
+=head2 index
+
+    $index = $iter->index;      # index of the current element, or undef
+    $iter->index(0);            # set the current element to the first element
+    $iter->index(-1);           # set the current element to the last element
+    $iter->index(undef);        # resets the iterator, no current element
+
+L</index> contains the current index of the iterator.  Before you start
+iterating, it will return undef.
+
+=head2 reset
+
+    $iter->reset;
+
+Resets the iterator so that the next call to L</next> will return
+the first element. B<Note:> any calls to L</shift> means that those
+elements have been discarded.  L</reset> will not reload these.
+
+=head1 INFORMATIONAL ACCESSORS
+
+=head2 size
+
+    $size = $iter->size;
+
+Returns the number of L</elements>.
+
+=head2 even
+
+    $bool = $iter->even
+
+Is the current L</index> even?
+
+=head2 odd
+
+    $bool = $iter->odd
+
+Is the current L</index> odd?
+
+=head2 parity
+
+    $parity = $iter->parity
+
+Returns C<'odd'> or C<'even'>. Useful for alternating the colour of rows:
+
+    while ( my $el = $iter->next ) {
+        my $css_class = $el->parity;
+        # display row
+    }
+
+=head2 is_first
+
+    $bool = $iter->is_first
+
+Is the L</current> element the first element?
+
+=head2 is_last
+
+    $bool = $iter->is_last
+
+Is the L</current> element the last element?
+
+=head2 has_next
+
+    $bool = $iter->has_next
+
+Is there a L</next> element?
+
+=head2 has_prev
+
+    $bool = $iter->has_prev
+
+Is there a L</prev> element?
+
+=head1 WRAPPERS
+
+All of the accessors ending in C<_element> or C<_elements> returns the
+raw data structure stored in L</elements>.
+
+The "short" accessors (eg L</first>, L</next>) pass the result of the
+"long" accessors (eg C<first_element>, C<next_element>) through
+the L</wrapper> (or L</multi_wrapper> for accessors with multiple return values),
+allowing the wrapper to transform the raw data in some way.
+
+The default for the "short" accessors is just to return the value
+unchanged.
+
 =head2 as_elements()
 
     $iter->as_elements()
@@ -568,67 +482,130 @@ L</as_elements()>.
 Sets the L</wrapper> and L</multi_wrapper> to return the raw data structures
 stored in L</elements>.
 
-=head1 WRAPPED ACCESSORS
+=head1 ELEMENT ACCESSORS
 
-See L</WRAPPERS> for an explanation.
+All of the accessors below have 2 forms:
+
+=over
+
+=item *
+
+Element, eg C<next_element> which returns the raw element.
+
+=item *
+
+Short, which passes the raw element through the L</wrapper> or
+L</multi_wrapper> currently in effect.
+
+=back
 
 =head2 first
 
-    $wrapped_el = $iter->first
+    $el = $iter->first
 
-Passes the result of L</first_element> through the L</wrapper>.
+Returns the first element, and resets the iterator so that a call
+to L</next> will return the second element. If there is
+no first element, it returns undef.
+
+Also C<first_element>
 
 =head2 next
 
-    $wrapped_el = $iter->next;
+    $el = $iter->next;
 
-Passes the result of L</next_element> through the L</wrapper>.
+Returns the next element, and advances the iterator by one.  If there is
+no next element, it returns undef.  If the next element is the last
+element, then it will work like this:
+
+    $iter->next;        # returns last element
+    $iter->next;        # returns undef, and resets iterator
+    $iter->next;        # returns first element
+
+Also C<next_element>
 
 =head2 prev
 
-    $wrapped_el = $iter->prev;
+    $el = $iter->prev
 
-Passes the result of L</prev_element> through the L</wrapper>.
+Returns the previous element, and moves the iterator one step in reverse.  If
+there is no previous element, it returns undef.  If the previous element is the
+first element, then it will work like this:
+
+    $iter->prev;        # returns prev element
+    $iter->prev;        # returns undef, and resets iterator to end
+    $iter->prev;        # returns last element
+
+Also C<prev_element>
 
 =head2 current
 
-    $wrapped_el = $iter->current;
+    $el = $iter->current
 
-Passes the result of L</current_element> through the L</wrapper>.
+Returns the current element, or undef
+
+Also C<current_element>
 
 =head2 last
 
-    $wrapped_el = $iter->last
+    $el = $iter->last
 
-Passes the result of L</last_element> through the L</wrapper>.
+Returns the last element, and resets the iterator so that a call
+to L</next> will return undef, and a second call to
+L</next> will return the first element If there is
+no last element, it returns undef.
+
+Also C<last_element>
 
 =head2 peek_next
 
-    $wrapped_el = $iter->peek_next
+    $el = $iter->peek_next
 
-Passes the result of L</peek_next_element> through the L</wrapper>.
+Returns the next element (or undef), but doesn't move the iterator.
+
+Also C<peek_next_element>
 
 =head2 peek_prev
 
-    $wrapped_el = $iter->peek_prev
+    $el = $iter->peek_prev
 
-Passes the result of L</peek_prev_element> through the L</wrapper>.
+Returns the previous element (or undef), but doesn't move the iterator.
+
+Also C<peek_prev_element>
 
 =head2 shift
 
-    $wrapped_el = $iter->shift
+    $el = $iter->shift
 
-Passes the result of L</shift_element> through the L</wrapper>.
+Returns the L</first> element and removes it from from the list. L</size>
+will decrease by 1. Returns undef if there are no more elements.
+
+Also C<shift_element>
 
 =head2 slice
 
-    @wrapped_els = $iter->slice
+    @els = $iter->slice($offset,$length);
 
-Passes the results of L</slice_elements> through the L</multi_wrapper>.
+Returns a list of (max) C<$length> elements, starting at C<$offset> (which
+is zero-based):
+
+    $iter->slice();             # all elements;
+    $iter->slice(5);            # elements 5..size
+    $iter->slice(-5);           # elements size-5..size
+    $iter->slice(0,10);         # elements 0..9
+    $iter->slice(5,10);         # elements 5..14
+
+If your iterator only contains 5 elements:
+
+    $iter->slice(3,10);         # elements 3..4
+    $iter->slice(10,10);        # an empty list
+
+Also C<slice_elements>
 
 =head2 all
 
-    @wrapped_els = $iter->all
+    @els = $iter->all
 
-Passes the results of L</all_elements> through the L</multi_wrapper>.
+Returns all L</elements> as a list.
+
+Also C<all_elements>
 
