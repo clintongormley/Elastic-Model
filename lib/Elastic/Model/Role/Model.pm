@@ -581,7 +581,7 @@ method.
     $doc = $model->get_doc(uid => $uid, ignore_missing => 1, ...);
 
 C<get_doc()> tries to retrieve the object corresponding to the
-L<$uid|Elastic::Model::UID>, first from the L</current_scope> (if there is one)
+L<$uid|Elastic::Model::UID>, first from the L</current_scope()> (if there is one)
 or from any of its parents. Failing that, it tries to retrieve the doc
 from the L</store>. If it finds the doc, then
 it stores it in the current scope (again, if there is one), otherwise it
@@ -627,7 +627,7 @@ exists.
 Any C<%args> are passed on to L<index_doc()|Elastic::Model::Store/"index_doc()"> or
 L<create_doc()|Elastic::Model::Store/"create_doc()">.
 
-If there is a L</current_scope> then the object is also stored there.
+If there is a L</current_scope()> then the object is also stored there.
 
 Also see the L<Elastic::Model::Role::Doc/on_conflict> parameter.
 
@@ -637,7 +637,7 @@ Also see the L<Elastic::Model::Role::Doc/on_conflict> parameter.
 
 Calls L<Elastic::Model::Store/delete_doc()> and returns the updated
 L<Elastic::Model::UID> object. Throws an error if it doesn't exist.
-If there is a L</current_scope> then an L<Elastic::Model::Deleted> object
+If there is a L</current_scope()> then an L<Elastic::Model::Deleted> object
 is stored there.
 
 =head3 search()
