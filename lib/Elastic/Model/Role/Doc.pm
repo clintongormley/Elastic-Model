@@ -86,14 +86,15 @@ sub has_changed {
 }
 
 #===================================
+sub old_values { shift->_old_value || {} }
+#===================================
+
+#===================================
 sub old_value {
 #===================================
     my $self = shift;
-    my $old = $self->_old_value or return;
-    if ( my $attr = shift ) {
-        return $old->{$attr};
-    }
-    return $old;
+    my $attr = shift or croak "No (attr) passed to old_value()";
+    return $self->old_values->{$attr};
 }
 
 #===================================
@@ -418,14 +419,19 @@ Mark the object as changed without specifying an attribute:
 
     $doc->has_changed(1);
 
+=head2 old_values()
+
+    \%old_vals  = $doc->old_values();
+
+Returns a hashref containing the original values of any attributes that have
+been changed.
+
 =head2 old_value()
 
     $old_val    = $doc->old_value($attr_name);
-    \%old_vals  = $doc->old_value();
 
-Returns the original value that an attribute had before being changed.  If
-called without an attribute name, it returns a hashref whose key names
-are the names of the attributes that have changed.
+Returns the original value that an attribute had before being changed, or
+C<undef>.
 
 =head2 Private methods
 
