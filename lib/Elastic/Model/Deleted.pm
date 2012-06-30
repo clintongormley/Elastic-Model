@@ -36,3 +36,46 @@ sub AUTOLOAD {
 __PACKAGE__->meta->make_immutable;
 
 1;
+
+__END__
+
+# ABSTRACT: A class to represent deleted doc objects which are still in scope
+
+=head1 DESCRIPTION
+
+When an object in scope is deleted, it is reblessed into
+Elastic::Model::Deleted, which throws an error if any method other than
+those listed below are called.
+
+For instance:
+
+    $user = $domain->get( user => 1 );
+    $user->delete;
+    print $user->name;
+    # throws error
+
+=head1 ATTRIBUTES
+
+=head2 uid
+
+    $uid = $deleted_doc->uid
+
+The original UID of the deleted doc.
+
+=head1 METHODS
+
+=head2 has_been_deleted()
+
+    1 == $deleted->has_been_deleted()
+
+Returns true without checking ElasticSearch. This method is provided
+so that it can be called in an L<Elastic::Model::Role::Doc/on_conflict>
+handler.
+
+Also see L<Elastic::Model::Role::Doc/has_been_deleted()>.
+
+
+
+
+
+
