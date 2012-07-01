@@ -13,8 +13,10 @@ You need a recent version of Java installed, then download the current
 stable release of ElasticSearch from L<http://www.elasticsearch.org/download/>.
 For instance:
 
-    curl -L -O https://github.com/downloads/elasticsearch/elasticsearch/elasticsearch-0.19.4.tar.gz
-    tar -xzf elasticsearch-0.19.4.tar.gz
+    curl -L -O https://github.com/downloads/elasticsearch/elasticsearch/elasticsearch-0.19.8.tar.gz
+    tar -xzf elasticsearch-0.19.8.tar.gz
+
+B<Note: The minimum required version of ElasticSearch is 0.19.8.>
 
 =head2 Install Elastic::Model
 
@@ -28,13 +30,17 @@ Or, if you want to run the full test suite, install Elastic::Model as:
 
 =head2 Start ElasticSearch
 
-    cd elasticsearch-0.19.4/
+    cd elasticsearch-0.19.8/
     ./bin/elasticsearch -f      # -f starts the server in the foreground
 
 You now have a running ElasticSearch cluster with one node. You can test that
 it is running with:
 
     curl http://localhost:9200/?pretty=true
+
+See L<http://www.elasticsearch.org/tutorials/> and
+L<http://www.elasticsearch.org/guide/reference/setup/> for more information
+about installing and configuring ElasticSearch.
 
 =head1 SETUP YOUR APPLICATION
 
