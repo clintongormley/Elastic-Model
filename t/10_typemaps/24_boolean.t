@@ -6,7 +6,7 @@ use warnings;
 our $test_class = 'FieldTest::Boolean';
 
 our @mapping = (
-    'basic' => { type => 'boolean' },
+    'basic' => { type => 'boolean', null_value => 0 },
 
     'options' => {
         boost          => 2,
@@ -21,8 +21,8 @@ our @mapping = (
     multi => {
         type   => "multi_field",
         fields => {
-            multi_attr => { boost => 2, type => "boolean" },
-            one        => { type  => "string" },
+            multi_attr => { boost => 2, type => "boolean", null_value => 0 },
+            one => { type => "string" },
         },
     },
 

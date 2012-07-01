@@ -312,8 +312,7 @@ sub attribute_mapping {
         $mapping->{$key} = $val;
     }
 
-    delete $mapping->{analyzer}
-        if $mapping->{index_analyzer} && $mapping->{search_analyzer};
+    $mapping = $map->_fixup_mapping($mapping);
 
     my $multi = delete $mapping->{multi}
         or return $mapping;
@@ -335,12 +334,25 @@ sub attribute_mapping {
                 unless $allowed->{$key} || $key eq 'type';
         }
 
-        delete $defn->{analyzer}
-            if $defn->{index_analyzer} && $defn->{search_analyzer};
-
-        $new{fields}{$name} = $defn;
+        $new{fields}{$name} = $map->_fixup_mapping($defn);
     }
     return \%new;
+}
+
+#===================================
+sub _fixup_mapping {
+#===================================
+    my ( $map, $defn ) = @_;
+
+    delete $defn->{analyzer}
+        if $defn->{index_analyzer} && $defn->{search_analyzer};
+
+    # make 'undef' a false value for boolean fields
+    $defn->{null_value} = 0
+        if $defn->{type} eq 'boolean'
+            and not exists $defn->{null_value};
+
+    return $defn;
 }
 
 #===================================

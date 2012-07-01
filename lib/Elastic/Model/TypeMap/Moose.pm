@@ -21,7 +21,7 @@ has_type 'Undef',
 #===================================
 has_type 'Bool',
 #===================================
-    map_via { type => 'boolean' };
+    map_via { type => 'boolean', null_value => 0 };
 
 #===================================
 has_type 'Str',
@@ -220,7 +220,12 @@ Mapping and in/deflation via L</Any>.
 
 =head2 Bool
 
-In/deflation via L</Any>. It is mapped as C<< { type => 'boolean' } >>.
+In/deflation via L</Any>. It is mapped as:
+
+    {
+        type       => 'boolean',
+        null_value => 0
+    }
 
 =head2 Maybe
 

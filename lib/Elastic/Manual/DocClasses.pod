@@ -1,5 +1,0 @@
-package Elastic::Manual::DocClasses;
-
-# ABSTRACT: Configuring and using your Doc classes
-
-=head1 TODO
