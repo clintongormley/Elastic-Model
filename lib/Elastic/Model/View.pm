@@ -446,8 +446,9 @@ __END__
 
 =head1 SYNOPSIS
 
-    $view  = $domain->view();
-    $posts = $view->type( 'post' );
+    $view    = $model->view();         # all domains and types known to the model
+    $view    = $domain->view();        # just $domain->name, and its types
+    $posts   = $view->type( 'post' );  # just type post
 
 10 most relevant posts containing C<'perl'> or C<'moose'>
 
@@ -467,18 +468,16 @@ C<content> field:
 The same as the above, but in one step:
 
     $results = $domain->view(
-
         type             => 'post',
         sort             => 'timestamp',
         queryb           => { content => 'perl moose' },
         filterb          => { created => { gte => '2012-01-01' } },
         highlight        => 'content',
-
     )->search;
 
 Efficiently retrieve all posts, unsorted:
 
-    $results = $posts->size(100)->scan('2m');
+    $results = $posts->size(100)->scan;
 
     while (my $result = $results->shift_result)) {
         do_something_with($result);
@@ -488,15 +487,16 @@ Efficiently retrieve all posts, unsorted:
 
 L<Elastic::Model::View> is used to query your docs in ElasticSearch.
 
-Views are "chainable", in other words, you get a clone of the current view every
-time you set an attribute. For instance, you could do:
+Views are "chainable". In other words, you get a clone of the
+current view every time you set an attribute. For instance, you could do:
 
     $all_types      = $domain->view;
     $users          = $all_types->type('user');
     $posts          = $all_types->('post');
     $recent_posts   = $posts->filterb({ published => { gt => '2012-05-01' }});
 
-Alternatively, you can set all or some of the attributes in a single call:
+Alternatively, you can set all or some of the attributes when you create
+a view:
 
     $recent_posts   = $domain->view(
         type    => 'post',
@@ -525,17 +525,17 @@ Executes a search and returns an L<Elastic::Model::Results> object
 with at most L</size> results.
 
 This is useful for returning finite results, ie where you know how many
-results you want.  For instance: I<"give me the best 10 results">.
+results you want.  For instance: I<"give me the 10 best results">.
 
 =head2 scroll()
 
-    $timeout = '1m';
-    $scrolled_results = $view->scroll($timeout);
+    $scroll_timeout = '1m';
+    $scrolled_results = $view->scroll( $scroll_timeout );
 
 Executes a search and returns an L<Elastic::Model::Results::Scrolled>
-object which will pull L</size> results from ElasticSearch until either
-(1) no more results are available or (2) more than C<$timeout> (default 1 minute)
-elapses between requests to ElasticSearch.
+object which will pull L</size> results from ElasticSearch as required until
+either (1) no more results are available or (2) more than C<$scroll_timeout>
+(default 1 minute) elapses between requests to ElasticSearch.
 
 Scrolling allows you to return an unbound result set.  Useful if you're not
 sure whether to expect 2 results or 2000.
@@ -592,7 +592,7 @@ Specify one or more domains (indices or aliases) to query. By default, a C<view>
 created from a L<domain|Elastic::Model::Domain> will query just that domain's
 L<name|Elastic::Model::Domain/name>.
 A C<view> created from the L<model|Elastic::Model::Role::Model> will query all
-the main domains (ie the L<Elastic::Model::Namesapace/name>) and
+the main domains (ie the L<Elastic::Model::Namespace/name>) and
 L<fixed domains|Elastic::Model::Namesapace/fixed domains> known to the model.
 
 =head2 type
@@ -603,21 +603,22 @@ L<fixed domains|Elastic::Model::Namesapace/fixed domains> known to the model.
     \@types   = $view->type;
 
 By default, a C<view> will query all L<types|Elastic::Manual::Terminology/Type>
-L<domains/"domain"> specified in the view.  You can specify one or more types.
+known to all the L<domains|"domain"> specified in the view.  You can specify
+one or more types.
 
 =head2 query
 
 =head2 queryb
 
-    # raw query DSL
+    # native query DSL
     $new_view = $view->query( text => { title => 'interesting words' } );
 
     # SearchBuilder DSL
-    $new_view  = $view->queryb( title => 'interesting words' );
+    $new_view = $view->queryb( title => 'interesting words' );
 
     \%query   = $view->query
 
-Specify the query to run in the raw
+Specify the query to run in the native
 L<ElasticSearch query DSL|http://www.elasticsearch.org/guide/reference/query-dsl/>
 or use C<queryb()> to specify your query  with the more Perlish
 L<ElasticSearch::SearchBuilder> query syntax.
@@ -629,7 +630,7 @@ L<match all docs|http://www.elasticsearch.org/guide/reference/query-dsl/match-al
 
 =head2 filterb
 
-    # raw query DSL
+    # native query DSL
     $new_view = $view->filter( term => { tag => 'perl' } );
 
     # SearchBuilder DSL
@@ -638,10 +639,10 @@ L<match all docs|http://www.elasticsearch.org/guide/reference/query-dsl/match-al
     \%filter  = $view->filter;
 
 You can specify a filter to apply to the query results using either
-the raw ElasticSearch query DSL or, use C<filterb()> to specify your
+the native ElasticSearch query DSL or, use C<filterb()> to specify your
 filter with the more Perlish L<ElasticSearch::SearchBuilder> DSL.
 If a filter is specified, it will be combined with the L</query>
-as a L<filtered query|http://www.elasticsearch.org/guide/reference/query-dsl/filtered-query.html>.
+as a L<filtered query|http://www.elasticsearch.org/guide/reference/query-dsl/filtered-query.html>,
 or (if no query is specified) as a
 L<constant score|http://www.elasticsearch.org/guide/reference/query-dsl/constant-score-query.html>
 query.
@@ -650,7 +651,7 @@ query.
 
 =head2 post_filterb
 
-    # raw query DSL
+    # native query DSL
     $new_view = $view->post_filter( term => { tag => 'perl' } );
 
     # SearchBuilder DSL
@@ -663,20 +664,20 @@ filter the results AFTER any L</facets> have been calculated.  In the above
 example, the facets would be calculated on all values of C<tag>, but the
 results would then be limited to just those docs where C<tag == perl>.
 
-You can specify a filter using either the raw ElasticSearch query DSL or,
+You can specify a post_filter using either the native ElasticSearch query DSL or,
 use C<post_filterb()> to specify it with the more Perlish
 L<ElasticSearch::SearchBuilder> DSL.
 
 =head2 sort
 
-    $new_view = $view->sort('_score');                # _score desc
-    $new_view = $view->sort('timestamp');             # timestamp asc
-    $new_view = $view->sort({timestamp => 'asc'});    # timestamp asc
-    $new_view = $view->sort({timestamp => 'desc'});   # timestamp desc
+    $new_view = $view->sort( '_score'                ); # _score desc
+    $new_view = $view->sort( 'timestamp'             ); # timestamp asc
+    $new_view = $view->sort( { timestamp => 'asc' }  ); # timestamp asc
+    $new_view = $view->sort( { timestamp => 'desc' } ); # timestamp desc
 
     $new_view = $view->sort(
-        '_score',                                     # _score desc
-        { timestamp => 'desc' }                       # then timestamp desc
+        '_score',                                       # _score desc
+        { timestamp => 'desc' }                         # then timestamp desc
     );
 
     \@sort    = $view->sort
@@ -691,7 +692,7 @@ B<Note:> Sorting cannot be combined with L</scan()>.
 
 =head2 from
 
-    $new_view = $view->from(10);
+    $new_view = $view->from( 10 );
 
     $from     = $view->from;
 
@@ -700,13 +701,13 @@ start at a later result (eg for paging), you can set L</from>.
 
 =head2 size
 
-    $new_view = $view->size(100);
+    $new_view = $view->size( 100 );
 
     $size     = $view->size;
 
 The number of results returned in a single L</search()>, which defaults to 10.
 
-B<Note:> See L</scan()> for a slightly different interpretation of the L</size>
+B<Note:> See L</scan()> for a slightly different application of the L</size>
 value.
 
 =head2 facets
@@ -747,26 +748,27 @@ an explanation of what facets are available.
 
 Specify which fields should be used for
 L<highlighted snippets|http://www.elasticsearch.org/guide/reference/api/search/highlighting.html>.
-to your search results. You can pass just a list of fields or fields with
+to your search results. You can pass just a list of fields, or fields with
 their field-specific settings. These values are used to set the C<fields>
 parameter in L</highlighting>.
 
 =head2 highlighting
 
     $new_view = $view->highlighting(
-        pre_tags    =>  ['<em>','<b>'],
-        post_tags   =>  ['</em>','</b>'],
+        pre_tags    =>  [ '<em>',  '<b>'  ],
+        post_tags   =>  [ '</em>', '</b>' ],
         encoder     => 'html'
         ...
     );
 
 The L</highlighting> attribute is used to pass any highlighting parameters
 which should be applied to all of the fields set in L</highlight> (although
-you can override these settings for individual fields by passing settings
+you can override these settings for individual fields by passing field settings
 to L</highlight>).
 
 See L<http://www.elasticsearch.org/guide/reference/api/search/highlighting.html>.
-for more about how highlighting works.
+for more about how highlighting works, and L<Elastic::Model::Result/highlight>
+for how to retrieve the highlighted snippets.
 
 =head1 OTHER ATTRIBUTES
 
@@ -782,7 +784,7 @@ L</fields>. See L<http://www.elasticsearch.org/guide/reference/api/search/fields
 
 B<Note:> If you do specify any fields, and you DON'T include C<'_source'> then the
 C<_source> field won't be returned, and you won't be able to retrieve the original
-object without requesting it from ElasticSearch in a separate step.
+object without requesting it from ElasticSearch in a separate (but automatic) step.
 
 =head2 script_fields
 
@@ -807,8 +809,8 @@ scripting language. (You can also use L<Javascript, Python and Java|http://www.e
 
 =head2 routing
 
-    $new_view = $view->routing('routing_val');
-    $new_view = $view->routing('routing_1','routing_2');
+    $new_view = $view->routing( 'routing_val' );
+    $new_view = $view->routing( 'routing_1', 'routing_2' );
 
 Search queries are usually directed at all shards. If you are using routing
 (eg to store related docs on the same shard) then you can limit the search
@@ -835,22 +837,22 @@ Make results from one index more relevant than those from another index.
 
 =head2 min_score
 
-    $new_view  = $view->min_score(2);
+    $new_view  = $view->min_score( 2 );
     $min_score = $view->min_score;
 
 Exclude results whose score (relevance) is less than the specified number.
 
 =head2 preference
 
-    $new_view = $view->preference('_local');
+    $new_view = $view->preference( '_local' );
 
 Control which node should return search results. See
 L<http://www.elasticsearch.org/guide/reference/api/search/preference.html> for more.
 
 =head2 timeout
 
-    $new_view = $view->timeout(10);         # 10 ms
-    $new_view = $view->timeout('10s');      # 10 sec
+    $new_view = $view->timeout( 10 );         # 10 ms
+    $new_view = $view->timeout( '10s' );      # 10 sec
 
     $timeout  = $view->timeout;
 
@@ -859,7 +861,7 @@ with whatever results it has managed to receive up until that point.
 
 =head2 track_scores
 
-    $new_view = $view->track_scores(1);
+    $new_view = $view->track_scores( 1 );
     $track    = $view->track_scores;
 
 By default, If you sort on a field other than C<_score>, ElasticSearch
@@ -870,7 +872,7 @@ L</track_scores> is true, these scores will be returned regardless.
 
 =head2 explain
 
-    $new_view = $view->explain(1);
+    $new_view = $view->explain( 1 );
     $explain  = $view->explain;
 
 Set L</explain> to true to return debugging information explaining how
@@ -879,7 +881,7 @@ L<Elastic::Model::Result/explain> to view the output.
 
 =head2 stats
 
-    $new_view = $view->stats('group_1','group_2');
+    $new_view = $view->stats( 'group_1', 'group_2' );
     \@groups  = $view->stats;
 
 The statistics for each search can be aggregated by C<group>. These stats
@@ -887,7 +889,7 @@ can later be retrieved using L<ElasticSearch/index_stats()>.
 
 =head2 search_builder
 
-    $new_view = $view->search_builder($search_builder);
+    $new_view = $view->search_builder( $search_builder );
     $builder  = $view->search_builder;
 
 If you would like to use a different search builder than the default
@@ -900,20 +902,20 @@ These parameters are only used with L</delete()>.
 
 =head2 consistency
 
-    $new_view    = $view->consistency('quorum' | 'all' | 'one');
+    $new_view    = $view->consistency( 'quorum' | 'all' | 'one' );
     $consistency = $view->consistency;
 
-At least C<one>, C<all> or a C<quorum> of nodes must be present for the
-delete to take place.
+At least C<one>, C<all> or a C<quorum> (default) of nodes must be present for
+the delete to take place.
 
 =head2 replication
 
-    $new_view    = $view->replication('sync' | 'async');
+    $new_view    = $view->replication( 'sync' | 'async' );
     $replication = $view->replication;
 
 Should a delete be done synchronously (ie waits until all nodes within
 the replcation group have run the delete) or asynchronously (returns
-immediately, performs the delete in the background).
+immediately, and performs the delete in the background).
 
 =head1 TODO
 
