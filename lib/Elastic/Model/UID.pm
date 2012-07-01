@@ -146,14 +146,11 @@ __END__
             routing => $routing,        # optional
             ....
         }
-    )
-    $uid = $doc->uid
-
-    $doc = $domain->get(
-        type    => $type,
-        id      => $id,
-        routing => $routing,            # optional
     );
+
+    $doc = $domain->get( $type => $id                      );
+    $doc = $domain->get( $type => $id, routing => $routing );
+
     $uid = $doc->uid;
 
     $index   = $uid->index;
@@ -165,36 +162,43 @@ __END__
 =head1 DESCRIPTION
 
 To truly identify a document as unique in ElasticSearch, you need to know
-the C<index> where it is stored, the C<type> of the document, its C<id>, and
-possibly its C<routing> value (which defaults to the ID).  Also, each object
-has a C<version> number which is incremented on each change.
-L<Elastic::Model::UID> wraps up all of these details in an object.
+the L<index|Elastic::Model::Terminology/Index> where it is stored, the
+L<type|Elastic::Model::Terminology/Type> of the document, its
+L<id|Elastic::Model::Terminology/ID>, and
+possibly its L<routing|Elastic::Model::Terminology/Routing> value (which
+defaults to the ID).  Also, each object
+has a L</version> number which is incremented on every change.
+L<Elastic::Model::UID> wraps up all of these details into an object.
 
 =head1 ATTRIBUTES
 
 =head2 index
 
-The index (or domain) name.  When you create a UID for a new document, you
-will create it with C<< index => $domain->name >>, which may be an index
-or an alias. However, when you save the document, the C<index> will be
-updated to reflect the actual index name.
+The L<index|Elastic::Model::Terminology/Index> (or
+L<domain|Elastic::Model::Terminology/Domain>) name.  When you create a new
+document, its UID will set C<index> to C<< $domain->name >>, which may be an index
+or an L<index alias|Elastic::Manual::Terminology/Alias>. However, when you
+save the document, the L</index> will be updated to reflect the actual index
+name.
 
 =head2 type
 
-The type of the document, as specified in L<Elastic::Model::Domain/"types">.
+The L<type|Elastic::Model::Terminology/Type> of the document, eg C<user>.
 
 =head2 id
 
-The string ID of the document - if not set when creating a new document, then
-an ID is auto-generated when the document is saved.
+The string L<id|Elastic::Model::Terminology/ID> of the document - if not set
+when creating a new document, then a unique ID is auto-generated when the
+document is saved.
 
 =head2 routing
 
-The routing string is used to determine in which shard the document lives. If
-not specified, then ElasticSearch generates a routing value using a hash of
-the ID.  If you use a custom routing value, then you can't change that value
-as the new routing B<may> point to a new shard.  Instead, you should delete
-the old doc, and create a new doc with the new routing value.
+The L<routing|Elastic::Model::Terminology/Routing> string is used to determine
+in which shard the document lives. If not specified, then ElasticSearch
+generates a routing value using a hash of the ID.  If you use a custom
+routing value, then you can't change that value as the new routing B<may>
+point to a new shard.  Instead, you should delete the old doc, and create a
+new doc with the new routing value.
 
 =head2 version
 
@@ -236,6 +240,12 @@ Creates a new UID with L</"from_store"> set to false.
 
 This is called when creating a new UID for a doc that has been loaded
 from ElasticSearch. You shouldn't need to use this method directly.
+
+=head2 clone()
+
+    $new_uid = $uid->clone();
+
+Clones an existing UID.
 
 =head2 update_from_store()
 
