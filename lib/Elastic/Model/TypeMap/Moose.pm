@@ -208,7 +208,7 @@ L</Any>.
 
 =head2 Any
 
-No deflator or inflator is attempted - the value is passed unaltered. If it
+No deflation or inflation is attempted - the value is passed unaltered. If it
 is not a value that L<JSON::XS> can handle (eg a blessed value) then
 deflation will fail.
 
