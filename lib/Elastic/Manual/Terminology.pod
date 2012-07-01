@@ -161,7 +161,7 @@ be changed. Instead, you have to create a new index with the new mapping and
 reindex your data.
 
 Elastic::Model generates the mapping for you using Moose's introspection.
-L<Attribute keywords|Elastic::Model::Trait::Field> are provided to give you
+L<Attribute keywords|Elastic::Model::Attributes> are provided to give you
 control over the mapping process.
 
 =head2 Document

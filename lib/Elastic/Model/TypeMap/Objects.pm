@@ -234,4 +234,4 @@ meaning that you can still do:
 =head2 Moose Roles and non-Moose classes
 
 Moose roles and non-Moose classes must provide
-L<custom mappings, deflators and inflators|Elastic::Model::Trait::Field/CUSTOM MAPPING, INFLATION AND DEFLATION>
+L<custom mappings, deflators and inflators|Elastic::Manual::Attributes/CUSTOM MAPPING, INFLATION AND DEFLATION>

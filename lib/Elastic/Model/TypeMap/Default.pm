@@ -89,5 +89,5 @@ your own type-map classes.
 
 =head1 TWEAKING YOUR ATTRIBUTE MAPPING
 
-See L<Elastic::Model::Trait::Field> for keywords you can use in your
+See L<Elastic::Manual::Attributes> for keywords you can use in your
 attribute declarations to tweak the mapping of individual fields.

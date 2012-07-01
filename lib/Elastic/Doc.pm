@@ -101,7 +101,7 @@ L<Elastic::Model::Meta::Doc> to its metaclass
 =item *
 
 adding keywords to your attribute declarations, to give you control over how
-they are indexed (see L<Elastic::Model::Trait::Field>)
+they are indexed (see L<Elastic::Manual::Attributes>)
 
 =item *
 
