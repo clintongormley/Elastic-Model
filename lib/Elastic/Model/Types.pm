@@ -113,6 +113,7 @@ subtype MultiField, as Dict [
     analyzer                     => Optional [Str],
     index_analyzer               => Optional [Str],
     search_analyzer              => Optional [Str],
+    search_quote_analyzer        => Optional [Str],
     omit_norms                   => Optional [Bool],
     omit_term_freq_and_positions => Optional [Bool],
     term_vector                  => Optional [TermVectorMapping],

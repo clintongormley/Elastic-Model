@@ -25,6 +25,7 @@ has 'options_attr' => (
     index_analyzer               => 'my_index_analyzer',
     search_analyzer              => 'my_search_analyzer',
     analyzer                     => 'my_analyzer',
+    search_quote_analyzer        => 'my_quoted_analyzer',
     include_in_all               => 0
 );
 

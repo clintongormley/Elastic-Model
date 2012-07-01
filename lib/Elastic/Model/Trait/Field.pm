@@ -139,6 +139,13 @@ has 'search_analyzer' => (
 );
 
 #===================================
+has 'search_quote_analyzer' => (
+#===================================
+    isa => Str,
+    is  => 'ro'
+);
+
+#===================================
 has 'omit_norms' => (
 #===================================
     isa => Bool,
@@ -626,6 +633,21 @@ Sets the L</"analyzer"> to use at index time only.
     );
 
 Sets the L</"analyzer"> to use at search time only.
+
+=head2 search_quote_analyzer
+
+    has 'email' => (
+        is                    => 'ro',
+        isa                   => 'Str',
+        search_analyzer       => 'my_email_analyzer',
+        search_quote_analyzer => 'my_quoted_email_analyzer'
+    );
+
+Sets the L</"analyzer"> to use in a
+L<Query-String query|http://www.elasticsearch.org/guide/reference/query-dsl/query-string-query.html>
+or  L<Field query|http://www.elasticsearch.org/guide/reference/query-dsl/field-query.html>
+when the search phrase includes quotes (C<"">). If not set, then it falls back
+to the L</search_analyzer> or the L</analyzer>.
 
 =head2 omit_norms
 

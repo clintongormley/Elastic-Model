@@ -34,9 +34,10 @@ cmp_deeply $good->index_config(
             numeric_detection => 1,
             properties        => {
                 string => {
-                    index_analyzer  => "custom",
-                    search_analyzer => "standard",
-                    type            => "string",
+                    index_analyzer        => "custom",
+                    search_analyzer       => "standard",
+                    search_quote_analyzer => 'quoted',
+                    type                  => "string",
                 },
                 timestamp => { type => "date" },
             },
@@ -52,6 +53,7 @@ cmp_deeply $good->index_config(
                     filter      => [ "truncate_20", "lowercase" ],
                     tokenizer   => "edge_ngrams",
                 },
+                quoted => { tokenizer => "whitespace", },
             },
             char_filter => {
                 map_ss => { mappings => [ "ß", "ss" ], type => "mapping" }
@@ -99,9 +101,10 @@ cmp_deeply $good->index_config(),
             numeric_detection => 1,
             properties        => {
                 string => {
-                    index_analyzer  => "custom",
-                    search_analyzer => "standard",
-                    type            => "string",
+                    index_analyzer        => "custom",
+                    search_analyzer       => "standard",
+                    search_quote_analyzer => 'quoted',
+                    type                  => "string",
                 },
                 timestamp => { type => "date" },
             },
@@ -128,6 +131,7 @@ cmp_deeply $good->index_config(),
                     filter      => [ "truncate_20", "lowercase" ],
                     tokenizer   => "edge_ngrams",
                 },
+                quoted => { tokenizer => "whitespace", },
             },
             char_filter => {
                 map_ss => { mappings => [ "ß", "ss" ], type => "mapping" }

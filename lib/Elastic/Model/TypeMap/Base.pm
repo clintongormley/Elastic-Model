@@ -181,6 +181,7 @@ our %Allowed_Attrs = (
         'analyzer'                     => 1,
         'index_analyzer'               => 1,
         'search_analyzer'              => 1,
+        'search_quote_analyzer'        => 1,
         'include_in_all'               => 1,
         'multi'                        => 1,
     },
