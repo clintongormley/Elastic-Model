@@ -4,7 +4,7 @@ use Moose;
 
 use Carp;
 use Elastic::Model::Types qw(
-    IndexNames ArrayRefOfStr SearchType SortArgs
+    IndexNames ArrayRefOfStr SortArgs
     HighlightArgs Consistency Replication);
 use MooseX::Types::Moose qw(Str Int HashRef ArrayRef Bool Num Object);
 

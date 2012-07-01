@@ -14,11 +14,7 @@ use MooseX::Types -declare => [ qw(
         Consistency
         CoreFieldType
         DynamicMapping
-        DynamicTemplate
-        DynamicTemplates
         ES
-        ESDateTime
-        ESDoc
         FieldType
         GeoPoint
         HighlightArgs
@@ -30,7 +26,6 @@ use MooseX::Types -declare => [ qw(
         MultiFields
         PathMapping
         Replication
-        SearchType
         SortArgs
         StoreMapping
         TermVectorMapping
@@ -66,11 +61,6 @@ my @enums = (
     [ 'sync', 'async' ],
     Consistency,
     [ 'quorum', 'one', 'all' ],
-    SearchType,
-    [   'query_then_fetch',     'query_and_fetch',
-        'dfs_query_then_fetch', 'dfs_query_and_fetch',
-        'scan',                 'count'
-    ],
 );
 
 while ( my $type = shift @enums ) {
@@ -177,20 +167,6 @@ subtype Binary, as Defined;
 #===================================
 
 #===================================
-subtype DynamicTemplate, as Dict [
-#===================================
-    match              => Optional [Str],
-    unmatch            => Optional [Str],
-    path_match         => Optional [Str],
-    match_mapping_type => Optional [FieldType],
-    mapping            => HashRef
-];
-
-#===================================
-subtype DynamicTemplates, as Map [ Str => DynamicTemplate ];
-#===================================
-
-#===================================
 subtype IndexNames, as ArrayRef [Str],
 #===================================
     where { @{$_} > 0 },    #
@@ -203,23 +179,13 @@ subtype ArrayRefOfStr, as ArrayRef [Str];
 coerce ArrayRefOfStr, from Str, via { [$_] };
 
 #===================================
-class_type ESDateTime, { class => 'DateTime' };
-#===================================
-
-#===================================
 subtype Timestamp, as Num;
 #===================================
-coerce Timestamp, from ESDateTime,
-    via { DateTime->from_epoch( epoch => $_ ) };
 
 #===================================
 class_type UID, { class => 'Elastic::Model::UID' };
 #===================================
 coerce UID, from Str,     via { Elastic::Model::UID->new_from_string($_) };
 coerce UID, from HashRef, via { Elastic::Model::UID->new($_) };
-
-#===================================
-role_type ESDoc, { role => 'Elastic::Model::Role::Doc' };
-#===================================
 
 1;
