@@ -189,3 +189,76 @@ coerce UID, from Str,     via { Elastic::Model::UID->new_from_string($_) };
 coerce UID, from HashRef, via { Elastic::Model::UID->new($_) };
 
 1;
+
+__END__
+
+# ABSTRACT: MooseX::Types for general and internal use
+
+=head1 SYNOPSIS
+
+    use Elastic::Model::Types qw(GeoPoint);
+
+    has 'point' => (
+        is      => 'ro',
+        isa     => GeoPoint,
+        coerce  => 1
+    );
+
+=head1 DESCRIPTION
+
+Elastic::Model::Types define a number of L<MooseX::Types>, some for internal
+use and some which will be useful generally.
+
+=head1 PUBLIC TYPES
+
+=head2 Binary
+
+    use Elastic::Model::Types qw(Binary);
+
+    has 'binary_field' => (
+        is  => 'ro',
+        isa => Binary
+    );
+
+Inherits from the C<Defined> type. Is automatically Base64 encoded/decoded.
+
+=head2 GeoPoint
+
+    use Elastic::Model::Types qw(GeoPoint);
+
+    has 'point' => (
+        is     => 'ro',
+        isa    => GeoPoint,
+        coerce => 1,
+    );
+
+C<GeoPoint> is a hashref with two keys:
+
+=over
+
+=item *
+
+C<lon>: a C<Number> between -180 and 180
+
+=item *
+
+C<lat>: a C<Number> between -90 and 90
+
+=back
+
+It can be coerced from an C<ArrayRef> with C<[$lon,$lat]> and from a
+C<Str> with C<"$lat,$lon">.
+
+=head2 Timestamp
+
+    use Elastic::Model::Types qw(Timestamp);
+
+    has 'timestamp' => (
+        is  => 'ro',
+        isa => Timestamp
+    );
+
+A C<Timestamp> is a C<Num> which holds floating epoch seconds, with milliseconds
+as decimal places. It is automatically mapped as a C<date> field in
+ElasticSearch.
+
