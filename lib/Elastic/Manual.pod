@@ -61,9 +61,9 @@ L<Elastic::Model>.
 
 A brief definition of some of the terms used by ElasticSearch and Elastic::Model.
 
-=head2 L<Elastic::Manual::DocClasses>
+=head2 L<Elastic::Manual::Attributes>
 
-How to setup your Doc classes and their attributes.
+Fine-tuning how the attributes in your Elastic::Doc classes are indexed.
 
 =head2 L<Elastic::Manual::QueryLanguage>
 
