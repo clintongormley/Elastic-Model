@@ -217,8 +217,6 @@ The version number is incremented each time a changed object is saved.
     say $user->has_changed;
     # 0
 
-See L<Elastic::Manual::Conflicts> for how to deal with version conflicts.
-
 =head1 QUERYING ELASTICSEARCH
 
 By default, everything in ElasticSearch is indexed and searchable. You can

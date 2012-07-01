@@ -84,10 +84,6 @@ as you need.
 How to use Elastic::Model to go from a small development environment to
 massive scale.
 
-=head2 L<Elastic::Manual::Conflicts>
-
-Optimistic locking and dealing with version conflicts.
-
 =head2 L<Elastic::Manual::Scoping>
 
 When and how to use L<Scopes|Elastic::Model::Scope>, an optional in-memory
