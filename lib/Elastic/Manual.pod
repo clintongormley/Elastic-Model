@@ -6,7 +6,7 @@ __END__
 
 =pod
 
-=head1 WHAT IS ELASTIC::MODEL
+=head1 WHAT IS ELASTIC::MODEL?
 
 Elastic::Model is a framework to store your Moose objects, which uses
 ElasticSearch as a NoSQL document store and flexible search engine.
@@ -60,6 +60,11 @@ L<Elastic::Model>.
 =head2 L<Elastic::Manual::Terminology>
 
 A brief definition of some of the terms used by ElasticSearch and Elastic::Model.
+
+=head2 L<Elastic::Manual::NoSQL>
+
+Some things you need to think about when moving from a relational DB to a
+NoSQL document store like ElasticSearch.
 
 =head2 L<Elastic::Manual::Attributes>
 
