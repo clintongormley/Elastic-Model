@@ -46,11 +46,26 @@ sub override_classes {
 }
 
 #===================================
-sub has_analyzer    { shift->add_analyzer( shift,    {@_} ) }
-sub has_tokenizer   { shift->add_tokenizer( shift,   {@_} ) }
-sub has_filter      { shift->add_filter( shift,      {@_} ) }
-sub has_char_filter { shift->add_char_filter( shift, {@_} ) }
-#==================================
+sub has_analyzer {
+#===================================
+    shift->add_analyzer( shift, ref $_[0] eq 'HASH' ? shift() : {@_} );
+}
+#===================================
+sub has_tokenizer {
+#===================================
+    shift->add_tokenizer( shift, ref $_[0] eq 'HASH' ? shift() : {@_} );
+}
+#===================================
+sub has_filter {
+#===================================
+    shift->add_filter( shift, ref $_[0] eq 'HASH' ? shift() : {@_} );
+}
+
+#===================================
+sub has_char_filter {
+#===================================
+    shift->add_char_filter( shift, ref $_[0] eq 'HASH' ? shift() : {@_} );
+}
 
 1;
 
