@@ -69,7 +69,7 @@ L<binary|/BINARY FIELDS>
 
 =item *
 
-L<ip|IP FIELDS> (IPv4 addresses)
+L<ip|/IP FIELDS> (IPv4 addresses)
 
 =item *
 
@@ -79,13 +79,13 @@ L<geo_point|/GEO_POINT FIELDS>
 
 L<object|/OBJECT FIELDS>
 
-=item
+=item *
 
 L<nested|/NESTED FIELDS> (a specialized form of C<object>)
 
 =item *
 
-L<multi_field|MULTI FIELDS> (index the same field in different ways)
+L<multi_field|/multi> (index the same field in different ways)
 
 =back
 
@@ -532,7 +532,7 @@ The C<precision_step> determines the number of terms generated for each
 value (defaults to 4). The more terms, the faster the lookup, but the more
 memory used.
 
-=head1 DATE KEYWORDS
+=head1 DATE FIELDS
 
 Dates in ElasticSearch are stored internally as C<long> values containing
 B<milli>seconds since the epoch.
@@ -802,7 +802,7 @@ L<nested query|http://www.elasticsearch.org/guide/reference/query-dsl/nested-que
 and the L<nested filter|http://www.elasticsearch.org/guide/reference/query-dsl/nested-filter.html>.
 
 The following keywords apply only to fields of L</"type"> C<nested>.
-You can also use L</include_in_all>, L</path> L</dynamic>, L</include_attrs
+You can also use L</include_in_all>, L</path> L</dynamic>, L</include_attrs>
 and L</exclude_attrs>.
 
 =head2 include_in_parent

@@ -70,10 +70,22 @@ NoSQL document store like ElasticSearch.
 
 Fine-tuning how the attributes in your Elastic::Doc classes are indexed.
 
-=head2 L<Elastic::Manual::QueryLanguage>
+=head2 L<Elastic::Manual::QueryDSL>
 
 Using the ElasticSearch Query DSL (and the L<ElasticSearch::SearchBuilder>
 syntax) to query your documents efficiently.
+
+=head3 L<Elastic::Manual::QueryDSL::Queries>
+
+Commonly used queries
+
+=head3 L<Elastic::Manual::QueryDSL::Filters>
+
+Commonly used filters
+
+=head3 L<Elastic::Manual::QueryDSL::Nested>
+
+Queries and filters for C<"nested"> fields.
 
 =head2 L<Elastic::Manual::Searching>
 

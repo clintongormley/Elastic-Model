@@ -1,0 +1,28 @@
+package Elastic::Manual::Nested;
+
+# ABSTRACT: Queries and filters for nested fields
+
+=head1 TODO
+
+Need to explain how nested fields work, when to use them and how to query them
+
+For the moment, see L<ElasticSearch::SearchBuilder/NESTED QUERIESE<sol>FILTERS>,
+L<http://www.elasticsearch.org/guide/reference/query-dsl/nested-query.html>
+and L<http://www.elasticsearch.org/guide/reference/query-dsl/nested-filter.html>
+
+=over
+
+=item *
+
+L<Elastic::Manual::QueryDSL>
+
+=item *
+
+L<Elastic::Manual::QueryDSL::Queries>
+
+=item *
+
+L<Elastic::Manual::QueryDSL::Filters>
+
+=back
+
