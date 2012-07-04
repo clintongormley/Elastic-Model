@@ -5,7 +5,11 @@ perl:
   - "5.12"
 env: PERL_CPANM_OPT="--notest --force --skip-satisfied" ES="localhost:9200"
 before_install:
-  - sudo service elasticsearch start
+  - mkdir -p /opt
+  - cd /opt
+  - curl -L -O https://github.com/downloads/elasticsearch/elasticsearch/elasticsearch-0.19.8.tar.gz
+  - tar -xzf elasticsearch-0.19.8.tar.gz
+  - elasticsearch-0.19.8/bin/elasticsearch
   - "cpanm Dist::Zilla"
   - "dzil authordeps | cpanm"
 install: "dzil listdeps | xargs cpanm"
