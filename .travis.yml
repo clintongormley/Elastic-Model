@@ -5,8 +5,7 @@ perl:
   - "5.12"
 env: PERL_CPANM_OPT="--notest --force --skip-satisfied" ES="localhost:9200"
 before_install:
-  - mkdir -p /opt
-  - cd /opt
+  - cd /tmp
   - curl -L -O https://github.com/downloads/elasticsearch/elasticsearch/elasticsearch-0.19.8.tar.gz
   - tar -xzf elasticsearch-0.19.8.tar.gz
   - elasticsearch-0.19.8/bin/elasticsearch
