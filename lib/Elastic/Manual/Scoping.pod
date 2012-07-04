@@ -133,10 +133,6 @@ We don't try to retrieve the object from the scope, because we already have
 everything we need to create it.  But once we have created it, we do
 try to store it in the current scope:
 
-(B<Note:> The "current scope" for search results is the scope
-in place B<when the object is inflated> (or accessed for the first time), not
-at the time the search is run.)
-
 =head2 Object is not in current scope
 
 If an object with the same C<domain_name/type/id> DOESN'T exist in the
@@ -170,4 +166,37 @@ L<Elastic::Model::Role::Doc/"uid"> of the object.
 
     print $results->first_object->name;
     # Throws error - deleted!
+
+=head2 Tie objects to the current scope
+
+The "current scope" for search results is the scope
+in place B<when the object is inflated> (or accessed for the first time), not
+at the time the search is run.)
+
+To ensure that the objects from search results are tied to a particular scope
+(eg the current scope), you can use:
+
+    $results->slice_objects();      # inflates all objects in the current scope
+    $results->slice_objects(0,10);  # inflates the first 10 objects
+
+The inflated objects are cached in the C<$results> object itself, so accessing
+the object later on will return the same object, even if you do:
+
+    $object = $results->next_result->object;
+
+
+=head1 SEE ALSO
+
+=over
+
+=item *
+
+L<Elastic::Manual>
+
+=item *
+
+L<Elastic::Model::Scope>
+
+=back
+
 

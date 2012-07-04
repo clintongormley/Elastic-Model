@@ -87,7 +87,10 @@ sub _build_highlights { shift->result->{highlight} || {} }
 sub _build_object {
 #===================================
     my $self = shift;
-    $self->model->get_doc( uid => $self->uid, source => $self->source );
+    $self->result->{_object} ||= $self->model->get_doc(
+        uid    => $self->uid,
+        source => $self->source
+    );
 }
 
 #===================================
