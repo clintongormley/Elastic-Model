@@ -22,30 +22,35 @@ ok $ns->index('myapp')->create, 'Create index myapp';
 isa_ok my $domain = $model->domain('myapp'), 'Elastic::Model::Domain',
     'Got domain myapp';
 
-isa_ok my $u1 = $domain->create(user=>{id=>1, name => 'Clint', email =>'clint@foo'}),'MyApp::User' ,'Create U1';
-isa_ok my $u2 = $domain->get(user=>1), 'MyApp::User', 'Get U2';
+isa_ok my $u1
+    = $domain->create(
+    user => { id => 1, name => 'Clint', email => 'clint@foo' } ),
+    'MyApp::User', 'Create U1';
+isa_ok my $u2 = $domain->get( user => 1 ), 'MyApp::User', 'Get U2';
 ok refaddr $u1 ne refaddr $u2, 'U1 and U2 are separate objects';
 
-is $u1->name('John'),'John', 'Set U1.name to John';
+is $u1->name('John'), 'John', 'Set U1.name to John';
 ok $u1->save, 'U1 updated';
-is $u2->name(),'Clint', 'U2.name is Clint';
-is $u1->uid->version,2, 'U1 has version 2';
-is $u2->uid->version,1, 'U2 has version 1';
+is $u2->name(), 'Clint', 'U2.name is Clint';
+is $u1->uid->version, 2, 'U1 has version 2';
+is $u2->uid->version, 1, 'U2 has version 1';
 
-is $u2->email('john@foo'),'john@foo', 'Set U2.email to john@foo';
-throws_ok sub { $u2->save}, qr/ElasticSearch::Error::Conflict/, 'Save U2 throws conflict error';
-ok $u2->save(on_conflict=>\&on_conflict);
+is $u2->email('john@foo'), 'john@foo', 'Set U2.email to john@foo';
+throws_ok sub { $u2->save }, qr/ElasticSearch::Error::Conflict/,
+    'Save U2 throws conflict error';
+ok $u2->save( on_conflict => \&on_conflict );
 
 #===================================
 sub on_conflict {
 #===================================
-    my ($old,$new) = @_;
+    my ( $old, $new ) = @_;
     is $old->has_changed, 1, 'Old has changed';
-    is $old->has_changed('email'),1, 'Old email has changed';
-    is $old->has_changed('name'),'', 'Old name has not changed';
-    cmp_deeply [keys %{$old->old_values}],['email','timestamp'], 'Old values keys';
+    is $old->has_changed('email'), 1,  'Old email has changed';
+    is $old->has_changed('name'),  '', 'Old name has not changed';
+    cmp_deeply [ keys %{ $old->old_values } ], [ 'email', 'timestamp' ],
+        'Old values keys';
     is $old->old_value('email'), 'clint@foo', 'Old value email';
-    is $old->old_value('name'), undef, 'Old value name';
+    is $old->old_value('name'),  undef,       'Old value name';
     is $new->has_changed(), '', 'New not changed';
     cmp_deeply $new->old_values, {}, 'New old values';
 
