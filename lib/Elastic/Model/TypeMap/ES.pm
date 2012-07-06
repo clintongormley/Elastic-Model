@@ -29,16 +29,19 @@ has_type 'Elastic::Model::Types::UID',
             type                         => 'string',
             index                        => 'not_analyzed',
             omit_norms                   => 1,
-            omit_term_freq_and_positions => 1
+            omit_term_freq_and_positions => 1,
+            index_name                   => "uid.${_}",
             }
     } qw(index type id routing);
 
     $props{routing}{index} = 'no';
+    delete $props{routing}{index_name};
 
     return (
         type       => 'object',
         dynamic    => 'strict',
-        properties => \%props
+        properties => \%props,
+        path       => 'just_name'
     );
 
     };
@@ -103,22 +106,26 @@ via L<Elastic::Model::UID/"new_from_store()">. It is mapped as:
     {
         type        => 'object',
         dynamic     => 'strict',
+        path        => 'just_name',
         properties  => {
             index   => {
                 type                         => 'string',
                 index                        => 'not_analyzed',
+                index_name                   => 'uid.index',
                 omit_norms                   => 1,
                 omit_term_freq_and_positions => 1,
             },
             type => {
                 type                         => 'string',
                 index                        => 'not_analyzed',
+                index_name                   => 'uid.type',
                 omit_norms                   => 1,
                 omit_term_freq_and_positions => 1,
             },
             id   => {
                 type                         => 'string',
                 index                        => 'not_analyzed',
+                index_name                   => 'uid.id',
                 omit_norms                   => 1,
                 omit_term_freq_and_positions => 1,
             },

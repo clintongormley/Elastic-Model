@@ -97,18 +97,21 @@ sub uid {
 #===================================
     +{  type       => "object",
         dynamic    => "strict",
+        path       => 'just_name',
         properties => {
             id => {
                 index                        => "not_analyzed",
                 omit_norms                   => 1,
                 omit_term_freq_and_positions => 1,
                 type                         => "string",
+                index_name                   => 'uid.id',
             },
             index => {
                 index                        => "not_analyzed",
                 omit_norms                   => 1,
                 omit_term_freq_and_positions => 1,
                 type                         => "string",
+                index_name                   => 'uid.index',
             },
             routing => {
                 index                        => "no",
@@ -121,6 +124,7 @@ sub uid {
                 omit_norms                   => 1,
                 omit_term_freq_and_positions => 1,
                 type                         => "string",
+                index_name                   => 'uid.type',
             },
         },
     };
