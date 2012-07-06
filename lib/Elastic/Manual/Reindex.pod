@@ -1,0 +1,139 @@
+package Elastic::Manual::Reindex;
+
+# ABSTRACT: How to reindex your data from an old index to a new index
+
+=head1 INTRODUCTION
+
+While you can add to the L<mapping|Elastic::Manual::Terminology/Mapping> of
+an index, you can't change what is already there. Especially during development,
+you will need to L<reindex|Elastic::Model::Index/reindex()> your data to a new
+index.
+
+=head1 USE ALIASES INSTEAD OF INDICES
+
+The easiest way to work is to have the L<Elastic::Model::Namespace/name>
+be an L<index alias|Elastic::Manual::Terminology/Alias> which points at the
+current version of your index.  For instance:
+
+    my $ns = $model->namespace( 'myapp' );
+    $ns->index( 'myapp_v1' )->create;
+    $ns->alias->to( 'myapp_v1' );
+
+Now you're ready to start indexing data into C<myapp>:
+
+    my $domain = $model->domain( 'myapp' );
+    $domain->create( user => { name => 'John'} );
+
+When you need to change your mapping, you can just reindex to a new index:
+
+    # create 'myapp_v2' if it doesn't exist, and
+    # copy 'myapp_v1' to 'myapp_v2'
+    $ns->index( 'myapp_v2' )->reindex( 'myapp' );
+
+    # update alias 'myapp' to point to 'myapp_v2'
+    $ns->alias->to( 'myapp_v2' );
+
+    # delete the old 'myapp_v1'
+    $ns->index( 'myapp_v1' )->delete;
+
+
+=head1 UPDATING UIDS
+
+Imagine you have a C<$post> object which has a C<user> attribute.  The
+L<UID|Elastic::Model::UID> of the user is stored in ElasticSearch, which
+includes the index name.
+
+When you reindex your data from C<myapp_v1> to C<myapp_v2>,
+L<reindex()|Elastic::Model::Index/reindex()> will automatically update
+all UIDs in the reindexed data to point to the new index.
+
+=head1 UPDATING UIDS IN OTHER INDICES
+
+Now imagine that you have another index (one you're not reindexing) which also
+has UIDs which point to the old index.  These will no longer be valid. You
+need to update the old UIDs to point to the new index.
+
+You can do this with:
+
+    $ns->index( 'myapp_v2' )->reindex(
+        domain       => 'myapp_v1',
+        repoint_uids => 1
+    );
+
+This will automatically find all UIDs in any index known to your
+L<model|Elastic::Model> and update them.
+
+If you don't want to do this in a single step, you can do it in two:
+
+    $index = $ns->index( 'myapp_v2' );
+    $index->reindex( 'myapp_v1' );
+    $index->repoint_uids( index_map => { myapp_v1 => 'myapp_v2' }) ;
+
+=head1 CHANGING DOC STRUCTURE WHILE REINDEXING
+
+Perhaps, when reindexing, you need to change the structure of the
+document.  For instance, perhaps you have an attribute C<foo> that was an
+C<ArrayRef[Str]> but is now a simple C<Str>.
+
+You can pass a C<transform> coderef which will be called with the raw doc
+as its first parameter:
+
+    $index->reindex(
+        domain       => 'myapp_v1',
+        repoint_uids => 1,
+        transform    => sub {
+            my $doc  = shift;
+            $doc->{_source}{foo} = $doc->{source}{foo}[0];
+        }
+    );
+
+=head1 REINDXING MULTIPLE INDICES OR PARTIAL INDICES
+
+Instead of passing the C<domain> parameter, you can pass a
+L<view|Elastic::Model::View> which gives you the flexbility to combine
+multiple indices into one, or to move part of an index into a separate
+index.  For instance:
+
+    # combine multiple indices
+    my $view = $model->view( domain => ['index_1','index_2']);
+    $index->reindex( $view );
+
+    # reindex part of an index
+    my $view = $model->view( domain => 'index_1', type => 'big_type' );
+    $index->reindex( $view );
+
+B<Note:> the second example (separating out part of an index) can be tricky.
+By default, the L<repoint_uids()|/Elastic::Model::Index/repoint_uids()>
+performs its magic on B<any> UID that includes the old index name.
+However, this may not always be what you want.
+
+For a custom requirement such as this, the C<transform> coderef is called
+with a second parameter, which acts as a flag.  By setting this to C<true>,
+you can prevent the automatic remapper from working:
+
+    $index->reindex(
+        view        => $view,
+        transform   => sub {
+            my ($doc) = @_;
+            $_[1] = 1;                  # Don't remap UIDs automatically
+            handle_remapping($doc);     # I'll do it myself
+        }
+    );
+
+=head1 TODO
+
+=over
+
+=item *
+
+Reindex in parallel
+
+=item *
+
+Reindex a live index
+
+=item *
+
+Keep two indices in sync
+
+=back
