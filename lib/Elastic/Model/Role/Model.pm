@@ -191,6 +191,13 @@ sub namespace_for_domain {
 }
 
 #===================================
+sub all_live_indices {
+#===================================
+    my $self = shift;
+    return map { $_->all_live_indices } values %{ $self->namespaces };
+}
+
+#===================================
 sub wrap_doc_class {
 #===================================
     my $self  = shift;
@@ -547,8 +554,6 @@ L<Elastic::Model::View/"new()">.
 Use a C<$view> to query your documents.  Views can be multi-domain and
 multi-type.
 
-
-
 =head2 new_scope()
 
     $scope = $model->new_scope();
@@ -666,6 +671,13 @@ corresponding L<Elastic::Model::Namespace> instances.
 Returns the L<Elastic::Model::Namespace> object which corresponds to the
 C<$domain_name>.  If the index (or alias) name is not yet known to the
 C<$model>, it will update the known domain list from the namespace objects.
+
+=head3 all_live_indices()
+
+    @indices = $model->all_live_indices();
+
+Queries ElasticSearch to find all existing indices related to all namespaces
+known to the model.
 
 =head3 es
 

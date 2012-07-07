@@ -51,6 +51,15 @@ sub all_domains {
 }
 
 #===================================
+sub all_live_indices {
+#===================================
+    my $self    = shift;
+    my @domains = ( $self->name, @{ $self->fixed_domains } );
+    my $aliases = $self->model->es->get_aliases( index => \@domains );
+    return keys %$aliases;
+}
+
+#===================================
 sub index {
 #===================================
     my $self = shift;
@@ -228,6 +237,12 @@ is either the L</name> of the C<$namespace> or the value passed in to L</alias()
 Returns all domain names known to the namespace. It does this by retrieving
 all indices and aliases associated with the namespace L</name> and the
 L</fixed_domains> (if any).
+
+=head2 all_live_indices()
+
+    @indices = $namespace->all_live_indices();
+
+Queries ElasticSearch to find all existing indices related to the namespace
 
 =head2 mappings()
 
