@@ -10,3 +10,4 @@
 log.*
 Elastic-Model-*
 /doc/
+/cover_db/
