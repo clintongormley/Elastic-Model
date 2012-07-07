@@ -158,7 +158,7 @@ and specifics about how each field should be L<analyzed|/Analysis>.
 
 New fields can be added to a mapping, but generally existing fields may not
 be changed. Instead, you have to create a new index with the new mapping and
-reindex your data.
+L<reindex|Elastic::Manual::Reindex> your data.
 
 Elastic::Model generates the mapping for you using Moose's introspection.
 L<Attribute keywords|Elastic::Model::Attributes> are provided to give you

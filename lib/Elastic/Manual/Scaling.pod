@@ -95,11 +95,16 @@ The above will create the index C<myapp_TIME> and point the alias C<myapp> at
 that index. Now, when you want to change your mapping, you can repeat the process
 with a new index name:
 
-    my $new_index = 'myapp_'.time();
-    $ns->index($new_index)->create;
+    my $new_name = 'myapp_'.time();
+    my $new_index = $ns->index($new_name);
+    $new_index->create;
 
-Now you can reindex your data from C<$index> to C<$new_index>, and finally
-update the alias and delete the old index:
+Now you can L<reindex|Elastic::Manual::Reindex> your data from
+C<$index> to C<$new_index>:
+
+    $new_index->reindex( 'myapp' );
+
+And finally, update the alias and delete the old index:
 
     my $current   = $ns->alias->aliased_to;
     $ns->alias->to($new_index);
@@ -332,16 +337,21 @@ Because we are using aliases, it is easy to create a new index just for this
 user, without having to change how your application works. First, we create
 a big index:
 
-    my $index = 'twitter_'.time();
-    $ns->index($index)->create( settings => { number_of_shards => 100 });
+    my $name  = 'twitter_'.time();
+    my $index = $ns->index( $name );
+    $index->create( settings => { number_of_shards => 100 });
 
-Then we add that index to our main domain C<myapp>, so that Elastic::Model
+Once we have reindexed the existing data from the old C<twitter> alias to
+the new index:
+
+    $index->reindex( 'twitter' );
+
+... we add the new index to our main domain C<myapp>, so that Elastic::Model
 knows that it uses the same namespace:
 
     $ns->alias->add($index);
 
-Once we have reindexed the existing data from the old C<twitter> alias to
-the new index, we update the alias to point to the new index:
+... and we update the C<twitter> alias to point to the new index:
 
     $ns->alias('twitter')->to($index);
 

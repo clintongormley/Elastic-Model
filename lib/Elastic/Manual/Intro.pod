@@ -117,6 +117,7 @@ introspection, we have enough information to setup everything we need.
 This creates an instance of your model, with a connection to a local
 ElasticSearch cluster.  The last line is the equivalent of:
 
+    use ElasticSearch();
     my $es     = ElasticSearch->new( servers => 'localhost:9200' );
     my $model  = MyApp->new( es => $es );
 

@@ -51,12 +51,15 @@ sub create_users {
     $ns->alias->to( 'myapp2', 'myapp3' );
 
     my @domains = ( map { $model->domain( "myapp" . $_ ) } qw(2 2 3) );
-
+    my @users;
     my $i = 0;
     for ( names() ) {
-        $domains[ $i % 3 ]->create( user => { name => $_, id => ++$i } );
+        push @users,
+            $domains[ $i % 3 ]->create( user => { name => $_, id => ++$i } );
     }
     $ns->alias->refresh;
+
+    return @users;
 }
 
 #===================================
