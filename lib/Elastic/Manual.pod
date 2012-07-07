@@ -70,6 +70,10 @@ NoSQL document store like ElasticSearch.
 
 Fine-tuning how the attributes in your Elastic::Doc classes are indexed.
 
+=head2 L<Elastic::Manual::Reindexing>
+
+How to reindex your data when you make changes to your attributes.
+
 =head2 L<Elastic::Manual::QueryDSL>
 
 Using the ElasticSearch Query DSL (and the L<ElasticSearch::SearchBuilder>
@@ -105,3 +109,56 @@ massive scale.
 
 When and how to use L<Scopes|Elastic::Model::Scope>, an optional in-memory
 cache (but required if you use weak refs).
+
+=head1 BUGS
+
+This is a new module, so there will probably be bugs, and the API may change
+in the future.
+
+If you have any suggestions for improvements, or find any bugs, please
+report them to http://github.com/clintongormley/Elastic-Model/issues. I
+will be notified, and then you'll automatically be notified of progress on
+your bug as I make changes.
+
+=head1 SUPPORT
+
+You can find documentation for this module with the perldoc command.
+perldoc Elastic::Manual
+
+You can also look for information at:
+
+=over
+
+=item * IRC
+
+The L<#elasticsearch|irc://irc.freenode.net/elasticsearch> channel on
+C<irc.freenode.net>.
+
+=item * Mailing list
+
+The main L<ElasticSearch mailing list|http://www.elasticsearch.org/community/forum/>.
+
+=item * GitHub
+
+L<http://github.com/clintongormley/Elastic-Model>
+
+=item * CPAN Ratings
+
+L<http://cpanratings.perl.org/d/Elastic-Model>
+
+=item * Search MetaCPAN
+
+L<https://metacpan.org/module/Elastic::Model>
+
+=back
+
+=head1 ACKNOWLEDGEMENTS
+
+Thanks to Shay Bannon, the ElasticSearch author, for producing an amazingly
+easy to use search engine, to L<PERLER|https://metacpan.org/author/PERLER>
+for writing L<ElasticSearchX::Model>, which was the original inspiration,
+to L<FLORA|https://metacpan.org/author/FLORA> and
+L<MSTROUT|https://metacpan.org/author/MSTROUT> for encouraging me to do
+better, and to L<DOY|https://metacpan.org/author/DOY> for guiding me
+through Moose internals.
+
