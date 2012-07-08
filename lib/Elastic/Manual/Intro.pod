@@ -24,9 +24,8 @@ Use your favourite CPAN installer:
 
     cpanm Elastic::Model
 
-Or, if you want to run the full test suite, install Elastic::Model as:
-
-    ES_HOME=/path/to/elasticsearch cpanm Elastic::Model
+See L<Elastic::Manual/TEST SUITE> for how to run the full test suite
+against a local ElasticSearch cluster.
 
 =head2 Start ElasticSearch
 

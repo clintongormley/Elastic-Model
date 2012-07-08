@@ -120,6 +120,26 @@ report them to http://github.com/clintongormley/Elastic-Model/issues. I
 will be notified, and then you'll automatically be notified of progress on
 your bug as I make changes.
 
+=head1 TEST SUITE
+
+The full test suite requires a live ElasticSearch cluster to run.  CPAN
+testers doesn't support this.  You can see full test results here:
+L<http://travis-ci.org/#!/clintongormley/Elastic-Model/builds>.
+
+To run the full test suite locally, run it as:
+
+    perl Makefile.PL
+    ES_HOME=/path/to/elasticsearch make test
+
+Or, if you are happy for any index starting with C<"myapp"> to be deleted,
+you can start your ElasticSearch server and run it as:
+
+    perl Makefile.PL
+    ES='localhost:9200' make test
+
+This is much faster as it doesn't have to restart the server multiple times,
+but you will lose any indices matching C</^myapp.*/>.
+
 =head1 SUPPORT
 
 You can find documentation for this module with the perldoc command.
