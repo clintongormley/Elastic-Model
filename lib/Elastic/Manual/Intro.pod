@@ -123,7 +123,7 @@ ElasticSearch cluster.  The last line is the equivalent of:
 =head2 Create an index
 
 Before we get started, we need to create an
-L<index|Elastic::Manual::Terminology/Index> (like a database in a relation DB)
+L<index|Elastic::Manual::Terminology/Index> (like a database in a relational DB)
 in ElasticSearch.
 
     $model->namespace('myapp')->index->create();
@@ -134,7 +134,7 @@ table in a database). It has also configured the type's
 L<mapping|Elastic::Manual::Terminology/Mapping> (which is like the schema
 or column definition).
 
-Now, our index is ready to be used.
+Our index is now ready to use.
 
 =head1 STORING AND RETRIEVING OBJECTS
 
