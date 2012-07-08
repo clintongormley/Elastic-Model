@@ -71,6 +71,14 @@ sub has_char_filter {
 
 # ABSTRACT: A NoSQL document store with full text search for Moose objects using ElasticSearch as a backend.
 
+=head1 INTRODUCTION TO Elastic::Model
+
+If you are not familiar with L<Elastic::Model>, you should start by reading
+L<Elastic::Manual::Intro>.
+
+The rest of the documentation on this page explains how to use the
+L<Elastic::Model> module itself.
+
 =head1 DESCRIPTION
 
 Elastic::Model is a framework to store your Moose objects, which uses
@@ -79,14 +87,6 @@ ElasticSearch as a NoSQL document store and flexible search engine.
 It is designed to make it easy to start using ElasticSearch with minimal extra
 code, but allows you full access to the rich feature set available in
 ElasticSearch as soon as you are ready to use it.
-
-=head1 INTRODUCTION TO Elastic::Model
-
-If you are not familiar with L<Elastic::Model>, you should start by reading
-L<Elastic::Manual::Intro>.
-
-The rest of the documentation on this page explains how to use the
-L<Elastic::Model> module itself.
 
 =head1 SYNOPSIS
 

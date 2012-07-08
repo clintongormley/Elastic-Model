@@ -86,6 +86,14 @@ __END__
 
 =cut
 
+=head1 INTRODUCTION TO Elastic::Model
+
+If you are not familiar with L<Elastic::Model>, you should start by reading
+L<Elastic::Manual::Intro>.
+
+The rest of the documentation on this page explains how to use the
+L<Elastic::Doc> module itself.
+
 =head1 DESCRIPTION
 
 Elastic::Doc prepares your object classes (eg C<MyApp::User>) for storage in
