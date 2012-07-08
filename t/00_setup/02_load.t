@@ -60,12 +60,6 @@ isa_ok $model->namespace('foo'), 'Elastic::Model::Namespace', 'Namespace foo';
 isa_ok $model->namespace('bar'), 'Elastic::Model::Namespace', 'Namespace bar';
 note '';
 
-note 'Domain';
-isa_ok $model->domain('foo'), 'Elastic::Model::Domain', 'Domain foo';
-isa_ok $model->domain('aaa'), 'Elastic::Model::Domain', 'Domain aaa';
-isa_ok $model->domain('bbb'), 'Elastic::Model::Domain', 'Domain bbb';
-note '';
-
 note 'View';
 isa_ok $model->view, 'Elastic::Model::View', 'View';
 

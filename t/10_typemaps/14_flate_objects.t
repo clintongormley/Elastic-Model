@@ -9,11 +9,13 @@ use Test::Deep;
 
 use lib 't/lib';
 
-BEGIN {
-    use_ok 'TypeTest' || print 'Bail out';
-}
+our $es;
+do 'es.pl';
 
-my $model = new_ok 'TypeTest';
+use_ok 'TypeTest' || print 'Bail out';
+
+my $model = new_ok( 'TypeTest', [ es => $es ], 'Model' );
+
 isa_ok my $tm = $model->typemap, 'Elastic::Model::TypeMap::Base';
 
 note '';

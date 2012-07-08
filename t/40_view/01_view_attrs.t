@@ -8,9 +8,12 @@ use Test::Deep;
 
 use lib 't/lib';
 
+our $es;
+do 'es.pl';
+
 use_ok 'MyApp' || print 'Bail out';
 
-my $model = new_ok( 'MyApp', [], 'Model' );
+my $model = new_ok( 'MyApp', [ es => $es ], 'Model' );
 isa_ok my $domain = $model->domain('myapp'), 'Elastic::Model::Domain';
 
 ## Create view ##
