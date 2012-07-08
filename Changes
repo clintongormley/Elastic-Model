@@ -1,3 +1,6 @@
+0.03    2012-07-08
+        Skip parts of the test suite which require a live cluster to run
+
 0.02    2012-07-07
         Removed the 'trial' flag.  First public release.
 
