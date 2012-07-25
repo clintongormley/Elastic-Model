@@ -218,7 +218,7 @@ the attribute itself.
 =item *
 
 When C<include_in_all> is set on a field of type C<object>, its
-value will propogate down to all attributes within the object.
+value will propagate down to all attributes within the object.
 
 =item *
 

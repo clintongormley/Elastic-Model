@@ -1,4 +1,4 @@
-package Elastic::Manual::Nested;
+package Elastic::Manual::QueryDSL::Nested;
 
 # ABSTRACT: Queries and filters for nested fields
 
