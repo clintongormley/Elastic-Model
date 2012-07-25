@@ -341,9 +341,12 @@ sub save_doc {
     my $uid  = $doc->uid;
     my $data = $self->deflate_object($doc);
 
-    my $action      = $uid->from_store ? 'index_doc' : 'create_doc';
+    my $action
+        = ( $uid->from_store || defined $args{version} )
+        ? 'index_doc'
+        : 'create_doc';
     my $on_conflict = delete $args{on_conflict};
-    my $result      = eval { $self->store->$action( $uid, $data, %args ) }
+    my $result = eval { $self->store->$action( $uid, $data, %args ) }
         or return $self->_handle_error( $@, $on_conflict, $doc );
 
     $uid->update_from_store($result);

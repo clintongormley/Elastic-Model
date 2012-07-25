@@ -352,8 +352,8 @@ on a doc that hasn't changed, then you can do:
     $doc->overwrite( %args );
 
 L</overwrite()> is exactly the same as L</save()> except it will overwrite
-any previous doc, regardless of whether another process has updated the same
-doc in the meantime.
+any previous doc, regardless of whether another process has created or updated
+a doc with the same UID in the meantime.
 
 =head2 delete()
 
