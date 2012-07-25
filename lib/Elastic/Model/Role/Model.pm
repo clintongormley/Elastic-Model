@@ -367,18 +367,22 @@ sub _handle_error {
 
     die $error
         unless $on_conflict
-            and $error =~ /ElasticSearch::Error::Conflict/;
+        and $error =~ /ElasticSearch::Error::Conflict/;
 
-    my $current_version = $error->{-vars}{current_version}
-        or die "Missing current_version from ElasticSearch::Error::Conflict";
+    my $new;
+    if ( my $current_version = $error->{-vars}{current_version} ) {
+        my $uid = Elastic::Model::UID->new(
+            %{ $original->uid->read_params },
+            version    => $current_version,
+            from_store => 1
+        );
+        $new = $self->get_doc( uid => $uid );
 
-    my $uid = Elastic::Model::UID->new(
-        %{ $original->uid->read_params },
-        version    => $current_version,
-        from_store => 1
-    );
+    }
+    else {
+        $new = $self->get_doc( uid => $original->uid->clone );
+    }
 
-    my $new = $self->get_doc( uid => $uid );
     $on_conflict->( $original, $new );
 
     return;

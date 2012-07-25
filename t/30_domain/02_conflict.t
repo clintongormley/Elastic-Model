@@ -38,13 +38,15 @@ is $u2->uid->version, 1, 'U2 has version 1';
 is $u2->email('john@foo'), 'john@foo', 'Set U2.email to john@foo';
 throws_ok sub { $u2->save }, qr/ElasticSearch::Error::Conflict/,
     'Save U2 throws conflict error';
-ok $u2->save( on_conflict => \&on_conflict );
+ok $u2->save( on_conflict => \&on_conflict ), 'On conflict with diff version';
+
 # Conflicts with new docs
 
 isa_ok my $u3 = $domain->new_doc( user => { id => 1, name => 'Bob' } ),
     'MyApp::User', 'U3';
 throws_ok sub { $u3->save }, qr/DocumentAlreadyExistsException/,
     'Error saving existing UID';
+ok $u3->save( on_conflict => \&on_conflict_2 ), 'On_conflict with new doc';
 ok $u3->overwrite, 'Overwrite new doc';
 is $u3->uid->version, 4, 'U3 has version 4';
 
@@ -69,16 +71,16 @@ sub on_conflict {
 
 }
 
+#===================================
+sub on_conflict_2 {
+#===================================
+    my ( $old, $new ) = @_;
+    cmp_deeply( $old, $u3, 'Old version is U3' );
+    cmp_deeply( $new->uid, $u2->uid ), 'New version is U2';
+}
+
 ## DONE ##
 
 done_testing;
-
-sub test_uid {
-    my ( $uid, $name, $vals ) = @_;
-    isa_ok $uid , 'Elastic::Model::UID', $name;
-    for my $t (qw(index type id routing version from_store cache_key)) {
-        is $uid->$t, $vals->{$t}, "$name $t";
-    }
-}
 
 __END__
