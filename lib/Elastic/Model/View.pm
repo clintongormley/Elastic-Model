@@ -481,7 +481,7 @@ Efficiently retrieve all posts, unsorted:
 
     $results = $posts->size(100)->scan;
 
-    while (my $result = $results->shift_result)) {
+    while (my $result = $results->shift_result) {
         do_something_with($result);
     );
 
