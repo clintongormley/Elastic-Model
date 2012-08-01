@@ -22,6 +22,7 @@ use MooseX::Types -declare => [ qw(
         HighlightArgs
         IndexMapping
         IndexNames
+        Keyword
         Latitude
         Longitude
         MultiField
@@ -189,6 +190,10 @@ subtype Timestamp, as Num;
 #===================================
 
 #===================================
+subtype Keyword, as Str;
+#===================================
+
+#===================================
 class_type UID, { class => 'Elastic::Model::UID' };
 #===================================
 coerce UID, from Str,     via { Elastic::Model::UID->new_from_string($_) };
@@ -216,6 +221,19 @@ Elastic::Model::Types define a number of L<MooseX::Types>, some for internal
 use and some which will be useful generally.
 
 =head1 PUBLIC TYPES
+
+=head2 Keyword
+
+    use Elastic::Model::Types qw(Keyword);
+
+    has 'status' => (
+        is  => 'ro',
+        isa => Keyword
+    );
+
+C<Keyword> is a sub-type of C<Str>.  It is provided to make it easy to map
+string values which should not be analyzed (eg a C<status> field rather than
+a C<comment_body> field). See L<Elastic::Model::TypeMap::ES/Keyword>.
 
 =head2 Binary
 

@@ -47,6 +47,16 @@ has_type 'Elastic::Model::Types::UID',
     };
 
 #===================================
+has_type 'Elastic::Model::Types::Keyword',
+#===================================
+    map_via {
+    type                         => 'string',
+    index                        => 'not_analyzed',
+    omit_norms                   => 1,
+    omit_term_freq_and_positions => 1,
+    };
+
+#===================================
 has_type 'Elastic::Model::Types::GeoPoint',
 #===================================
     deflate_via {
@@ -97,6 +107,22 @@ L<Elastic::Model::TypeMap::ES> provides mapping, inflation and deflation
 for ElasticSearch specific types.
 
 =head1 TYPES
+
+=head2 Elastic::Model::Types::Keyword
+
+Attributes of type L<Elastic::Model::Types/Keyword> are in/deflated
+via L<Elastic::Model::TypeMap::Moose/Any> and are mapped as:
+
+    {
+        type                         => 'string',
+        index                        => 'not_analyzed',
+        omit_norms                   => 1,
+        omit_term_freq_and_positions => 1,
+    }
+
+It is a suitable type to use for string attributes which should not
+be analyzed, and will not be used for scoring. Rather they are suitable
+to use as filters.
 
 =head2 Elastic::Model::Types::UID
 

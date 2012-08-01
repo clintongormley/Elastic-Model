@@ -178,6 +178,7 @@ C<no>: This attribute will not be indexed, and will thus not be searchable.
 
 C<not_analyzed>: This attribute will be indexed using exactly the value
 that you pass in, eg C<FoO> will be stored (and searchable) as C<FoO>.
+Also see L<Elastic::Model::TypeMap::ES/Keyword>.
 
 =item *
 

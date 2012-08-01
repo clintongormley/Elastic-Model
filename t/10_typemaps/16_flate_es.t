@@ -28,6 +28,15 @@ note '';
 
 my ( $de, $in );
 
+## KEYWORD ##
+
+{
+    ( $de, $in ) = flators('keyword');
+
+    is $de->('foo'), 'foo', 'Deflate: keyword';
+    is $in->('bar'), 'bar', 'Inflate: keyword';
+}
+
 ## BINARY ##
 
 {

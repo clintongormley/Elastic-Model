@@ -1,9 +1,16 @@
 package TypeTest::ES;
 
 use Elastic::Doc;
-use Elastic::Model::Types qw(GeoPoint Binary Timestamp);
+use Elastic::Model::Types qw(Keyword GeoPoint Binary Timestamp);
 
 # UID and Timestamp tested in Objects
+
+#===================================
+has 'keyword_attr' => (
+#===================================
+    is  => 'ro',
+    isa => Keyword,
+);
 
 #===================================
 has 'geopoint_attr' => (
