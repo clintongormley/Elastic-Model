@@ -1,3 +1,11 @@
+0.05    2012-08-01
+        ENHANCMENTS:
+         - Added support for unique_keys via ElasticSearchX::UniqueKey
+         - Added a Keyword type to be used for not_analyzed string fields
+         - Handle stub doc inflation using Variable::Magic instead of
+           wrapping _inline_instance_* in Moose
+        BUG FIXES:
+         - Lazy attributes weren't being built properly during deflation
 0.04    2012-07-25
         overwrite() should work for new docs as well as docs loaded from ES
         on_conflict() called with $doc->create doesn't get a version number,
