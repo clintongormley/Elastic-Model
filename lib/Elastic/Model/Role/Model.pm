@@ -2,8 +2,9 @@ package Elastic::Model::Role::Model;
 
 use Moose::Role;
 use Carp;
-use Elastic::Model::Types qw(ES);
-use ElasticSearch 0.55 ();
+use Elastic::Model::Types qw(ES ES_UniqueKey);
+use ElasticSearch 0.57             ();
+use ElasticSearchX::UniqueKey 0.03 ();
 use Class::Load qw(load_class);
 use Moose::Util qw(does_role);
 use MooseX::Types::Moose qw(:all);
@@ -59,7 +60,17 @@ has 'es' => (
     isa     => ES,
     is      => 'ro',
     lazy    => 1,
-    builder => '_build_es'
+    builder => '_build_es',
+    coerce  => 1,
+);
+
+#===================================
+has 'es_unique' => (
+#===================================
+    isa     => ES_UniqueKey,
+    is      => 'ro',
+    lazy    => 1,
+    builder => '_build_es_unique',
 );
 
 #===================================
@@ -128,6 +139,19 @@ sub BUILD        { shift->doc_class_wrappers }
 sub _build_store { $_[0]->store_class->new( es => $_[0]->es ) }
 sub _build_es    { ElasticSearch->new }
 #===================================
+
+#===================================
+sub _build_es_unique {
+#===================================
+    my $self  = shift;
+    my $index = Class::MOP::class_of($self)->unique_index;
+    my $uniq  = ElasticSearchX::UniqueKey->new(
+        es    => $self->es,
+        index => $index
+    );
+    $uniq->bootstrap;
+    return $uniq;
+}
 
 #===================================
 sub _build_namespaces {
@@ -342,12 +366,23 @@ sub save_doc {
     my $data = $self->deflate_object($doc);
 
     my $action
-        = ( $uid->from_store || defined $args{version} )
+        = ( $uid->from_store or $uid->id and defined $args{version} )
         ? 'index_doc'
         : 'create_doc';
+
+    my $on_unique   = delete $args{on_unique};
     my $on_conflict = delete $args{on_conflict};
-    my $result = eval { $self->store->$action( $uid, $data, %args ) }
-        or return $self->_handle_error( $@, $on_conflict, $doc );
+
+    my $unique = $self->_update_unique_keys( $doc, $action, $on_unique )
+        or return;
+
+    my $result = eval { $self->store->$action( $uid, $data, %args ) } or do {
+        my $error = $@;
+        $unique->{rollback}->();
+        return $self->_handle_error( $error, $on_conflict, $doc );
+    };
+
+    $unique->{commit}->();
 
     $uid->update_from_store($result);
     $doc->_set_source($data);
@@ -359,6 +394,60 @@ sub save_doc {
     return $scope->store_object( $ns->name, $doc );
 }
 
+my $noops = {
+    commit   => sub { },
+    rollback => sub { }
+};
+
+#===================================
+sub _update_unique_keys {
+#===================================
+    my ( $self, $doc, $action, $on_unique ) = @_;
+    my $meta    = Class::MOP::class_of($doc);
+    my $uniques = $meta->unique_keys
+        or return $noops;
+
+    my $from_store = $doc->uid->from_store;
+
+    croak "Cannot overwrite a new doc of class ("
+        . $doc->original_class
+        . ") because it has unique keys"
+        if $action eq 'index_doc' and not $from_store;
+
+    my ( %old, %new );
+    for my $key ( keys %$uniques ) {
+        my $new = $doc->$key;
+
+        if ($from_store) {
+            my $old
+                = $doc->has_changed($key)
+                ? $doc->old_value($key)
+                : $doc->$key;
+            no warnings 'uninitialized';
+            next if $from_store and $old eq $new;
+            $old{$key} = $old if defined $old and length $old;
+        }
+
+        $new{$key} = $new if defined $new and length $new;
+    }
+
+    my $uniq = $self->es_unique;
+
+    if ( my %failed = $uniq->multi_create(%new) ) {
+        if ($on_unique) {
+            $on_unique->( $doc, \%failed );
+            return;
+        }
+        croak "Unique keys already exist: "
+            . join( ', ', map { $_ . '/' . $failed{$_} } sort keys %failed );
+
+    }
+    return {
+        commit   => sub { $uniq->multi_delete(%old); },
+        rollback => sub { $uniq->multi_delete(%new); }
+    };
+}
+
 #===================================
 sub _handle_error {
 #===================================
@@ -367,7 +456,7 @@ sub _handle_error {
 
     die $error
         unless $on_conflict
-        and $error =~ /ElasticSearch::Error::Conflict/;
+            and $error =~ /ElasticSearch::Error::Conflict/;
 
     my $new;
     if ( my $current_version = $error->{-vars}{current_version} ) {
@@ -395,8 +484,10 @@ sub delete_doc {
     my $uid = delete $args{uid}
         or croak "No UID passed to delete_doc()";
 
+    my $unique = $self->_delete_unique_keys($uid);
     my $result = $self->store->delete_doc( $uid, %args )
         or return;
+    $unique->{commit}->();
 
     $uid->update_from_store($result);
 
@@ -405,6 +496,31 @@ sub delete_doc {
         $scope->delete_object( $ns->name, $uid );
     }
     return $uid;
+}
+
+#===================================
+sub _delete_unique_keys {
+#===================================
+    my ( $self, $uid ) = @_;
+
+    my $doc = $self->get_doc( uid => $uid, ignore_missing => 1 )
+        or return $noops;
+
+    my $meta = Class::MOP::class_of($doc);
+    my $uniques = $meta->unique_keys or return $noops;
+
+    my %old;
+    for my $key ( keys %$uniques ) {
+        my $old
+            = $doc->has_changed($key)
+            ? $doc->old_value($key)
+            : $doc->$key;
+        $old{$key} = $old if defined $old and length $old;
+    }
+    my $uniq = $self->es_unique;
+    return {
+        commit => sub { $uniq->multi_delete(%old) }
+    };
 }
 
 #===================================
@@ -641,7 +757,8 @@ L<create_doc()|Elastic::Model::Store/"create_doc()">.
 
 If there is a L</current_scope()> then the object is also stored there.
 
-Also see the L<Elastic::Model::Role::Doc/on_conflict> parameter.
+Also see the L<Elastic::Model::Role::Doc/on_conflict> and
+L<Elastic::Model::Role::Doc/on_unique> parameters.
 
 =head3 delete_doc()
 
@@ -691,6 +808,13 @@ known to the model.
     $es = $model->es
 
 Returns the L<ElasticSearch> instance that was passed to L</"new()">.
+
+=head3 es_unique
+
+    $uniq = $model->es_unique
+
+Returns the L<ElasticSearchX::UniqueKey> instance pointing to the index
+specified with L<has_unique_index|Elastic::Model/Custom unique key index>.
 
 =head3 store
 

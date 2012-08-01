@@ -56,15 +56,14 @@ $ns->index('myapp3')->refresh;
 $new->refresh;
 
 cmp_deeply
-    index_count(index=>'myapp3'),
-    {myapp3 => 65, myapp2 => 131 },
+    index_count( index => 'myapp3' ),
+    { myapp3 => 65, myapp2 => 131 },
     'myapp3 UIDs unchanged';
 
 cmp_deeply
-    index_count(index=>'myapp4'),
-    {myapp4 => 65, myapp2 => 131 },
+    index_count( index => 'myapp4' ),
+    { myapp4 => 65, myapp2 => 131 },
     'myapp4 UIDs updated';
-
 
 # Reindex just myapp2 to myapp4
 $new->delete;
@@ -73,15 +72,14 @@ $ns->index('myapp3')->refresh;
 $new->refresh;
 
 cmp_deeply
-    index_count(index=>'myapp3'),
-    {myapp3 => 65, myapp4 => 131 },
+    index_count( index => 'myapp3' ),
+    { myapp3 => 65, myapp4 => 131 },
     'myapp3 UIDs updated';
 
 cmp_deeply
-    index_count(index=>'myapp4'),
+    index_count( index => 'myapp4' ),
     {},
     'myapp4 has no UIDs';
-
 
 done_testing;
 

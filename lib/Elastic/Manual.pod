@@ -70,6 +70,10 @@ NoSQL document store like ElasticSearch.
 
 Fine-tuning how the attributes in your Elastic::Doc classes are indexed.
 
+=head2 L<Elastic::Manual::Attributes::Unique>
+
+Making attributes in your Elastic::Doc classes unique.
+
 =head2 L<Elastic::Manual::Reindexing>
 
 How to reindex your data when you make changes to your attributes.

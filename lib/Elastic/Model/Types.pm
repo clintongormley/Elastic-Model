@@ -3,6 +3,7 @@ package Elastic::Model::Types;
 use strict;
 use warnings;
 use ElasticSearch();
+use ElasticSearchX::UniqueKey();
 
 use MooseX::Types::Moose qw(:all);
 use MooseX::Types::Structured qw (Dict Optional Map);
@@ -15,6 +16,7 @@ use MooseX::Types -declare => [ qw(
         CoreFieldType
         DynamicMapping
         ES
+        ES_UniqueKey
         FieldType
         GeoPoint
         HighlightArgs
@@ -86,6 +88,10 @@ coerce ES, from ArrayRef, via {
     s/^:/127.0.0.1:/ for @servers;
     ElasticSearch->new( servers => \@servers );
 };
+
+#===================================
+class_type ES_UniqueKey, { class => 'ElasticSearchX::UniqueKey' };
+#===================================
 
 #===================================
 subtype StoreMapping, as enum( [ 'yes', 'no' ] );

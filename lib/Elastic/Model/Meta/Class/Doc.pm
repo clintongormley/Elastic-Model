@@ -2,7 +2,7 @@ package Elastic::Model::Meta::Class::Doc;
 
 use Moose::Role;
 
-use MooseX::Types::Moose qw(HashRef);
+use MooseX::Types::Moose qw(Maybe HashRef);
 use Carp;
 use namespace::autoclean;
 use Variable::Magic qw(cast wizard);
@@ -16,6 +16,15 @@ has 'mapping' => (
     isa     => HashRef,
     is      => 'rw',
     default => sub { {} }
+);
+
+#===================================
+has 'unique_keys' => (
+#===================================
+    is      => 'ro',
+    isa     => Maybe [HashRef],
+    lazy    => 1,
+    builder => '_build_unique_keys'
 );
 
 #===================================
@@ -33,6 +42,26 @@ sub new_stub {
     $obj->_can_inflate(1);
     cast %$obj, $wiz;
     return $obj;
+}
+
+#===================================
+sub _build_unique_keys {
+#===================================
+    my $self = shift;
+    my %keys;
+    my %key_names;
+    for my $attr ( $self->get_all_attributes ) {
+        next unless $attr->can('unique_key');
+        my $key = $attr->unique_key;
+        next unless defined $key and length $key;
+
+        croak "Duplicate unique_key ($key) in class ("
+            . $self->original_class . ')'
+            if $key_names{$key}++;
+
+        $keys{ $attr->name } = $key;
+    }
+    return %keys ? \%keys : undef;
 }
 
 #===================================
@@ -58,10 +87,18 @@ You shouldn't need to use anything from this class directly.
 
 =head2 mapping
 
-    $mapping = $meta->mapping($mapping);
+    \%mapping = $meta->mapping($mapping);
 
 Used to store custom mapping config for a class.  Use the
 L<Elastic::Doc/"has_mapping">  sugar instead of calling this method directly.
+
+=head1 unique_keys
+
+    \%unique_keys = $meta->unique_keys
+
+Returns a hashref whose keys are the attribute names, and whose values are
+the value specified in L<Elastic::Manual::Attributes/unique_key>.  If there
+are no unique keys, returns C<undef>.
 
 =head1 METHODS
 

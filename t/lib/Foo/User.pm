@@ -22,14 +22,14 @@ has 'email' => (
 #===================================
 has 'lazy' => (
 #===================================
-    is => 'ro',
-    isa => 'Str',
-    lazy => 1,
+    is      => 'ro',
+    isa     => 'Str',
+    lazy    => 1,
     builder => '_build_lazy'
 );
 
 #===================================
-sub _build_lazy { 'lazy' }
+sub _build_lazy {'lazy'}
 #===================================
 
 no Moose;

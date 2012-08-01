@@ -572,7 +572,8 @@ All other metadta is thrown away.
 
 Deletes all docs matching the query and returns a hashref indicating
 success. Any docs that are stored in a live L<scope|Elastic::Model::Scope>
-or are cached somewhere are not removed.
+or are cached somewhere are not removed. Any
+L<unique keys|Elastic::Manual::Attributes::Unique> are not removed.
 
 This should really only be used once you are sure that the matching docs
 are out of circulation.  Also, it is more efficient to just delete a whole index
