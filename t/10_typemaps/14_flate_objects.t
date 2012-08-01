@@ -81,6 +81,7 @@ my ( $de, $in );
         'doc',
         {   email => "john\@foo.com",
             name  => "John",
+            lazy  => 'lazy',
             uid   => { id => 1, index => "foo", type => "user" },
         }
     );
@@ -98,6 +99,7 @@ my ( $de, $in );
     test_doc_attr(
         'doc_exname',
         {   email => "john\@foo.com",
+            lazy  => 'lazy',
             uid   => { id => 1, index => "foo", type => "user" },
         }
     );

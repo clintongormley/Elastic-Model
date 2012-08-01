@@ -133,9 +133,8 @@ sub class_deflator {
         for ( keys %deflators ) {
             my $attr = $attrs->{$_};
             unless ( $attr->has_value($obj) ) {
-                next unless $attr->has_builder;
-                my $reader = $attr->get_read_method_ref;
-                $obj->$reader;
+                next unless $attr->has_builder || $attr->has_default;
+                $attr->get_read_method_ref->($obj);
             }
             my $val = $attr->get_raw_value($obj);
             eval { $hash{$_} = $deflators{$_}->($val); 1 } and next;

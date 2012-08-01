@@ -17,6 +17,7 @@ our @mapping = (
             email     => { type => "string" },
             name      => { type => "string" },
             timestamp => { type => "date" },
+            lazy      => { type => "string" },
             uid       => $uid,
         },
     },
@@ -43,6 +44,7 @@ our @mapping = (
         properties => {
             email     => { type => "string" },
             timestamp => { type => "date" },
+            lazy      => { type => "string" },
             uid       => $uid,
         },
 
