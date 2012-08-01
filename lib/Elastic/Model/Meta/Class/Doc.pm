@@ -5,6 +5,10 @@ use Moose::Role;
 use MooseX::Types::Moose qw(HashRef);
 use Carp;
 use namespace::autoclean;
+use Variable::Magic qw(cast wizard);
+
+my $wiz = wizard( map { $_ => \&_inflate } qw(fetch store exists delete) );
+my %exclude = map { $_ => 1 } qw(uid _can_inflate _source);
 
 #===================================
 has 'mapping' => (
@@ -27,7 +31,16 @@ sub new_stub {
     $obj->_set_uid($uid);
     $obj->_set_source($source) if $source;
     $obj->_can_inflate(1);
+    cast %$obj, $wiz;
     return $obj;
+}
+
+#===================================
+sub _inflate {
+#===================================
+    my ( $obj, undef, $key ) = @_;
+    return if $exclude{ $key || '' };
+    $obj->_inflate_doc if $obj->{_can_inflate};
 }
 
 1;
