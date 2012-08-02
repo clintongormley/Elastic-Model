@@ -156,12 +156,19 @@ You can also look for information at:
 
 =item * IRC
 
-The L<#elasticsearch|irc://irc.freenode.net/elasticsearch> channel on
+The L<#elasticsearch|irc://irc.perl.org/elasticsearch> channel on C<irc.perl.org>
+is a Perl-specific channel for L<Elastic::Model> and L<ElasticSearch>.
+
+The main ElasticSearch channel: L<#elasticsearch|irc://irc.freenode.net/elasticsearch> channel on
 C<irc.freenode.net>.
 
 =item * Mailing list
 
-The main L<ElasticSearch mailing list|http://www.elasticsearch.org/community/forum/>.
+The Elastic::Model mailing list is available on:
+L<https://groups.google.com/forum/#!forum/elastic-model>.
+
+The main ElasticSearch mailing list can be found on
+L<http://www.elasticsearch.org/community/forum/>.
 
 =item * GitHub
 
