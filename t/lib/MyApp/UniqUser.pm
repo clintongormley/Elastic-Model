@@ -15,7 +15,7 @@ has 'email' => (
     is         => 'rw',
     isa        => 'Str',
     required   => 1,
-    unique_key => 'email',
+    unique_key => 'key_email',
     trigger    => sub { shift->clear_compound },
 );
 
@@ -25,7 +25,7 @@ has 'account_type' => (
     is         => 'rw',
     isa        => 'Str',
     required   => 1,
-    unique_key => 'account',
+    unique_key => 'key_account_type',
     trigger    => sub { shift->clear_compound },
 );
 
@@ -34,7 +34,7 @@ has 'optional' => (
 #===================================
     is         => 'rw',
     isa        => 'Str',
-    unique_key => 'optional',
+    unique_key => 'key_optional',
     clearer    => 'clear_optional'
 );
 
@@ -47,7 +47,7 @@ has 'compound' => (
     lazy       => 1,
     clearer    => 'clear_compound',
     default    => sub { $_[0]->account_type . ':' . $_[0]->email },
-    unique_key => 'compound',
+    unique_key => 'key_compound',
 );
 
 no Elastic::Doc;

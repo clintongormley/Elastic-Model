@@ -19,9 +19,7 @@ ok my $ns = $model->namespace('myapp'), 'Got ns';
 ok $ns->index->create, 'Create index myapp';
 ok my $domain = $model->domain('myapp'), 'Got domain';
 
-is $model->meta->unique_index,
-    'myapp1',
-    'Unique index set';
+is $model->meta->unique_index, 'myapp1', 'Unique index set';
 
 isa_ok
     my $uniq = $model->es_unique,
@@ -44,9 +42,9 @@ ok $user->save, 'Save user';
 
 cmp_deeply + {
     $uniq->multi_exists(
-        email        => 'john@foo.com',
-        account_type => 'facebook',
-        compound     => 'facebook:john@foo.com'
+        key_email        => 'john@foo.com',
+        key_account_type => 'facebook',
+        key_compound     => 'facebook:john@foo.com'
     )
     },
     {}, 'Unique keys created';
@@ -61,22 +59,22 @@ ok $user->save, 'Unique changed user saved';
 
 cmp_deeply + {
     $uniq->multi_exists(
-        email        => 'john@foo.com',
-        account_type => 'facebook',
-        compound     => 'facebook:john@foo.com'
+        key_email        => 'john@foo.com',
+        key_account_type => 'facebook',
+        key_compound     => 'facebook:john@foo.com'
     )
     },
     {
-    email    => 'john@foo.com',
-    compound => 'facebook:john@foo.com'
+    key_email    => 'john@foo.com',
+    key_compound => 'facebook:john@foo.com'
     },
     'Old unique keys removed';
 
 cmp_deeply + {
     $uniq->multi_exists(
-        email        => 'james@foo.com',
-        account_type => 'facebook',
-        compound     => 'facebook:james@foo.com'
+        key_email        => 'james@foo.com',
+        key_account_type => 'facebook',
+        key_compound     => 'facebook:james@foo.com'
     )
     },
     {}, 'New unique keys created';
@@ -94,7 +92,7 @@ isa_ok $user = $domain->new_doc(
     'MyApp::UniqUser', 'User';
 
 throws_ok sub { $user->save },
-    qr{Unique keys already exist: account_type/facebook},
+    qr{Unique keys already exist: key_account_type/facebook},
     'Save conflicted user';
 
 # On Unique
@@ -104,7 +102,7 @@ ok $user->save(
         my ( $u, $f ) = @_;
         $on_unique++;
         is refaddr $u, refaddr $user, 'User passed to on_unique';
-        cmp_deeply $f, { account_type => 'facebook' },
+        cmp_deeply $f, { key_account_type => 'facebook' },
             'Failed keys passed to on_unique';
     }
     ),
@@ -114,14 +112,14 @@ ok $on_unique, 'on_unique called';
 
 cmp_deeply + {
     $uniq->multi_exists(
-        email        => 'mary@foo.com',
-        compound     => 'facebook:mary@foo.com',
-        account_type => 'facebook',
+        key_email        => 'mary@foo.com',
+        key_compound     => 'facebook:mary@foo.com',
+        key_account_type => 'facebook',
     )
     },
     {
-    email    => 'mary@foo.com',
-    compound => 'facebook:mary@foo.com',
+    key_email    => 'mary@foo.com',
+    key_compound => 'facebook:mary@foo.com',
     },
     'New unique keys not created';
 
@@ -131,9 +129,9 @@ ok $user->save, 'Second user saved';
 
 cmp_deeply + {
     $uniq->multi_exists(
-        email        => 'mary@foo.com',
-        account_type => 'fb',
-        compound     => 'fb:mary@foo.com'
+        key_email        => 'mary@foo.com',
+        key_account_type => 'fb',
+        key_compound     => 'fb:mary@foo.com'
     )
     },
     {}, 'New unique keys created';
@@ -145,27 +143,27 @@ is $user->email('alice@foo.com'), 'alice@foo.com',
 
 # Update clashing
 throws_ok sub { $user->save },
-    qr{Unique keys already exist: account_type/facebook},
+    qr{Unique keys already exist: key_account_type/facebook},
     'Update to conflicted';
 
 cmp_deeply + {
     $uniq->multi_exists(
-        email        => 'mary@foo.com',
-        account_type => 'fb',
-        compound     => 'fb:mary@foo.com'
+        key_email        => 'mary@foo.com',
+        key_account_type => 'fb',
+        key_compound     => 'fb:mary@foo.com'
     )
     },
     {}, 'Old keys still exist';
 
 cmp_deeply + {
     $uniq->multi_exists(
-        email    => 'alice@foo.com',
-        compound => 'facebook:mary@foo.com'
+        key_email    => 'alice@foo.com',
+        key_compound => 'facebook:mary@foo.com'
     )
     },
     {
-    email    => 'alice@foo.com',
-    compound => 'facebook:mary@foo.com'
+    key_email    => 'alice@foo.com',
+    key_compound => 'facebook:mary@foo.com'
     },
     'New keys not created';
 
@@ -190,15 +188,15 @@ throws_ok sub { $user->save },
 
 cmp_deeply + {
     $uniq->multi_exists(
-        account_type => 'twitter',
-        email        => 'alex@foo.com',
-        compound     => 'twitter:alex@foo.com'
+        key_account_type => 'twitter',
+        key_email        => 'alex@foo.com',
+        key_compound     => 'twitter:alex@foo.com'
     )
     },
     {
-    account_type => 'twitter',
-    email        => 'alex@foo.com',
-    compound     => 'twitter:alex@foo.com'
+    key_account_type => 'twitter',
+    key_email        => 'alex@foo.com',
+    key_compound     => 'twitter:alex@foo.com'
     },
     'New keys rolled back';
 
@@ -208,10 +206,10 @@ is $user->optional('foo'), 'foo', 'Updated optional';
 ok $user->save, 'Saved with optional';
 cmp_deeply + {
     $uniq->multi_exists(
-        email        => 'mary@foo.com',
-        account_type => 'fb',
-        compound     => 'fb:mary@foo.com',
-        optional     => 'foo'
+        key_email        => 'mary@foo.com',
+        key_account_type => 'fb',
+        key_compound     => 'fb:mary@foo.com',
+        key_optional     => 'foo'
     )
     },
     {}, 'Optional key created';
@@ -219,16 +217,13 @@ ok $user->clear_optional, 'Optional cleared';
 ok $user->save,           'Saved without optional';
 cmp_deeply + {
     $uniq->multi_exists(
-        email        => 'mary@foo.com',
-        account_type => 'fb',
-        compound     => 'fb:mary@foo.com',
-        optional     => 'foo'
+        key_email        => 'mary@foo.com',
+        key_account_type => 'fb',
+        key_compound     => 'fb:mary@foo.com',
+        key_optional     => 'foo'
     )
     },
-    {
-    optional => 'foo'
-
-    },
+    { key_optional => 'foo' },
     'Optional key deleted';
 
 # Delete keys
@@ -236,16 +231,15 @@ ok $user->delete, 'User deleted';
 
 cmp_deeply + {
     $uniq->multi_exists(
-        email        => 'mary@foo.com',
-        account_type => 'fb',
-        compound     => 'fb:mary@foo.com'
+        key_email        => 'mary@foo.com',
+        key_account_type => 'fb',
+        key_compound     => 'fb:mary@foo.com'
     )
     },
     {
-    email        => 'mary@foo.com',
-    account_type => 'fb',
-    compound     => 'fb:mary@foo.com'
-
+    key_email        => 'mary@foo.com',
+    key_account_type => 'fb',
+    key_compound     => 'fb:mary@foo.com'
     },
     'Old keys deleted';
 

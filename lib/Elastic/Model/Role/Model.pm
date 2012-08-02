@@ -416,7 +416,8 @@ sub _update_unique_keys {
 
     my ( %old, %new );
     for my $key ( keys %$uniques ) {
-        my $new = $doc->$key;
+        my $unique_key = $uniques->{$key};
+        my $new        = $doc->$key;
 
         if ($from_store) {
             my $old
@@ -425,10 +426,10 @@ sub _update_unique_keys {
                 : $doc->$key;
             no warnings 'uninitialized';
             next if $from_store and $old eq $new;
-            $old{$key} = $old if defined $old and length $old;
+            $old{$unique_key} = $old if defined $old and length $old;
         }
 
-        $new{$key} = $new if defined $new and length $new;
+        $new{$unique_key} = $new if defined $new and length $new;
     }
 
     my $uniq = $self->es_unique;
@@ -515,7 +516,7 @@ sub _delete_unique_keys {
             = $doc->has_changed($key)
             ? $doc->old_value($key)
             : $doc->$key;
-        $old{$key} = $old if defined $old and length $old;
+        $old{ $uniques->{$key} } = $old if defined $old and length $old;
     }
     my $uniq = $self->es_unique;
     return {
