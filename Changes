@@ -1,3 +1,8 @@
+0.07    2012-08-02
+        ENHANCEMENT:
+         - Added Elastic::Model::SearchBuilder to automatically serialize
+           queries/filters like ->filterb( user => $user_doc )
+           or ->filterb( $uid )
 0.06    2012-08-02
         BUG:
          - The unique key was using the attribute name, rather than
