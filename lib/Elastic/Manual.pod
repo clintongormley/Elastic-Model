@@ -156,11 +156,12 @@ You can also look for information at:
 
 =item * IRC
 
-The L<#elasticsearch|irc://irc.perl.org/elasticsearch> channel on C<irc.perl.org>
-is a Perl-specific channel for L<Elastic::Model> and L<ElasticSearch>.
+The L<#elasticsearch|irc://irc.perl.org/elasticsearch> channel on
+C<irc.perl.org> is a Perl-specific channel for L<Elastic::Model> and
+L<ElasticSearch>.
 
-The main ElasticSearch channel: L<#elasticsearch|irc://irc.freenode.net/elasticsearch> channel on
-C<irc.freenode.net>.
+The main ElasticSearch channel:
+L<#elasticsearch|irc://irc.freenode.net/elasticsearch> on C<irc.freenode.net>.
 
 =item * Mailing list
 
