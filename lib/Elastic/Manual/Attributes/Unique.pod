@@ -138,6 +138,12 @@ correctly.
 If you use L<Elastic::Model::View/delete()> then you are responsible for
 removing the related keys yourself.
 
+=head2 Changing unique key names and reindexing
+
+The unique keys index will not be updated if you change the C<unique_key>
+name, and reindexing does not take unique keys into account at all.  It
+is up to you to manage any changes.
+
 =head1 SEE ALSO
 
 =over
