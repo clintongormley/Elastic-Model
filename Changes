@@ -1,3 +1,7 @@
+0.06    2012-08-02
+        BUG:
+         - The unique key was using the attribute name, rather than
+           the unique key name.
 0.05    2012-08-01
         ENHANCMENTS:
          - Added support for unique_keys via ElasticSearchX::UniqueKey
