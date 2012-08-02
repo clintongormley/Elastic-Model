@@ -11,11 +11,6 @@ BEGIN {
     use_ok('Elastic::Model::SearchBuilder') || print "Bail out!";
 }
 
-diag "";
-diag(
-    "Testing Elastic::Model::SearchBuilder $Elastic::Model::SearchBuilder::VERSION, Perl $], $^X"
-);
-
 my $a;
 ok $a = Elastic::Model::SearchBuilder->new, 'Instantiate';
 ok $a = $a->new, 'Instantiate from ref';
