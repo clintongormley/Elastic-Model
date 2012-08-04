@@ -97,12 +97,12 @@ L<on_unique|Elastic::Model::Role::Doc/on_unique> parameter:
 
     $doc->save(
         on_unique => sub {
-            my ($doc,$conflicts) = @_;
+            my ($doc,$failed) = @_;
             # do something
         }
     )
 
-The C<$conflicts> hashref will contain a hashref whose keys are the name
+The C<$failed> hashref will contain a hashref whose keys are the name
 of the L<unique_keys|Elastic::Manual::Attributes/unique_key> that have
 conflicts, and whose values are the values of those keys which already exist,
 and so cannot be overwritten. For instance:
