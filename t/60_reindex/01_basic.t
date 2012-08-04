@@ -4,7 +4,6 @@ use strict;
 use warnings;
 use Test::More 0.96;
 use Test::Exception;
-use Scalar::Util qw(refaddr weaken);
 use Test::Deep;
 use ElasticSearch;
 

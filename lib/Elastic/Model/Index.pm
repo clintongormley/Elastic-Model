@@ -32,6 +32,7 @@ sub reindex {
     my $bulk_size  = $args{bulk_size} || $size;
     my $dest_index = $self->name;
     my $model      = $self->model;
+    my $transform  = $args{transform} || sub {@_};
 
     printf "Reindexing domain ($domain) to index ($dest_index)\n" if $verbose;
 
@@ -47,7 +48,7 @@ sub reindex {
     # later, when they're used in docs that aren't being reindexed
     my @uids;
     my $doc_updater = sub {
-        my ($doc) = @_;
+        my ($doc) = $transform->(@_);
         push @uids, [ @{$doc}{qw(_index _type _id)} ];
         $doc->{_index} = $dest_index;
         return $doc;
@@ -266,6 +267,8 @@ L<namespace|Elastic::Model::Namespace>, pass in a list of C<@types>.
         scan            => '2m',
         quiet           => 0,
 
+        transform       => sub {...},
+
         on_conflict     => sub {...} | 'IGNORE'
         on_error        => sub {...} | 'IGNORE'
         uid_on_conflict => sub {...} | 'IGNORE'
@@ -313,6 +316,22 @@ scroll timeouts.
 If true (the default), L</repoint_uids()> will be called automatically to
 update any L<UIDs|Elastic::Model::UID> (which point at the old index) in
 indices other than the ones currently being reindexed.
+
+=item transform
+
+If you need to change the structure/data of your doc while reindexing, you
+can pass a C<transform> coderef.  This will be called before any changes
+have been made to the doc, and should return the new doc. For instance,
+to convert the single-value C<tag> field to an array of C<tags>:
+
+    $index->reindex(
+        'new_index',
+        'transform' => sub {
+            my $doc = shift;
+            $doc->{_source}{tags} = [ delete $doc->{_source}{tag} ];
+            return $doc
+        }
+    );
 
 =item on_conflict / on_error
 

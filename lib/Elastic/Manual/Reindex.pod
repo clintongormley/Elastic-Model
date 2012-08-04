@@ -58,13 +58,31 @@ L<reindex()|Elastic::Model::Index/reindex()>, but you can disable it with:
 
     $index->reindex( 'myapp:v1', repoint_uids => 0 );
 
+=head1 CHANGING DOC STRUCTURE WHILE REINDEXING
+
+If the structure of your Doc class has changed, then you may need to change
+the structure of each doc before reindexing it.  To do so, you can pass
+a C<transform> callback.
+
+The C<transform> sub is called before any other changes are made to your doc,
+and is passed the C<$doc> as its only parameter. It should return the new
+C<$doc>.
+
+For instance, to convert the single-value C<tag> field to an array of C<tags>,
+you could do:
+
+    $index->reindex(
+        'new_index',
+        'transform' => sub {
+            my $doc = shift;
+            $doc->{_source}{tags} = [ delete $doc->{_source}{tag} ];
+            return $doc
+        }
+    );
+
 =head1 TODO
 
 =over
-
-=item *
-
-Make custom changes to docs while reindexing
 
 =item *
 
