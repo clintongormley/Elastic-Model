@@ -4,6 +4,7 @@ use Moose;
 use namespace::autoclean;
 use MooseX::Types::Moose qw(:all);
 use Scalar::Util qw(refaddr);
+use Devel::GlobalDestruction;
 
 #===================================
 has '_objects' => (
@@ -103,6 +104,7 @@ sub delete_object {
 sub DEMOLISH {
 #===================================
     my $self = shift;
+    return if in_global_destruction;
     $self->model->detach_scope($self);
 }
 
