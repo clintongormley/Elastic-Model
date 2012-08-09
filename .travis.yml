@@ -14,4 +14,4 @@ before_install:
   - "cpanm Dist::Zilla"
   - "dzil authordeps | cpanm"
 install: "dzil listdeps | xargs cpanm"
-script: "dzil test --release"
+script: "dzil test --release --verbose"
