@@ -1,3 +1,11 @@
+0.08    2012-08-09
+        ENHANCEMENT:
+         - added a transform() parameter to reindex() to allow the user to
+           change the data structure while reindexing
+        BUG FIX:
+         - don't try to destroy scopes during global shutdown
+         - reindex() was loading all docs into memory, rather than processing
+           them in blocks
 0.07    2012-08-02
         ENHANCEMENT:
          - Added Elastic::Model::SearchBuilder to automatically serialize
