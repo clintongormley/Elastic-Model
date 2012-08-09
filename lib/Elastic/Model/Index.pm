@@ -71,12 +71,13 @@ sub reindex {
 
     my $source = $model->view->domain($domain)->size($size)->scan($scan);
     $model->es->reindex(
-        source      => $source->as_elements,
-        quiet       => !$verbose,
-        transform   => $updater,
-        bulk_size   => $bulk_size,
-        on_conflict => $args{on_conflict},
-        on_error    => $args{on_error},
+        source       => $source,
+        _method_name => 'shift_element',
+        quiet        => !$verbose,
+        transform    => $updater,
+        bulk_size    => $bulk_size,
+        on_conflict  => $args{on_conflict},
+        on_error     => $args{on_error},
     );
 
     return 1 unless $args{repoint_uids};
@@ -158,12 +159,13 @@ sub repoint_uids {
         my $source = $view->filterb( \@clauses )->scan($scan);
 
         $model->es->reindex(
-            source      => $source->as_elements,
-            bulk_size   => $bulk_size,
-            quiet       => 1,
-            transform   => $updater,
-            on_conflict => $args{on_conflict},
-            on_error    => $args{on_error},
+            source       => $source,
+            _method_name => 'shift_element',
+            bulk_size    => $bulk_size,
+            quiet        => 1,
+            transform    => $updater,
+            on_conflict  => $args{on_conflict},
+            on_error     => $args{on_error},
         );
 
     }
