@@ -33,56 +33,6 @@ my @objs = ( $user, $uid );
 my $a = Elastic::Model::SearchBuilder->new;
 
 test_queries(
-    'SCALAR',
-
-    'Object', $user,
-    {   bool => {
-            must => [
-                { term => { 'uid.index' => 'myapp' } },
-                { term => { 'uid.type'  => 'user' } },
-                { term => { 'uid.id'    => 1 } },
-            ]
-        }
-    },
-
-    'UID', $uid,
-    {   bool => {
-            must => [
-                { term => { 'uid.index' => 'myapp' } },
-                { term => { 'uid.type'  => 'user' } },
-                { term => { 'uid.id'    => 1 } },
-            ]
-        }
-    },
-);
-
-test_queries(
-    'HASHREF - no key',
-    'Object',
-    { '' => $user },
-    {   bool => {
-            must => [
-                { term => { 'uid.index' => 'myapp' } },
-                { term => { 'uid.type'  => 'user' } },
-                { term => { 'uid.id'    => 1 } },
-            ]
-        }
-    },
-
-    'UID',
-    { '' => $uid },
-    {   bool => {
-            must => [
-                { term => { 'uid.index' => 'myapp' } },
-                { term => { 'uid.type'  => 'user' } },
-                { term => { 'uid.id'    => 1 } },
-            ]
-        }
-    },
-
-);
-
-test_queries(
     'HASHREF - key',
     'Object',
     { 'user' => $user },

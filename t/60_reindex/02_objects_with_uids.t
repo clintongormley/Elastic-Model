@@ -88,7 +88,7 @@ sub index_count {
     my $terms = $model->es->search(
         @_,
         size   => 0,
-        facets => { index => { terms => { field => 'uid.index' } } }
+        facets => { index => { terms => { field => 'user.uid.index' } } }
     )->{facets}{index}{terms};
     return +{ map { $_->{term} => $_->{count} } @$terms };
 

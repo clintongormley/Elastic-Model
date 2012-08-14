@@ -105,9 +105,9 @@ sub repoint_uids {
     my $bulk_size  = $args{bulk_size} || $size;
     my $model      = $self->model;
     my $index_name = $self->name;
-    my $uids       = $args{uids} || [];
+    my $uids       = $args{uids} || {};
 
-    unless (@$uids) {
+    unless (%$uids) {
         print "No UIDs to repoint\n" if $verbose;
         return 1;
     }
@@ -116,6 +116,12 @@ sub repoint_uids {
     my @indices = grep { not $exclude{$_} } $model->all_live_indices;
 
     unless (@indices) {
+        print "No UIDs to repoint\n" if $verbose;
+        return 1;
+    }
+
+    my @uid_attrs = $self->_uid_attrs_for_indices(@indices);
+    unless (@uid_attrs) {
         print "No UIDs to repoint\n" if $verbose;
         return 1;
     }
@@ -131,47 +137,100 @@ sub repoint_uids {
     my %map;
     my $uid_updater = sub {
         my $uid = shift;
-        my $key = join "\0", @{$uid}{ 'index', 'type', 'id' };
-        $uid->{index} = $index_name
-            if $map{$key};
+        return unless $uids->{ $uid->{index} }{ $uid->{type} }{ $uid->{id} };
+        $uid->{index} = $index_name;
     };
 
     my $updater = $self->doc_updater( $doc_updater, $uid_updater );
 
-    printf( "Repointing %d UIDs\n", scalar @$uids ) if $verbose;
     local $| = $verbose;
 
-    while (@$uids) {
-        %map = ();
-        print "." if $verbose;
+    for my $index ( keys %$uids ) {
+        my $types = $uids->{$index};
+        for my $type ( keys %$types ) {
+            my @ids = keys %{ $types->{$type} };
 
-        my @clauses;
-        for ( splice @$uids, 0, $size ) {
-            $map{ join( "\0", @$_ ) } = 1;
-            push @clauses,
-                {
-                'uid.index' => $_->[0],
-                'uid.type'  => $_->[1],
-                'uid.id'    => $_->[2],
-                };
+            printf( "Repointing %d UIDs from %s/%s ",
+                0 + @ids, $index, $type )
+                if $verbose;
+
+            while (@ids) {
+                print "." if $verbose;
+
+                my $clauses
+                    = $self->_build_uid_clauses( \@uid_attrs, $index, $type,
+                    [ splice @ids, 0, $size ] );
+
+                my $source = $view->filter( or => $clauses )->scan($scan);
+                $model->es->reindex(
+                    source       => $source,
+                    _method_name => 'shift_element',
+                    bulk_size    => $bulk_size,
+                    quiet        => 1,
+                    transform    => $updater,
+                    on_conflict  => $args{on_conflict},
+                    on_error     => $args{on_error},
+                );
+            }
+            print "\n" if $verbose;
         }
-
-        my $source = $view->filterb( \@clauses )->scan($scan);
-
-        $model->es->reindex(
-            source       => $source,
-            _method_name => 'shift_element',
-            bulk_size    => $bulk_size,
-            quiet        => 1,
-            transform    => $updater,
-            on_conflict  => $args{on_conflict},
-            on_error     => $args{on_error},
-        );
-
     }
 
     print "\nDone\n" if $verbose;
     return 1;
+}
+
+#===================================
+sub _uid_attrs_for_indices {
+#===================================
+    my $self    = shift;
+    my @indices = @_;
+    my $mapping = $self->model->es->mapping( index => \@indices );
+    my %attrs   = map { $_ => 1 }
+        map { _find_uid_attrs( $_->{properties} ) }
+        map { values %$_ } values %$mapping;
+    return keys %attrs;
+
+}
+
+#===================================
+sub _find_uid_attrs {
+#===================================
+    my ( $mapping, $level ) = @_;
+
+    my @attrs;
+    $level = '' unless $level;
+
+    keys %$mapping;
+    while ( my ( $k, $v ) = each %$mapping ) {
+        next unless $v->{properties};
+        my $attr = $level ? "$level.$k" : $k;
+
+        if ( $k eq 'uid' and $v->{properties} and $v->{properties}{index} ) {
+            push @attrs, $attr;
+            next;
+        }
+        push @attrs, _find_uid_attrs( $v->{properties} || {}, $attr );
+    }
+    return @attrs;
+}
+
+#===================================
+sub _build_uid_clauses {
+#===================================
+    my ( $self, $uid_attrs, $index, $type, $ids ) = @_;
+    my @clauses;
+    for my $id (@$ids) {
+        push @clauses, map {
+            +{  and => [
+                    { term => { "$_.index" => $index } },
+                    { term => { "$_.type"  => $type } },
+                    { term => { "$_.id"    => $id } }
+                ]
+                }
+        } @$uid_attrs;
+    }
+    return \@clauses;
 }
 
 #===================================
@@ -386,8 +445,8 @@ Parameters:
 
 =item uids
 
-C<uids> is an array ref, containing a list of the stale
-L<UIDs|Elastic::Model::UID> which should be updated.
+C<uids> is a hash ref the stale L<UIDs|Elastic::Model::UID> which should be
+updated.
 
 For instance: you have reindexed C<myapp_v1> to C<myapp_v2>, but domain
 C<other> has documents with UIDs which point to C<myapp_v1>. You
@@ -395,10 +454,14 @@ can updated these by passing a list of the old UIDs, as follows:
 
     $index = $namespace->index('myapp_v2');
     $index->repoint_uids(
-        uids    => [
-            ['myapp_v1','user',1], # ie old_index, type, ID
-            ['myapp_v1','user',2],
-        ]
+        uids    => {                        # index
+            myapp_v1 => {                   # type
+                user => {
+                    1 => 1,                 # ids
+                    2 => 1,
+                }
+            }
+        }
     );
 
 =item exclude

@@ -33,48 +33,6 @@ my @objs = ( $user, $uid );
 my $a = Elastic::Model::SearchBuilder->new;
 
 test_filters(
-    'SCALAR',
-
-    'Object', $user,
-    {   and => [
-            { term => { 'uid.index' => 'myapp' } },
-            { term => { 'uid.type'  => 'user' } },
-            { term => { 'uid.id'    => 1 } },
-        ]
-    },
-
-    'UID', $uid,
-    {   and => [
-            { term => { 'uid.index' => 'myapp' } },
-            { term => { 'uid.type'  => 'user' } },
-            { term => { 'uid.id'    => 1 } },
-        ]
-    },
-);
-
-test_filters(
-    'HASHREF - no key',
-    'Object',
-    { '' => $user },
-    {   and => [
-            { term => { 'uid.index' => 'myapp' } },
-            { term => { 'uid.type'  => 'user' } },
-            { term => { 'uid.id'    => 1 } },
-        ]
-    },
-
-    'UID',
-    { '' => $uid },
-    {   and => [
-            { term => { 'uid.index' => 'myapp' } },
-            { term => { 'uid.type'  => 'user' } },
-            { term => { 'uid.id'    => 1 } },
-        ]
-    },
-
-);
-
-test_filters(
     'HASHREF - key',
     'Object',
     { 'user' => $user },
