@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use Test::More 0.96;
 use Test::Exception;
+use Test::Deep;
 
 use lib 't/lib';
 
@@ -202,6 +203,23 @@ test_uid(
         cache_key  => 'user;2'
     }
 );
+
+# Terms_indexed_for_field
+$ns->index('myapp2')->refresh;
+isa_ok $user = $domain->get( user => 1 ), 'MyApp::User', 'User';
+
+is_deeply $user->terms_indexed_for_field('email'),
+    {
+    _type   => "terms",
+    missing => 0,
+    other   => 0,
+    terms   => [
+        { count => 1, term => "foo.com" },
+        { count => 1, term => "clint" },
+    ],
+    total => 2,
+    },
+    'Terms indexed for field';
 
 ## DONE ##
 

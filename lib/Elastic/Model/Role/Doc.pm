@@ -169,6 +169,20 @@ sub has_been_deleted {
     !$self->model->doc_exists( uid => $uid, @_ );
 }
 
+#===================================
+sub terms_indexed_for_field {
+#===================================
+    my $self  = shift;
+    my $field = shift or croak "Missing required param (fieldname)";
+    my $size  = shift || 20;
+
+    my $uid = $self->uid;
+    return $self->model->view->domain( $uid->index )->type( $uid->type )
+        ->filterb( _id => $uid->id )
+        ->facets( field => { terms => { field => $field, size => 20 } } )
+        ->size(0)->search->facet('field');
+}
+
 1;
 
 __END__
@@ -473,6 +487,14 @@ been changed.
 
 Returns the original value that an attribute had before being changed, or
 C<undef>.
+
+=head2 terms_indexed_for_field()
+
+    $terms = $doc->terms_indexed_for_field( $fieldname, $size );
+
+This method is useful for debugging queries and analysis - it returns
+the actual terms (ie after analysis) that have been indexed for
+field C<$fieldname> in the current doc. C<$size> defaults to 20.
 
 =head2 Private methods
 
