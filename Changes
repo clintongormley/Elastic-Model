@@ -1,3 +1,22 @@
+0.09    2012-08-14
+        ENHANCEMENT:
+         - Added terms_indexed_for_field() to Elastic::Model::Role::Doc to aid
+           debugging.
+         - Added id() and type() convenience methods on Elastic::Model::Role::Doc
+           which call the equivalent method on the doc's UID
+
+        BUG FIX:
+         - Changed the mapping for UIDs to use the full path name, not
+           'just_name'.  * REQUIRES REINDEXING *
+            This fixes a major bug where all Doc class attributes in an object
+            were being indexed in the same fields, so it was impossible to
+            distinguish a search for (mother => $user) from (father => $user).
+            Unfortunately, this means it is no longer possible to search for just
+            any UID using queryb($uid), as it now needs the full path name for
+            the attribute, eg queryb( 'user.partner' => $user ).
+            Consequently, I've also had to change the Index->repoint_uids
+            to search in all possible UID attributes.
+
 0.08    2012-08-09
         ENHANCEMENT:
          - added a transform() parameter to reindex() to allow the user to
