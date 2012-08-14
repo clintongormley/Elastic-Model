@@ -46,10 +46,10 @@ sub reindex {
 
     # store all changed UIDs so that we can repoint them
     # later, when they're used in docs that aren't being reindexed
-    my @uids;
+    my %uids;
     my $doc_updater = sub {
         my ($doc) = $transform->(@_);
-        push @uids, [ @{$doc}{qw(_index _type _id)} ];
+        $uids{ $doc->{_index} }{ $doc->{_type} }{ $doc->{_id} } = 1;
         $doc->{_index} = $dest_index;
         return $doc;
     };
@@ -83,7 +83,7 @@ sub reindex {
     return 1 unless $args{repoint_uids};
 
     $self->repoint_uids(
-        uids        => \@uids,
+        uids        => \%uids,
         quiet       => !$verbose,
         exclude     => [ keys %map ],
         size        => $size,
