@@ -20,6 +20,7 @@ has 'uid' => (
     writer   => '_set_uid',
     traits   => ['Elastic::Model::Trait::Exclude'],
     exclude  => 1,
+    handles  => [ 'id', 'type' ]
 );
 
 #===================================
@@ -269,6 +270,27 @@ L<namespace|Elastic::Model::Namespace> contains multiple indices, it is up
 to you to ensure uniqueness.  Either leave the ID blank, in which case
 ElasticSearch will generate a unique ID, or ensure that the way you
 generate IDs will not cause a collision.
+
+=head2 type / id
+
+    $type = $doc->type;
+    $id   = $doc->id;
+
+C<type> and C<id> are provided as convenience, read-only accessors which
+call the equivalent accessor on L</uid>.
+
+You can defined your own C<id()> and C<type()> methods, in which case they
+won't be imported, or you can import them under a different name, eg:
+
+    package MyApp::User;
+    use Elastic::Doc;
+
+    with 'Elastic::Model::Role::Doc' => {
+        -alias => {
+            id   => 'doc_id',
+            type => 'doc_type',
+        }
+    };
 
 =head2 timestamp
 
