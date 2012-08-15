@@ -1,3 +1,7 @@
+0.10    2012-08-15
+        BUG FIX:
+         - Declare a minimum version for ElasticSearch::SearchBuilder
+
 0.09    2012-08-14
         ENHANCEMENT:
          - Added terms_indexed_for_field() to Elastic::Model::Role::Doc to aid
