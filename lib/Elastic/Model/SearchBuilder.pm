@@ -2,7 +2,7 @@ package Elastic::Model::SearchBuilder;
 
 use strict;
 use warnings;
-use ElasticSearch::SearchBuilder v0.14;
+use ElasticSearch::SearchBuilder 0.14;
 use parent 'ElasticSearch::SearchBuilder';
 use Carp;
 
