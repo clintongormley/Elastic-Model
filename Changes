@@ -1,3 +1,9 @@
+0.12    2012-09-22
+        ENHANCEMENT:
+         - Added support for retrieving partial objects (thanks to DIEGOK
+           for suggesting)
+         - Improved documentation (thanks to TIMB)
+
 0.11    2012-08-18
         ENHANCEMENT:
          - Variable::Magic v 0.51 allows us to remove the magic after inflating
