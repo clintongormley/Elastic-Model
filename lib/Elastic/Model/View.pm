@@ -851,8 +851,9 @@ scripting language. (You can also use L<Javascript, Python and Java|http://www.e
     $results     = $new_view->search->as_partials;
     $partial_obj = $results->next;
 
-If your objects are large, you may want to load only part of the object in your
-search results. You can specify which parts of the object to include or exclude
+If your objects are large, but you only need access to a few attributes to
+eg display search results, you may want to retrieve only the relevant parts of
+each object.  You can specify which parts of the object to include or exclude
 using C<include_paths> and C<exclude_paths>. If either of these is set
 then the full C<_source> field will not be loaded (unless you specify it
 explicitly using L</fields>).
