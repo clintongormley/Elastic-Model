@@ -130,8 +130,7 @@ sub explain {
     my $explain = $result->{_explanation}
         || return "No explanation\n";
 
-    my $text = sprintf
-        "Doc: [%s|%s|%s], Shard: [%s|%d]:\n",
+    my $text = sprintf "Doc: [%s|%s|%s], Shard: [%s|%d]:\n",
         map { defined $_ ? $_ : 'undef' }
         @{$result}{qw(_index _type _id _node _shard)};
 
