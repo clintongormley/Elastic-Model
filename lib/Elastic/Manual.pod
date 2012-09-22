@@ -74,7 +74,7 @@ Fine-tuning how the attributes in your Elastic::Doc classes are indexed.
 
 Making attributes in your Elastic::Doc classes unique.
 
-=head2 L<Elastic::Manual::Reindexing>
+=head2 L<Elastic::Manual::Reindex>
 
 How to reindex your data when you make changes to your attributes.
 

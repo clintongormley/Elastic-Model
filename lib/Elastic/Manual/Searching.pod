@@ -219,7 +219,7 @@ shouldn't make your scroll timeouts longer than they need to be.  The
 default is 1 minute, but you may be able to reduce that considerably depending
 on your use case.
 
-Of coure, sometimes consistency won't matter - it may be perfectly reasonable to
+Of course, sometimes consistency won't matter - it may be perfectly reasonable to
 show duplicates in keyword searches, but less reasonable to have duplicate or
 missing items in a list.
 

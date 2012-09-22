@@ -528,8 +528,40 @@ but uses more disk space, and the field needs to be setup correctly before use:
 
 =head1 NUMERIC FIELDS
 
-The following keyword applies only to fields of L</type> C<integer>,
-C<long>, C<float>, C<double>, C<short> or C<byte>.
+Numeric fields can have any of the following types:
+
+=over
+
+=item byte
+
+Range: -128 to 127
+
+=item short
+
+Range: -32,768 to 32,767
+
+=item integer
+
+Range: -2,147,483,648 to 2,147,483,647
+
+=item long
+
+Range: -9,223,372,036,854,775,808 to 9,223,372,036,854,775,807
+
+=item float
+
+Single-precision 32-bit IEEE 754 floating point
+
+=item double
+
+Double-precision 64-bit IEEE 754 floating point
+
+=back
+
+(See L<http://docs.oracle.com/javase/specs/jls/se7/html/jls-4.html#jls-4.2.3>
+for more on single or double value ranges.)
+
+The following keyword applies only to numeric fields.
 
 You can also use L</index>, L</include_in_all>, L</boost>, L</multi>,
 L</index_name>, L</unique_key>, L</store> and L</null_value>.
@@ -548,7 +580,8 @@ memory used.
 =head1 DATE FIELDS
 
 Dates in ElasticSearch are stored internally as C<long> values containing
-B<milli>seconds since the epoch.
+B<milli>seconds since the epoch. The maximum date range is 292269055 BC to
+292278994 AD.
 
 The following keywords apply only to fields of L</"type"> C<date>.
 You can also use L</index>, L</include_in_all>, L</boost>, L</multi>,
@@ -740,6 +773,12 @@ if an unknown field is included).
 
 =head2 path
 
+The C<path> keyword controls how the attribute names of an object are flattened
+into field names in elasticsearch. It can be set to C<full> (the default) or
+C<just_path>.
+
+For instance, given the following example:
+
     package MyApp::Types;
 
     use MooseX::Types -declare 'FullName';
@@ -762,21 +801,60 @@ if an unknown field is included).
     has 'husband' => (
         is      => 'ro',
         isa     => FullName,
+    );
+
+    has 'wife' => (
+        is      => 'ro',
+        isa     => FullName,
+    );
+
+A C<MyApp::Couple> object may look like this:
+
+    {
+        husband => { first => 'John', last => 'Smith' },
+        wife    => { first => 'Mary', last => 'Smith' }
+    }
+
+By default, this data would be flattened and stored as follows:
+
+    FIELD NAME        |  VALUES
+    ------------------|---------
+    husband.first     |  john
+    husband.last      |  smith
+    wife.first        |  mary
+    wife.last         |  smith
+
+These field names, or "paths", can also have the C<type> name prepended,
+so C<husband.first> could also be referred to as C<couple.husband.first>.
+
+The C<path> keyword can be used to control the construction of this path.  For
+instance, if C<MyApp::Couple> was defined as:
+
+    package MyApp::Couple;
+
+    use Moose;
+    use MyApp::Types qw(FullName);
+
+    has 'husband' => (
+        is      => 'ro',
+        isa     => FullName,
         path    => 'just_name'
     );
 
     has 'wife' => (
         is      => 'ro',
         isa     => FullName,
-        path    => 'full'
+        path    => 'just_name'
     );
 
-The C<path> keyword accepts the values C<full> and C<just_name>.  By default,
-nested attributes can be referenced by just their name, or by their path,
-using dot-notation, eg C<wife.first>, or C<couple.wife.first>.
+then the values would be indexed as:
 
-The C<path> setting, which defaults to C<full> (eg C<wife.first>) can be
-set to C<just_name>, in which case eg the name C<husband.first> won't be defined.
+    FIELD NAME        |  VALUES
+    ------------------|---------------
+    first             |  john, mary
+    last              |  smith, smith
+
+... also accessible as C<couple.first> and C<couple.last>.
 
 The C<path> keyword can also be combined with the L</"index_name"> keyword.
 
@@ -848,7 +926,7 @@ but refers to the top-most document, rather than the direct parent.
 
 You can have attributes in one class that refer to another L<Elastic::Doc>
 class.  For instance, a C<MyApp::Post> object could have, as an attribute,
-the C<MyApp::User> object to whome the post belongs.
+the C<MyApp::User> object to whom the post belongs.
 
 You may want to store just the L<Elastic::Model::UID> of the C<user> object,
 or you may want to include the user's name and email address, so that you

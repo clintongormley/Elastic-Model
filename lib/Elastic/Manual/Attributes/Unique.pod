@@ -6,18 +6,23 @@ package Elastic::Manual::Attributes::Unique;
 
 =head1 INTRODUCTION
 
-The only unique key available in ElasticSearch is the document ID. Typically,
-if you want a document to be unique, you use the unique value as the ID.
+The only unique constraint available in ElasticSearch is the document ID.
+Typically, if you want a document to be unique, you use the unique value as
+the ID.
+
 However, sometimes you don't want to do this. For instance, you may want to
-use the email address as a unique identifier for your user accounts, but
+use the email address as a unique constraint for your user accounts, but
 you also want to be able to link to a user account without exposing their
 email address, and let the user change their email address without having
 to update the ID of their user account wherever it is used.
 
+In this case, we want the ID of the user document to be auto-generated, but
+we also want the value of the C<email> attribute to be unique.
+
 =head1 STORING UNIQUE KEYS
 
-L<Elastic::Model> uses L<ElasticSearchX::UniqueKey> to enable unique key
-tracking.  Your unique keys are tracked in a special index which defaults to
+L<Elastic::Model> uses L<ElasticSearchX::UniqueKey> to enable unique constraints.
+Your unique attributes are tracked in a special index which defaults to
 C<"unique_key">, but which can be specified in your Model class:
 
     package MyApp;
@@ -30,10 +35,10 @@ C<"unique_key">, but which can be specified in your Model class:
 
 The index will be created automatically.
 
-=head1 MAKING AN ATTRIBUTE UNIQUE
+=head1 APPLYING UNIQUE CONSTRAINTS
 
 Any attribute whose value is a string (including numeric attributes) can
-be made unique:
+have a unique constraint applied:
 
     has 'email' => (
         is          => 'rw',
@@ -52,8 +57,8 @@ C<myapp_email>.
 
 =head1 COMPOUND KEYS
 
-It is easy to make a compound key unique. For instance, to combine the
-attributes C<account_type> and C<account_name> you could do:
+It is easy to make a compound key a unique constraint. For instance, to combine
+the attributes C<account_type> and C<account_name> you could do:
 
     has 'account_type' => (
         is         => 'rw',

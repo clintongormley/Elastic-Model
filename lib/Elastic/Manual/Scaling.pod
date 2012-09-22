@@ -136,7 +136,7 @@ for these domains, you have two options:
 
 =head3 Manually specify domain names
 
-Either specify the extra domains in you namespace declaration:
+You can manually specify the extra domains in your namespace declaration:
 
     has_namespace 'myapp' => {
         user => 'MyApp::User',
@@ -185,8 +185,8 @@ for a presentation discussing the strategies described below.
 =head2 Overallocation - the "Kagillion shards" solution
 
 The first scaling response to I<"our new business-started-on-a-shoestring will
-be HUGE!!!"> is: I<"Lets create an index with 1,000 shards and run it on a
-ZX Spectrum!">
+be HUGE!!!"> is: I<"Lets create an index with 10,000 shards and run it on an
+Amazon EC2 micro instance!">
 
 Unfortunately, this approach doesn't work. Each shard consumes resources:
 memory, filehandles, CPU.  Your ZX Spectrum won't handle 1,000 shards!
