@@ -350,7 +350,8 @@ eg C<MyApp::User>
 
     $results->as_partials()
 
-Sets the "short" accessors (eg L</next>, L</prev>) to return partial objects
+Sets the "short" accessors (eg L<Elastic::Model::Role::Iterator/next> or
+L<Elastic::Model::Role::Iterator/prev>) to return partial objects
 as specified by L<Elastic::Model::View/"include_paths / exclude_paths">.
 
 =head1 RESULT ACCESSORS
@@ -414,7 +415,7 @@ related object (eg a C<MyApp::User> object). For instance:
 Each of the methods listed below takes the result of the related
 C<_element> accessor in L<Elastic::Model::Role::Iterator> and inflates the
 related partial object as specified by
-L<Elastic::Model::View/"include_paths / exclude_paths". For instance:
+L<Elastic::Model::View/"include_paths / exclude_paths">. For instance:
 
     $object = $results->next_partial;
 
