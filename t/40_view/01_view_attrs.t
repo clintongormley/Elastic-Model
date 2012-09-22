@@ -608,6 +608,36 @@ test_view(
     { script_fields => { two => { script => 'yy' } } }
 );
 
+test_view(
+    'Include paths',
+    $view->include_paths('foo.*'),
+    {   partial_fields => { _partial_doc => { include => ['foo.*'] } },
+        fields => [ "_parent", "_routing" ],
+    }
+);
+
+test_view(
+    'Exclude paths',
+    $view->exclude_paths('foo.*'),
+    {   partial_fields => { _partial_doc => { exclude => ['foo.*'] } },
+        fields => [ "_parent", "_routing" ],
+    }
+);
+
+test_view(
+    'Include and exclude paths',
+    $view->include_paths( 'foo.*', 'fuz.*' )
+        ->exclude_paths( 'bar.*', 'baz.*' ),
+    {   partial_fields => {
+            _partial_doc => {
+                include => [ 'foo.*', 'fuz.*' ],
+                exclude => [ 'bar.*', 'baz.*' ]
+            }
+        },
+        fields => [ "_parent", "_routing" ],
+    }
+);
+
 ## timeout ##
 test_view(
     'New-timeout',

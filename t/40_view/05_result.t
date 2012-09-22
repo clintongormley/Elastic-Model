@@ -122,6 +122,22 @@ is
 
 like $result->explain, qr/product of:/, 'AdvResult->explain';
 
+# Partial docs #
+
+isa_ok $result = $view->queryb( { name => 'Aardwolf' } )    #
+    ->include_paths('name')                                 #
+    ->first(), 'Elastic::Model::Result', 'Partial';
+
+isa_ok my $doc = $result->partial, 'MyApp::User', 'Partial->partial';
+ok $doc->{name}, 'Partial has name';
+ok !$doc->{timestamp}, 'Partial has no timestamp';
+ok $doc->uid->is_partial, 'Partial UID is partial';
+
+isa_ok $doc = $result->object, 'MyApp::User', 'Partial->object';
+ok $doc->{name},      'Object has name';
+ok $doc->{timestamp}, 'Object has timestamp';
+ok !$doc->uid->is_partial, 'Object UID is not partial';
+
 done_testing;
 
 __END__

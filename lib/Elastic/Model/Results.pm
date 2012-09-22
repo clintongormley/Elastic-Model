@@ -274,6 +274,13 @@ eg C<MyApp::User>
 Sets the "short" accessors (eg L</next>, L</prev>) to return the raw result
 returned by ElasticSearch.
 
+=head2 as_partials()
+
+    $results->as_partials()
+
+Sets the "short" accessors (eg L</next>, L</prev>) to return partial objects
+as specified by L<Elastic::Model::View/"include_paths / exclude_paths">.
+
 =head1 ELEMENT ACCESSORS
 
 All of the accessors below have 4 forms:
@@ -293,6 +300,11 @@ an instance of C<MyApp::User>
 =item *
 
 Element, eg C<next_element> which returns the raw hashref from ElasticSearch
+
+=item *
+
+Partial Doc, eg C<next_partial> which returns a partial object as specified
+by L<Elastic::Model::View/"include_paths / exclude_paths">.
 
 =item *
 
@@ -316,7 +328,7 @@ Returns the first element, and resets the iterator so that a call
 to L</next> will return the second element. If there is
 no first element, it returns undef.
 
-Also C<first_result>, C<first_object>, C<first_element>
+Also C<first_result>, C<first_object>, C<first_element>, C<first_partial>
 
 =head2 next
 
@@ -330,7 +342,7 @@ element, then it will work like this:
     $results->next;        # returns undef, and resets iterator
     $results->next;        # returns first element
 
-Also C<next_result>, C<next_object>, C<next_element>
+Also C<next_result>, C<next_object>, C<next_element>, C<next_partial>
 
 =head2 prev
 
@@ -344,7 +356,7 @@ first element, then it will work like this:
     $results->prev;        # returns undef, and resets iterator to end
     $results->prev;        # returns last element
 
-Also C<prev_result>, C<prev_object>, C<prev_element>
+Also C<prev_result>, C<prev_object>, C<prev_element>, C<prev_partial>
 
 =head2 current
 
@@ -352,7 +364,7 @@ Also C<prev_result>, C<prev_object>, C<prev_element>
 
 Returns the current element, or undef
 
-Also C<current_result>, C<current_object>, C<current_element>
+Also C<current_result>, C<current_object>, C<current_element>, C<current_partial>
 
 =head2 last
 
@@ -363,7 +375,7 @@ to L</next> will return undef, and a second call to
 L</next> will return the first element If there is
 no last element, it returns undef.
 
-Also C<last_result>, C<last_object>, C<last_element>
+Also C<last_result>, C<last_object>, C<last_element>, C<last_partial>
 
 =head2 peek_next
 
@@ -371,7 +383,8 @@ Also C<last_result>, C<last_object>, C<last_element>
 
 Returns the next element (or undef), but doesn't move the iterator.
 
-Also C<peek_next_result>, C<peek_next_object>, C<peek_next_element>
+Also C<peek_next_result>, C<peek_next_object>, C<peek_next_element>,
+C<peek_next_partial>
 
 =head2 peek_prev
 
@@ -379,7 +392,8 @@ Also C<peek_next_result>, C<peek_next_object>, C<peek_next_element>
 
 Returns the previous element (or undef), but doesn't move the iterator.
 
-Also C<peek_prev_result>, C<peek_prev_object>, C<peek_prev_element>
+Also C<peek_prev_result>, C<peek_prev_object>, C<peek_prev_element>,
+C<peek_prev_partial>
 
 =head2 shift
 
@@ -388,7 +402,7 @@ Also C<peek_prev_result>, C<peek_prev_object>, C<peek_prev_element>
 Returns the L</first> element and removes it from from the list. L</size>
 will decrease by 1. Returns undef if there are no more elements.
 
-Also C<shift_result>, C<shift_object>, C<shift_element>
+Also C<shift_result>, C<shift_object>, C<shift_element>, C<shift_partial>
 
 =head2 slice
 
@@ -408,7 +422,7 @@ If your iterator only contains 5 elements:
     $results->slice(3,10);         # elements 3..4
     $results->slice(10,10);        # an empty list
 
-Also C<slice_results>, C<slice_objects>, C<slice_elements>
+Also C<slice_results>, C<slice_objects>, C<slice_elements>, C<slice_partials>
 
 =head2 all
 
@@ -416,5 +430,5 @@ Also C<slice_results>, C<slice_objects>, C<slice_elements>
 
 Returns all L</elements> as a list.
 
-Also C<all_results>, C<all_objects>, C<all_elements>
+Also C<all_results>, C<all_objects>, C<all_elements>, C<all_partials>
 

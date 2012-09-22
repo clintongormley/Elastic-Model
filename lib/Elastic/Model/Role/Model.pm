@@ -348,6 +348,22 @@ sub get_doc_source {
 }
 
 #===================================
+sub new_partial_doc {
+#===================================
+    my ( $self, %args ) = @_;
+    my $uid = $args{uid}
+        or croak "No UID passed to new_partial_doc()";
+
+    my $source = $args{partial_source}
+        or croak "No (partial_source) passed to new_partial_doc()";
+
+    my $ns = $self->namespace_for_domain( $uid->index );
+
+    my $class = $ns->class_for_type( $uid->type );
+    return $class->meta->new_stub( $uid, $source );
+}
+
+#===================================
 sub doc_exists {
 #===================================
     my ( $self, %args ) = @_;
@@ -361,8 +377,15 @@ sub save_doc {
 #===================================
     my ( $self, %args ) = @_;
 
-    my $doc  = delete $args{doc};
-    my $uid  = $doc->uid;
+    my $doc = delete $args{doc};
+    my $uid = $doc->uid;
+
+    croak "Cannot save partial doc type ("
+        . $uid->type
+        . ") id ("
+        . $uid->id . ")"
+        if $uid->is_partial;
+
     my $data = $self->deflate_object($doc);
 
     my $action
@@ -457,7 +480,7 @@ sub _handle_error {
 
     die $error
         unless $on_conflict
-            and $error =~ /ElasticSearch::Error::Conflict/;
+        and $error =~ /ElasticSearch::Error::Conflict/;
 
     my $new;
     if ( my $current_version = $error->{-vars}{current_version} ) {
@@ -779,6 +802,21 @@ method.
 
 Passes C<%args> through to L<Elastic::Model::Store/"search()">
 
+=head3 new_partial_doc()
+
+    part_doc = $model->new_partial_doc(
+        uid            => $uid,
+        partial_source => \%source
+    );
+
+Creates an instance of a partial doc (ie an object which contains only some of
+the values stored in elasticsearch). These partial docs are useful when
+your objects are large, and you need to display search results which
+require only a few attributes, instead of the whole object.
+
+Attempting to save a partial doc will cause an error to be thrown.
+
+You shouldn't need to call this method yourself.
 
 =head2 Miscellaneous
 

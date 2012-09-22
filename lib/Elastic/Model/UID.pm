@@ -54,6 +54,13 @@ has from_store => (
 );
 
 #===================================
+has 'is_partial' => (
+#===================================
+    is  => 'ro',
+    isa => Bool,
+);
+
+#===================================
 has cache_key => (
 #===================================
     is      => 'ro',
@@ -72,6 +79,19 @@ sub new_from_store {
     my %params = %{ shift() };
     $class->new(
         from_store => 1,
+        routing    => $params{fields}{routing},
+        map { $_ => $params{"_$_"} } qw(index type id version)
+    );
+}
+
+#===================================
+sub new_partial {
+#===================================
+    my $class  = shift;
+    my %params = %{ shift() };
+    $class->new(
+        from_store => 1,
+        is_partial => 1,
         routing    => $params{fields}{routing},
         map { $_ => $params{"_$_"} } qw(index type id version)
     );
@@ -211,6 +231,11 @@ an older version of the document will throw an exception.
 A boolean value indicating whether the C<UID> was loaded from ElasticSearch
 (C<true>) or created via L</"new()">.
 
+=head2 is_partial
+
+A boolean value indicating whether the C<UID> represents a partial or full
+object. Partial objects cannot be saved.
+
 =head2 cache_key
 
 A generated string combining the L</"type"> and the L</"id">
@@ -239,6 +264,19 @@ Creates a new UID with L</"from_store"> set to false.
     );
 
 This is called when creating a new UID for a doc that has been loaded
+from ElasticSearch. You shouldn't need to use this method directly.
+
+=head2 new_partial()
+
+    $uid = Elastic::Model::UID->new_partial(
+        _index   => $index,
+        _type    => $type,
+        _id      => $id,
+        _version => $version,
+        fields   => { routing => $routing }
+    );
+
+This is called when creating a new UID for a partial doc that has been loaded
 from ElasticSearch. You shouldn't need to use this method directly.
 
 =head2 clone()

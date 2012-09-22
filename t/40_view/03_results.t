@@ -18,7 +18,9 @@ ok my $ns = $model->namespace('myapp'), 'Got ns';
 
 create_users($model);
 
-isa_ok my $view = $model->view( domain => 'myapp' )->sort('name.untouched'),
+isa_ok my $view
+    = $model->view( domain => 'myapp' )->sort('name.untouched')
+    ->fields('_source')->include_paths('name'),
     'Elastic::Model::View', 'View';
 isa_ok my $it = $view->search, 'Elastic::Model::Results', 'Iterator';
 
@@ -240,6 +242,14 @@ sub test_single {
             isa_ok $r= $it->$name, 'Elastic::Model::Result',
                 "$desc $name as results - $id";
             is $r->id, $id, "$desc $name as results ID - $id";
+            $reset->();
+
+            $it->as_partials;
+            isa_ok $r= $it->$name, 'MyApp::User',
+                "$desc $name as partials - $id";
+            is $r->uid->is_partial, 1, "$desc $name as partials is partial";
+            ok $r->name, "$desc $name as partials has name";
+            ok !$r->{timestamp}, "$desc $name as partials has no timestamp";
 
         }
         else {
@@ -262,6 +272,10 @@ sub test_single {
 
             $it->as_results;
             is $r= $it->$name, undef, "$desc $name as results - undef";
+            $reset->();
+
+            $it->as_partials;
+            is $r= $it->$name, undef, "$desc $name as partials - undef";
 
         }
 

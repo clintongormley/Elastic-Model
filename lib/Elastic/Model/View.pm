@@ -69,7 +69,8 @@ has 'fields' => (
     isa     => ArrayRefOfStr,
     coerce  => 1,
     is      => 'rw',
-    default => sub { ['_source'] },
+    lazy    => 1,
+    builder => '_build_fields',
 );
 
 #===================================
@@ -147,6 +148,22 @@ has 'routing' => (
     isa    => ArrayRefOfStr,
     coerce => 1,
     is     => 'rw',
+);
+
+#===================================
+has 'include_paths' => (
+#===================================
+    is        => 'rw',
+    isa       => ArrayRef [Str],
+    predicate => '_has_include_paths'
+);
+
+#===================================
+has 'exclude_paths' => (
+#===================================
+    is        => 'rw',
+    isa       => ArrayRef [Str],
+    predicate => '_has_exclude_paths'
 );
 
 #===================================
@@ -256,7 +273,8 @@ around [
 
 around [
 #===================================
-    'domain', 'type', 'fields', 'sort', 'routing', 'stats'
+    'domain',        'type', 'fields', 'sort', 'routing', 'stats',
+    'include_paths', 'exclude_paths'
 #===================================
 ] => sub { _clone_args( \&_array_args, @_ ) };
 
@@ -313,6 +331,14 @@ sub _check_no_fields {
     my ( $self, $val ) = @_;
     croak "Use the (highlight) attribute to set the fields to highlight"
         if $val->{fields};
+}
+
+#===================================
+sub _build_fields {
+#===================================
+    my $self = shift;
+    return $self->_has_include_paths
+        || $self->_has_exclude_paths ? [] : ['_source'];
 }
 
 no Moose;
@@ -391,6 +417,13 @@ sub _build_search {
         $highlight = { %{ $self->highlighting || {} }, fields => $fields };
     }
 
+    my %partial;
+
+    $partial{include} = $self->include_paths
+        if $self->_has_include_paths;
+    $partial{exclude} = $self->exclude_paths
+        if $self->_has_exclude_paths;
+
     my %args = ( (
             map { $_ => $self->$_ }
                 qw(
@@ -407,7 +440,7 @@ sub _build_search {
         @_,
         version => 1,
         fields  => [ '_parent', '_routing', @{ $self->fields } ],
-
+        ( partial_fields => { _partial_doc => \%partial } ) x !!%partial
     );
 
     return { map { $_ => $args{$_} } grep { defined $args{$_} } keys %args };
@@ -809,6 +842,26 @@ object without requesting it from ElasticSearch in a separate (but automatic) st
 L<Script fields|http://www.elasticsearch.org/guide/reference/api/search/script-fields.html>
 can be generated using the L<mvel|http://mvel.codehaus.org/Language+Guide+for+2.0>
 scripting language. (You can also use L<Javascript, Python and Java|http://www.elasticsearch.org/guide/reference/modules/scripting>.)
+
+=head2 include_paths / exclude_paths
+
+    $new_view    = $view->include_paths('foo.*')
+                        ->exclude_paths('foo.bar.*','baz.*');
+
+    $results     = $new_view->search->as_partials;
+    $partial_obj = $results->next;
+
+If your objects are large, you may want to load only part of the object in your
+search results. You can specify which parts of the object to include or exclude
+using C<include_paths> and C<exclude_paths>. If either of these is set
+then the full C<_source> field will not be loaded (unless you specify it
+explicitly using L</fields>).
+
+The partial objects returned when L<Elastic::Model::Results/as_partials()>
+is in effect function exactly as real objects, except that they cannot
+be saved.
+
+See C<Partial fields> on L<http://www.elasticsearch.org/guide/reference/api/search/fields.html>.
 
 =head2 routing
 

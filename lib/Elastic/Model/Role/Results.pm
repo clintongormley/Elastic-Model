@@ -78,6 +78,24 @@ has '_as_objects' => (
     builder => '_as_objects_builder'
 );
 
+#===================================
+has '_as_partial' => (
+#===================================
+    isa     => CodeRef,
+    is      => 'ro',
+    lazy    => 1,
+    builder => '_as_partial_builder'
+);
+
+#===================================
+has '_as_partials' => (
+#===================================
+    isa     => CodeRef,
+    is      => 'ro',
+    lazy    => 1,
+    builder => '_as_partials_builder'
+);
+
 no Moose;
 
 #===================================
@@ -108,8 +126,7 @@ sub _as_object_builder {
         $raw->{_object} ||= do {
             my $uid = Elastic::Model::UID->new_from_store($raw);
             $model->get_doc( uid => $uid, source => $raw->{_source} );
-            }
-
+        };
     };
 }
 
@@ -123,6 +140,42 @@ sub _as_objects_builder {
             $_->{_object} ||= do {
                 my $uid = Elastic::Model::UID->new_from_store($_);
                 $m->get_doc( uid => $uid, source => $_->{_source} );
+            };
+        } @_;
+    };
+}
+
+#===================================
+sub _as_partial_builder {
+#===================================
+    my $self  = shift;
+    my $model = $self->model;
+    sub {
+        my $raw = shift or return;
+        $raw->{_partial} ||= do {
+            my $uid = Elastic::Model::UID->new_partial($raw);
+            $model->new_partial_doc(
+                uid            => $uid,
+                partial_source => $raw->{fields}->{_partial_doc}
+            );
+            }
+
+    };
+}
+
+#===================================
+sub _as_partials_builder {
+#===================================
+    my $self = shift;
+    my $m    = $self->model;
+    sub {
+        map {
+            $_->{_partial} ||= do {
+                my $uid = Elastic::Model::UID->new_partial($_);
+                $m->new_partial_doc(
+                    uid            => $uid,
+                    partial_source => $_->{fields}->{_partial_doc}
+                );
                 }
         } @_;
     };
@@ -143,6 +196,15 @@ sub as_objects {
     my $self = shift;
     $self->wrapper( $self->_as_object );
     $self->multi_wrapper( $self->_as_objects );
+    $self;
+}
+
+#===================================
+sub as_partials {
+#===================================
+    my $self = shift;
+    $self->wrapper( $self->_as_partial );
+    $self->multi_wrapper( $self->_as_partials );
     $self;
 }
 
@@ -182,6 +244,25 @@ sub slice_objects {
 #===================================
     my $self = shift;
     $self->_as_objects->( $self->slice_elements(@_) );
+}
+
+#===================================
+sub first_partial     { $_[0]->_as_partial->( $_[0]->first_element ) }
+sub last_partial      { $_[0]->_as_partial->( $_[0]->last_element ) }
+sub next_partial      { $_[0]->_as_partial->( $_[0]->next_element ) }
+sub prev_partial      { $_[0]->_as_partial->( $_[0]->prev_element ) }
+sub current_partial   { $_[0]->_as_partial->( $_[0]->current_element ) }
+sub peek_next_partial { $_[0]->_as_partial->( $_[0]->peek_next_element ) }
+sub peek_prev_partial { $_[0]->_as_partial->( $_[0]->peek_prev_element ) }
+sub shift_partial     { $_[0]->_as_partial->( $_[0]->shift_element ) }
+sub all_partials      { $_[0]->_as_partials->( $_[0]->all_elements ) }
+#===================================
+
+#===================================
+sub slice_partials {
+#===================================
+    my $self = shift;
+    $self->_as_partials->( $self->slice_elements(@_) );
 }
 
 1;
@@ -265,6 +346,13 @@ Sets the "short" accessors (eg L<Elastic::Model::Role::Iterator/next> or
 L<Elastic::Model::Role::Iterator/prev>) to return the object itself,
 eg C<MyApp::User>
 
+=head2 as_partials()
+
+    $results->as_partials()
+
+Sets the "short" accessors (eg L</next>, L</prev>) to return partial objects
+as specified by L<Elastic::Model::View/"include_paths / exclude_paths">.
+
 =head1 RESULT ACCESSORS
 
 Each of the methods listed below takes the result of the related
@@ -296,7 +384,7 @@ in an L<Elastic::Model::Result> object. For instance:
 =head1 OBJECT ACCESSORS
 
 Each of the methods listed below takes the result of the related
-C<_element> accessor in L<Elastic::Model::Role::Iterator> and inflate the
+C<_element> accessor in L<Elastic::Model::Role::Iterator> and inflates the
 related object (eg a C<MyApp::User> object). For instance:
 
     $object = $results->next_object;
@@ -320,3 +408,32 @@ related object (eg a C<MyApp::User> object). For instance:
 =head2 all_objects
 
 =head2 slice_objects
+
+=head1 PARTIAL OBJECT ACCESSORS
+
+Each of the methods listed below takes the result of the related
+C<_element> accessor in L<Elastic::Model::Role::Iterator> and inflates the
+related partial object as specified by
+L<Elastic::Model::View/"include_paths / exclude_paths". For instance:
+
+    $object = $results->next_partial;
+
+=head2 first_partial
+
+=head2 last_partial
+
+=head2 next_partial
+
+=head2 prev_partial
+
+=head2 current_partial
+
+=head2 peek_next_partial
+
+=head2 peek_prev_partial
+
+=head2 shift_partial
+
+=head2 all_partials
+
+=head2 slice_partials
