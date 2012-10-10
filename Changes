@@ -1,3 +1,9 @@
+0.13    2012-10-10
+        BUG FIXES:
+         - UIDs from search results were missing the routing value
+         - use Elastic::Doc on 'extend'ed classes didn't work as expected
+         - Minimum version of Moose set to 2.06
+
 0.12    2012-09-22
         ENHANCEMENT:
          - Added support for retrieving partial objects (thanks to DIEGOK
