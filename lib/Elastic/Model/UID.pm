@@ -79,7 +79,7 @@ sub new_from_store {
     my %params = %{ shift() };
     $class->new(
         from_store => 1,
-        routing    => $params{fields}{routing},
+        routing    => $params{fields}{_routing},
         map { $_ => $params{"_$_"} } qw(index type id version)
     );
 }
@@ -92,7 +92,7 @@ sub new_partial {
     $class->new(
         from_store => 1,
         is_partial => 1,
-        routing    => $params{fields}{routing},
+        routing    => $params{fields}{_routing},
         map { $_ => $params{"_$_"} } qw(index type id version)
     );
 }
