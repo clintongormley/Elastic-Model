@@ -12,9 +12,16 @@ Moose::Exporter->setup_import_methods(
             has_analyzer has_tokenizer has_filter has_char_filter
             has_unique_index)
     ],
-    base_class_roles => ['Elastic::Model::Role::Model'],
-    also             => 'Moose',
+    also => 'Moose',
 );
+
+#===================================
+sub init_meta {
+#===================================
+    shift;
+    my $meta = Moose->init_meta(@_);
+    Moose::Util::apply_all_roles( $meta, 'Elastic::Model::Role::Model' );
+}
 
 #===================================
 sub has_namespace {
