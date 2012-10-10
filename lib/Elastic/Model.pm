@@ -1,6 +1,6 @@
 package Elastic::Model;
 
-use Moose();
+use Moose 2.06 ();
 use Moose::Exporter();
 use Carp;
 use namespace::autoclean;
