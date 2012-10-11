@@ -358,7 +358,7 @@ A hash ref containing all filters plus their configuration, eg:
 
     {
         my_filter => {
-            type        => 'edgeNGram',
+            type        => 'edge_ngram',
             min_gram    => 1,
             max_gram    => 20
         }

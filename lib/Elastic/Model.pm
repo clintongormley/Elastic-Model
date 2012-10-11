@@ -119,7 +119,7 @@ ElasticSearch as soon as you are ready to use it.
     # Setup custom analyzers
 
     has_filter 'edge_ngrams' => (
-        type     => 'edgeNGram',
+        type     => 'edge_ngram',
         min_gram => 2,
         max_gram => 10
     );
@@ -252,7 +252,7 @@ multiple token filters.  For instance, each term could be broken down into
 "edge ngrams" (eg 'foo' => 'f','fo','foo') for partial matching.
 
     has_filter 'my_ngrams' => (
-        type        => 'edgeNGram',
+        type        => 'edge_ngram',
         min_gram    => 1,
         max_gram    => 10,
     );
