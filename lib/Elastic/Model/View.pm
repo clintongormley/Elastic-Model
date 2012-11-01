@@ -974,6 +974,3 @@ Should a delete be done synchronously (ie waits until all nodes within
 the replcation group have run the delete) or asynchronously (returns
 immediately, and performs the delete in the background).
 
-=head1 TODO
-
-Possibly support L<partial fields|https://github.com/elasticsearch/elasticsearch/issues/1570>

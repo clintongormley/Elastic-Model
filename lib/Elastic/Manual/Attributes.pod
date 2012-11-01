@@ -774,7 +774,7 @@ if an unknown field is included).
 =head2 path
 
 The C<path> keyword controls how the attribute names of an object are flattened
-into field names in elasticsearch. It can be set to C<full> (the default) or
+into field names in Elasticsearch. It can be set to C<full> (the default) or
 C<just_path>.
 
 For instance, given the following example:

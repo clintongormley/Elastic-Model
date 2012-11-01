@@ -133,7 +133,7 @@ sub analysis_for_mappings {
         for my $name ( _required_analyzers( $mappings->{$type} ) ) {
             next
                 if exists $analyzers{$name}
-                    || $self->is_default( 'analyzer', $name );
+                || $self->is_default( 'analyzer', $name );
             $analyzers{$name} = $self->analyzer($name)
                 or die "Unknown analyzer ($name) required by type ($type)";
         }
@@ -148,7 +148,7 @@ sub analysis_for_mappings {
             for my $name ( ref $vals ? @$vals : $vals ) {
                 next
                     if exists $defn{$name}
-                        || $self->is_default( $type, $name );
+                    || $self->is_default( $type, $name );
                 $defn{$name} = $self->$type($name)
                     or die
                     "Unknown $type ($name) required by analyzer '$analyzer_name'";

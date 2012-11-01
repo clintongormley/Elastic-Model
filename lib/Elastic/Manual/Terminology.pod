@@ -208,7 +208,7 @@ See also L</Text> and L</Term> and L</Query>.
 
 =head2 Term
 
-A term is an exact value that is indexed in elasticsearch. The terms
+A term is an exact value that is indexed in Elasticsearch. The terms
 C<foo>, C<Foo>, C<FOO> are NOT equivalent. Terms (ie exact values) can be
 searched for using "term" queries.
 

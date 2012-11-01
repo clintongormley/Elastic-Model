@@ -810,7 +810,7 @@ Passes C<%args> through to L<Elastic::Model::Store/"search()">
     );
 
 Creates an instance of a partial doc (ie an object which contains only some of
-the values stored in elasticsearch). These partial docs are useful when
+the values stored in Elasticsearch). These partial docs are useful when
 your objects are large, and you need to display search results which
 require only a few attributes, instead of the whole object.
 
