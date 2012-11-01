@@ -81,7 +81,7 @@ test_view(
 test_view( 'Set-type-str', $view->type('foo'), { type => ['foo'] } );
 
 ## query ##
-my $clause = { text => { foo => 'bar' } };
+my $clause = { match => { foo => 'bar' } };
 test_view(
     'New-query',
     $domain->view( query => $clause ),
@@ -102,7 +102,7 @@ test_view(
 test_view(
     'New-queryb-str',
     $domain->view( queryb => 'foo' ),
-    { query => { text => { _all => 'foo' } } }
+    { query => { match => { _all => 'foo' } } }
 );
 
 test_view(
@@ -111,8 +111,8 @@ test_view(
     {   query => {
             bool => {
                 should => [
-                    { text => { foo => "bar" } },
-                    { text => { foo => "baz" } }
+                    { match => { foo => "bar" } },
+                    { match => { foo => "baz" } }
                 ],
             },
         }
@@ -128,11 +128,11 @@ test_view(
 test_view(
     'Set-queryb-list',
     $view->queryb( foo => 'bar', foo => 'baz' ),
-    { query => { text => { foo => 'baz' } } }
+    { query => { match => { foo => 'baz' } } }
 );
 
 test_view( 'Set-queryb-str', $view->queryb('foo'),
-    { query => { text => { _all => 'foo' } } } );
+    { query => { match => { _all => 'foo' } } } );
 
 test_view(
     'Set-queryb-array',
@@ -140,8 +140,8 @@ test_view(
     {   query => {
             bool => {
                 should => [
-                    { text => { foo => "bar" } },
-                    { text => { foo => "baz" } }
+                    { match => { foo => "bar" } },
+                    { match => { foo => "baz" } }
                 ],
             },
         }
@@ -307,8 +307,8 @@ test_view(
     $view->queryb( foo => 1 )->filterb( bar => 1 )->post_filterb( baz => 1 ),
     {   query => {
             filtered => {
-                query  => { text => { foo => 1 } },
-                filter => { term => { bar => 1 } }
+                query  => { match => { foo => 1 } },
+                filter => { term  => { bar => 1 } }
             }
         },
         filter => { term => { baz => 1 } }
