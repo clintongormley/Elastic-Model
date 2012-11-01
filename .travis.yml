@@ -7,7 +7,7 @@ env: PERL_CPANM_OPT="--mirror http://cpan.mirrors.travis-ci.org  --mirror http:/
 before_install:
   - export OLD_DIR=`pwd`
   - cd /tmp
-  - curl -L -O https://github.com/downloads/elasticsearch/elasticsearch/elasticsearch-0.19.8.tar.gz
+  - curl -L -O https://github.com/downloads/elasticsearch/elasticsearch/elasticsearch-0.19.11.tar.gz
   - tar -xzf elasticsearch-0.19.11.tar.gz
   - elasticsearch-0.19.11/bin/elasticsearch
   - cd $OLD_DIR
