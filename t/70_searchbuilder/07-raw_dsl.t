@@ -26,7 +26,7 @@ test_queries(
         -filter => { bar => 2, -query => \{ term => { baz => 3 } } }
     },
     {   filtered => {
-            query  => { text => { foo => 1 } },
+            query  => { match => { foo => 1 } },
             filter => {
                 and => [
                     { query => { term => { baz => 3 } } },

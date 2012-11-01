@@ -124,6 +124,69 @@ test_filters(
 );
 
 test_filters(
+    'UNARY OPERATOR: -indices',
+
+    '-indices: V',
+    { -indices => 'V' },
+    qr/HASHREF/,
+
+    '-indices: {}',
+    { -indices => { indices => 'foo', filter => { foo => 1 } } },
+    { indices => { indices => ['foo'], filter => { term => { foo => 1 } } } },
+
+    '-indices: {""}',
+    {   -indices => {
+            indices         => 'foo',
+            filter          => { foo => 1 },
+            no_match_filter => ''
+        }
+    },
+    { indices => { indices => ['foo'], filter => { term => { foo => 1 } } } },
+
+    '-indices: {none}',
+    {   -indices => {
+            indices         => 'foo',
+            filter          => { foo => 1 },
+            no_match_filter => 'none'
+        }
+    },
+    {   indices => {
+            indices         => ['foo'],
+            filter          => { term => { foo => 1 } },
+            no_match_filter => 'none'
+        }
+    },
+
+    '-indices: {all}',
+    {   -indices => {
+            indices         => 'foo',
+            filter          => { foo => 1 },
+            no_match_filter => 'all'
+        }
+    },
+    {   indices => {
+            indices         => ['foo'],
+            filter          => { term => { foo => 1 } },
+            no_match_filter => 'all'
+        }
+    },
+
+    '-indices: {filter}',
+    {   -indices => {
+            indices         => 'foo',
+            filter          => { foo => 1 },
+            no_match_filter => { foo => 2 }
+        }
+    },
+    {   indices => {
+            indices         => ['foo'],
+            filter          => { term => { foo => 1 } },
+            no_match_filter => { term => { foo => 2 } }
+        }
+    },
+);
+
+test_filters(
     'UNARY OPERATOR: ids, not_ids',
     'IDS: 1',
     { -ids => 1 },
@@ -160,6 +223,41 @@ test_filters(
 );
 
 test_filters(
+    'UNARY OPERATOR: has_parent, not_has_parent',
+
+    'HAS_PARENT: V',
+    { -has_parent => 'V' },
+    qr/HASHREF/,
+
+    'HAS_PARENT: %V',
+    {   -has_parent =>
+            { query => { foo => 'bar' }, type => 'foo', _scope => 'scope' }
+    },
+    {   has_parent => {
+            query  => { match => { foo => 'bar' } },
+            _scope => 'scope',
+            type   => 'foo'
+        }
+    },
+
+    'NOT_HAS_PARENT: %V',
+    {   -not_has_parent =>
+            { query => { foo => 'bar' }, type => 'foo', _scope => 'scope' }
+    },
+    {   not => {
+            filter => {
+                has_parent => {
+                    query  => { match => { foo => 'bar' } },
+                    _scope => 'scope',
+                    type   => 'foo'
+                }
+            }
+        }
+    },
+
+);
+
+test_filters(
     'UNARY OPERATOR: has_child, not_has_child',
 
     'HAS_CHILD: V',
@@ -171,7 +269,7 @@ test_filters(
             { query => { foo => 'bar' }, type => 'foo', _scope => 'scope' }
     },
     {   has_child => {
-            query  => { text => { foo => 'bar' } },
+            query  => { match => { foo => 'bar' } },
             _scope => 'scope',
             type   => 'foo'
         }
@@ -184,7 +282,7 @@ test_filters(
     {   not => {
             filter => {
                 has_child => {
-                    query  => { text => { foo => 'bar' } },
+                    query  => { match => { foo => 'bar' } },
                     _scope => 'scope',
                     type   => 'foo'
                 }
@@ -198,11 +296,11 @@ test_filters(
     'UNARY OPERATOR: query, not_query',
     'QUERY: {}',
     { -query => { k => 'v' } },
-    { query => { text => { k => 'v' } } },
+    { query => { match => { k => 'v' } } },
 
     'NOT_QUERY: {}',
     { -not_query => { k => 'v' } },
-    { not => { filter => { query => { text => { k => 'v' } } } } },
+    { not => { filter => { query => { match => { k => 'v' } } } } },
 
 );
 
@@ -239,7 +337,7 @@ test_filters(
 
     'CACHE WITH QUERY',
     { -cache => { -query => { k => 'v' } } },
-    { fquery => { _cache => 1, query => { text => { k => 'v' } } } },
+    { fquery => { _cache => 1, query => { match => { k => 'v' } } } },
 
     'CACHE WITH AND',
     { -cache => { foo => 1, bar => 2 } },

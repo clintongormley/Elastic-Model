@@ -2,7 +2,7 @@ package Elastic::Model::SearchBuilder;
 
 use strict;
 use warnings;
-use ElasticSearch::SearchBuilder 0.14;
+use ElasticSearch::SearchBuilder 0.16;
 use parent 'ElasticSearch::SearchBuilder';
 use Carp;
 
@@ -40,7 +40,7 @@ sub _filter_field_terms {
 }
 
 #===================================
-sub _query_field_text {
+sub _query_field_match {
 #===================================
     my $self = shift;
     my ( $k, $op, $val ) = @_;
@@ -53,7 +53,7 @@ sub _query_field_text {
             ElasticUIDREF =>
                 sub { $self->_uid_to_terms( 'query', $k, $val ) },
             FALLBACK => sub {
-                $self->SUPER::_query_field_text( $k, $op, $val );
+                $self->SUPER::_query_field_match( $k, $op, $val );
             },
         }
     );

@@ -437,14 +437,14 @@ test_filters(
 
     '-name: QUERY KV',
     { -name => { foo => { -query => { k => 'v' } } } },
-    { fquery => { _name => 'foo', query => { text => { k => 'v' } } } },
+    { fquery => { _name => 'foo', query => { match => { k => 'v' } } } },
 
     '-name: -cache: QUERY KV',
     { -name => { foo => { -cache => { -query => { k => 'v' } } } } },
     {   fquery => {
             _name  => 'foo',
             _cache => 1,
-            query  => { text => { k => 'v' } }
+            query  => { match => { k => 'v' } }
         }
     },
 
@@ -455,7 +455,7 @@ test_filters(
                 fquery => {
                     _name  => 'foo',
                     _cache => 1,
-                    query  => { text => { k => 'v' } }
+                    query  => { match => { k => 'v' } }
                 }
             }
         }

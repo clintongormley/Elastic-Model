@@ -258,6 +258,118 @@ test_queries(
     },
 );
 
+test_queries(
+    'UNARY OPERATOR: match, not_match',
+    'MATCH: V',
+    { -match => 'v' },
+    qr/HASHREF/,
+
+    'MATCH: UNDEF',
+    { -match => undef },
+    qr/HASHREF/,
+
+    'MATCH: [V]',
+    { -match => ['v'] },
+    qr/HASHREF/,
+
+    'MATCH: {}',
+    {   -match => {
+            query                => "foo bar",
+            fields               => [ 'title', 'content' ],
+            use_dis_max          => 1,
+            tie_breaker          => 0.7,
+            boost                => 2,
+            operator             => 'and',
+            analyzer             => 'standard',
+            fuzziness            => 0.5,
+            fuzzy_rewrite        => 'constant_score_default',
+            rewrite              => 'constant_score_default',
+            max_expansions       => 1024,
+            minimum_should_match => 2,
+            prefix_length        => 2,
+            lenient              => 1,
+            slop                 => 10,
+            type                 => 'boolean'
+        }
+    },
+    {   multi_match => {
+            query                => "foo bar",
+            fields               => [ 'title', 'content' ],
+            use_dis_max          => 1,
+            tie_breaker          => 0.7,
+            boost                => 2,
+            operator             => 'and',
+            analyzer             => 'standard',
+            fuzziness            => 0.5,
+            fuzzy_rewrite        => 'constant_score_default',
+            rewrite              => 'constant_score_default',
+            max_expansions       => 1024,
+            minimum_should_match => 2,
+            prefix_length        => 2,
+            lenient              => 1,
+            slop                 => 10,
+            type                 => 'boolean'
+        }
+    },
+
+    'NOT_MATCH: V',
+    { -not_match => 'v' },
+    qr/HASHREF/,
+
+    'NOT_MATCH: UNDEF',
+    { -not_match => undef },
+    qr/HASHREF/,
+
+    'NOT_MATCH: [V]',
+    { -not_match => ['v'] },
+    qr/HASHREF/,
+
+    'NOT_MATCH: {}',
+    {   -not_match => {
+            query                => "foo bar",
+            fields               => [ 'title', 'content' ],
+            use_dis_max          => 1,
+            tie_breaker          => 0.7,
+            boost                => 2,
+            operator             => 'and',
+            analyzer             => 'standard',
+            fuzziness            => 0.5,
+            fuzzy_rewrite        => 'constant_score_default',
+            rewrite              => 'constant_score_default',
+            max_expansions       => 1024,
+            minimum_should_match => 2,
+            prefix_length        => 2,
+            lenient              => 1,
+            slop                 => 10,
+            type                 => 'boolean'
+        }
+    },
+    {   bool => {
+            must_not => [ {
+                    multi_match => {
+                        query                => "foo bar",
+                        fields               => [ 'title', 'content' ],
+                        use_dis_max          => 1,
+                        tie_breaker          => 0.7,
+                        boost                => 2,
+                        operator             => 'and',
+                        analyzer             => 'standard',
+                        fuzziness            => 0.5,
+                        fuzzy_rewrite        => 'constant_score_default',
+                        rewrite              => 'constant_score_default',
+                        max_expansions       => 1024,
+                        minimum_should_match => 2,
+                        prefix_length        => 2,
+                        lenient              => 1,
+                        slop                 => 10,
+                        type                 => 'boolean'
+                    }
+                }
+            ]
+        }
+    },
+);
+
 for my $op (qw(-qs -query_string)) {
     test_queries(
         "UNARY OPERATOR: $op",
@@ -291,7 +403,7 @@ for my $op (qw(-qs -query_string)) {
                 fuzzy_max_expansions         => 1024,
                 lenient                      => 1,
                 lowercase_expanded_terms     => 1,
-                minimum_number_should_match  => 3,
+                minimum_should_match         => 3,
                 phrase_slop                  => 10,
                 tie_breaker                  => 1.5,
                 use_dis_max                  => 1,
@@ -315,7 +427,7 @@ for my $op (qw(-qs -query_string)) {
                 lenient                      => 1,
                 fuzzy_max_expansions         => 1024,
                 lowercase_expanded_terms     => 1,
-                minimum_number_should_match  => 3,
+                minimum_should_match         => 3,
                 phrase_slop                  => 10,
                 tie_breaker                  => 1.5,
                 use_dis_max                  => 1,
@@ -359,7 +471,7 @@ for my $op (qw(-not_qs -not_query_string)) {
                 fuzzy_max_expansions         => 1024,
                 lenient                      => 1,
                 lowercase_expanded_terms     => 1,
-                minimum_number_should_match  => 3,
+                minimum_should_match         => 3,
                 phrase_slop                  => 10,
                 tie_breaker                  => 1.5,
                 use_dis_max                  => 1,
@@ -384,13 +496,13 @@ for my $op (qw(-not_qs -not_query_string)) {
                             fuzzy_rewrite        => 'constant_score_default',
                             fuzzy_max_expansions => 1024,
                             lenient              => 1,
-                            lowercase_expanded_terms    => 1,
-                            minimum_number_should_match => 3,
-                            phrase_slop                 => 10,
-                            tie_breaker                 => 1.5,
-                            use_dis_max                 => 1,
-                            quote_analyzer              => 'standard',
-                            quote_field_suffix          => '.unstemmed'
+                            lowercase_expanded_terms => 1,
+                            minimum_should_match     => 3,
+                            phrase_slop              => 10,
+                            tie_breaker              => 1.5,
+                            use_dis_max              => 1,
+                            quote_analyzer           => 'standard',
+                            quote_field_suffix       => '.unstemmed'
                         }
                     }
                 ]
@@ -417,9 +529,9 @@ test_queries(
         }
     },
     {   bool => {
-            must                        => [ { text => { k => 'v' } } ],
-            must_not                    => [ { text => { k => 'v' } } ],
-            should                      => [ { text => { k => 'v' } } ],
+            must                        => [ { match => { k => 'v' } } ],
+            must_not                    => [ { match => { k => 'v' } } ],
+            should                      => [ { match => { k => 'v' } } ],
             minimum_number_should_match => 1,
             disable_coord               => 1,
             boost                       => 2,
@@ -434,16 +546,16 @@ test_queries(
         }
     },
     {   bool => {
-            must => [ { text => { k => 'v' } }, { text => { k => 'v' } } ],
+            must => [ { match => { k => 'v' } }, { match => { k => 'v' } } ],
             must_not =>
-                [ { text => { k => 'v' } }, { text => { k => 'v' } } ],
-            should => [ { text => { k => 'v' } }, { text => { k => 'v' } } ]
+                [ { match => { k => 'v' } }, { match => { k => 'v' } } ],
+            should => [ { match => { k => 'v' } }, { match => { k => 'v' } } ]
         }
     },
 
     'bool: {[empty]}',
     { -bool => { must => [], must_not => undef, should => 'foo' } },
-    { bool => { should => [ { text => { _all => 'foo' } } ] } },
+    { bool => { should => [ { match => { _all => 'foo' } } ] } },
 
     'not_bool: {}',
     {   -not_bool => {
@@ -456,16 +568,16 @@ test_queries(
             must_not => [ {
                     bool => {
                         must => [
-                            { text => { k => 'v' } },
-                            { text => { k => 'v' } }
+                            { match => { k => 'v' } },
+                            { match => { k => 'v' } }
                         ],
                         must_not => [
-                            { text => { k => 'v' } },
-                            { text => { k => 'v' } }
+                            { match => { k => 'v' } },
+                            { match => { k => 'v' } }
                         ],
                         should => [
-                            { text => { k => 'v' } },
-                            { text => { k => 'v' } }
+                            { match => { k => 'v' } },
+                            { match => { k => 'v' } }
                         ]
                     }
                 }
@@ -489,8 +601,8 @@ test_queries(
         }
     },
     {   boosting => {
-            positive       => { text => { k => 'v' } },
-            negative       => { text => { k => 'v' } },
+            positive       => { match => { k => 'v' } },
+            negative       => { match => { k => 'v' } },
             negative_boost => 1
         }
     },
@@ -506,14 +618,16 @@ test_queries(
             positive => {
                 bool => {
                     should => [
-                        { text => { k => 'v' } }, { text => { k => 'v' } }
+                        { match => { k => 'v' } },
+                        { match => { k => 'v' } }
                     ]
                 }
             },
             negative => {
                 bool => {
                     should => [
-                        { text => { k => 'v' } }, { text => { k => 'v' } }
+                        { match => { k => 'v' } },
+                        { match => { k => 'v' } }
                     ]
                 }
             },
@@ -534,16 +648,16 @@ test_queries(
                         positive => {
                             bool => {
                                 should => [
-                                    { text => { k => 'v' } },
-                                    { text => { k => 'v' } }
+                                    { match => { k => 'v' } },
+                                    { match => { k => 'v' } }
                                 ]
                             }
                         },
                         negative => {
                             bool => {
                                 should => [
-                                    { text => { k => 'v' } },
-                                    { text => { k => 'v' } }
+                                    { match => { k => 'v' } },
+                                    { match => { k => 'v' } }
                                 ]
                             }
                         },
@@ -570,7 +684,7 @@ test_queries(
         }
     },
     {   custom_boost_factor => {
-            query        => { text => { k => 'v' } },
+            query        => { match => { k => 'v' } },
             boost_factor => 3
         }
     },
@@ -588,7 +702,7 @@ for my $op (qw(-dis_max -dismax)) {
         { $op => [ { k => 'v' }, { k => 'v' } ] },
         {   dis_max => {
                 queries =>
-                    [ { text => { k => 'v' } }, { text => { k => 'v' } } ]
+                    [ { match => { k => 'v' } }, { match => { k => 'v' } } ]
             }
         },
 
@@ -601,7 +715,7 @@ for my $op (qw(-dis_max -dismax)) {
         },
         {   dis_max => {
                 queries =>
-                    [ { text => { k => 'v' } }, { text => { k => 'v' } } ],
+                    [ { match => { k => 'v' } }, { match => { k => 'v' } } ],
                 tie_breaker => 1,
                 boost       => 2
             }
@@ -625,7 +739,7 @@ test_queries(
         }
     },
     {   custom_score => {
-            query  => { text => { k => 'v' } },
+            query  => { match => { k => 'v' } },
             script => 'script',
             lang   => 'lang',
             params => { foo => 'bar' }
@@ -643,7 +757,7 @@ test_queries(
     {   bool => {
             must_not => [ {
                     custom_score => {
-                        query  => { text => { k => 'v' } },
+                        query  => { match => { k => 'v' } },
                         script => 'script',
                         lang   => 'lang',
                         params => { foo => 'bar' }
@@ -666,7 +780,7 @@ test_queries(
         }
     },
     {   custom_filters_score => {
-            query => { text => { k => 'v' } },
+            query => { match => { k => 'v' } },
             filters => [ { filter => { term => { k => 'v' } }, boost => 2 } ],
             score_mode => 'first',
             max_boost  => 10
@@ -689,7 +803,7 @@ test_queries(
         }
     },
     {   custom_filters_score => {
-            query   => { text => { k => 'v' } },
+            query   => { match => { k => 'v' } },
             filters => [
                 { filter => { term => { k => 'v' } }, boost => 2 },
                 {   filter => { term => { k => 'v' } },
@@ -702,6 +816,52 @@ test_queries(
             max_boost  => 10
         }
     },
+);
+
+test_queries(
+    'UNARY OPERATOR: has_parent, not_has_parent',
+
+    'HAS_PARENT: V',
+    { -has_parent => 'V' },
+    qr/HASHREF/,
+
+    'HAS_PARENT: %V',
+    {   -has_parent => {
+            query  => { foo => 'bar' },
+            type   => 'foo',
+            _scope => 'scope',
+            boost  => 1
+        }
+    },
+    {   has_parent => {
+            query  => { match => { foo => 'bar' } },
+            _scope => 'scope',
+            type   => 'foo',
+            boost  => 1
+        }
+    },
+
+    'NOT_HAS_PARENT: %V',
+    {   -not_has_parent => {
+            query  => { foo => 'bar' },
+            type   => 'foo',
+            _scope => 'scope',
+            boost  => 1
+        }
+    },
+    {   bool => {
+            must_not => [ {
+                    has_parent => {
+                        query  => { match => { foo => 'bar' } },
+                        _scope => 'scope',
+                        boost  => 1,
+                        type   => 'foo'
+                    }
+                }
+            ]
+        }
+    },
+
 );
 
 test_queries(
@@ -720,7 +880,7 @@ test_queries(
         }
     },
     {   has_child => {
-            query  => { text => { foo => 'bar' } },
+            query  => { match => { foo => 'bar' } },
             _scope => 'scope',
             type   => 'foo',
             boost  => 1
@@ -738,7 +898,7 @@ test_queries(
     {   bool => {
             must_not => [ {
                     has_child => {
-                        query  => { text => { foo => 'bar' } },
+                        query  => { match => { foo => 'bar' } },
                         _scope => 'scope',
                         boost  => 1,
                         type   => 'foo'
@@ -768,7 +928,7 @@ test_queries(
         }
     },
     {   top_children => {
-            query              => { text => { foo => 'bar' } },
+            query              => { match => { foo => 'bar' } },
             _scope             => 'scope',
             type               => 'foo',
             score              => 'max',
@@ -790,7 +950,7 @@ test_queries(
     {   bool => {
             must_not => [ {
                     top_children => {
-                        query  => { text => { foo => 'bar' } },
+                        query  => { match => { foo => 'bar' } },
                         _scope => 'scope',
                         type   => 'foo',
                         ,
@@ -820,8 +980,8 @@ test_queries(
     'QUERY/FILTER',
     { k => 'v', -filter => { k => 'v' } },
     {   filtered => {
-            query  => { text => { k => 'v' } },
-            filter => { term => { k => 'v' } }
+            query  => { match => { k => 'v' } },
+            filter => { term  => { k => 'v' } }
         }
     },
 );
@@ -835,13 +995,13 @@ test_queries(
 
     '-indices: {}',
     { -indices => { indices => 'foo', query => { foo => 1 } } },
-    { indices => { indices => ['foo'], query => { text => { foo => 1 } } } },
+    { indices => { indices => ['foo'], query => { match => { foo => 1 } } } },
 
     '-indices: {""}',
     {   -indices =>
             { indices => 'foo', query => { foo => 1 }, no_match_query => '' }
     },
-    { indices => { indices => ['foo'], query => { text => { foo => 1 } } } },
+    { indices => { indices => ['foo'], query => { match => { foo => 1 } } } },
 
     '-indices: {none}',
     {   -indices => {
@@ -852,7 +1012,7 @@ test_queries(
     },
     {   indices => {
             indices        => ['foo'],
-            query          => { text => { foo => 1 } },
+            query          => { match => { foo => 1 } },
             no_match_query => 'none'
         }
     },
@@ -866,7 +1026,7 @@ test_queries(
     },
     {   indices => {
             indices        => ['foo'],
-            query          => { text => { foo => 1 } },
+            query          => { match => { foo => 1 } },
             no_match_query => 'all'
         }
     },
@@ -880,8 +1040,8 @@ test_queries(
     },
     {   indices => {
             indices        => ['foo'],
-            query          => { text => { foo => 1 } },
-            no_match_query => { text => { foo => 2 } }
+            query          => { match => { foo => 1 } },
+            no_match_query => { match => { foo => 2 } }
         }
     },
 );
@@ -903,7 +1063,7 @@ test_queries(
     },
     {   nested => {
             path       => 'foo',
-            query      => { text => { foo => 'bar' } },
+            query      => { match => { foo => 'bar' } },
             score_mode => 'avg',
             _scope     => 'scope'
         }
@@ -921,7 +1081,7 @@ test_queries(
             must_not => [ {
                     nested => {
                         path       => 'foo',
-                        query      => { text => { foo => 'bar' } },
+                        query      => { match => { foo => 'bar' } },
                         score_mode => 'avg',
                         _scope     => 'scope'
                     }

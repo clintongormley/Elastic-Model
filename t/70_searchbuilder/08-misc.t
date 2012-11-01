@@ -11,7 +11,7 @@ use Elastic::Model::SearchBuilder;
 my $a = Elastic::Model::SearchBuilder->new;
 
 eq_or_diff $a->query( { k => { '=' => { query => 0 } } } ),
-    { query => { text => { k => { query => 0 } } } },
+    { query => { match => { k => { query => 0 } } } },
     'False string hash_param';
 
 throws_ok { $a->query( { k => { '=' => { query => undef } } } ) }

@@ -15,15 +15,15 @@ test_queries(
 
     '-and',
     { k => 1, -and => [] },
-    { text => { k => 1 } },
+    { match => { k => 1 } },
 
     '-or',
     { k => 1, -or => [] },
-    { text => { k => 1 } },
+    { match => { k => 1 } },
 
     '-not',
     { k => 1, -not => [] },
-    { text => { k => 1 } },
+    { match => { k => 1 } },
 );
 
 test_queries(
@@ -60,30 +60,32 @@ test_queries(
     'SINGLE AND|OR|NOT',
 
     '-and1',
-    { -and => [ k => 1 ] },
-    { text => { k => 1 } },
+    { -and  => [ k => 1 ] },
+    { match => { k => 1 } },
 
     '-or1',
-    { -or  => [ k => 1 ] },
-    { text => { k => 1 } },
+    { -or   => [ k => 1 ] },
+    { match => { k => 1 } },
 
     '-not',
     { -not => [ k => 1 ] },
-    { bool => { must_not => [ { text => { k => 1 } } ] } },
+    { bool => { must_not => [ { match => { k => 1 } } ] } },
 );
 
 my %and_or = (
     and => {
-        bool => { must => [ { text => { a => 1 } }, { text => { b => 2 } } ] }
+        bool =>
+            { must => [ { match => { a => 1 } }, { match => { b => 2 } } ] }
     },
     or => {
-        bool =>
-            { should => [ { text => { a => 1 } }, { text => { b => 2 } } ] }
+        bool => {
+            should => [ { match => { a => 1 } }, { match => { b => 2 } } ]
+        }
     },
     or_and => {
         bool => {
-            must   => [ { text => { c => 3 } } ],
-            should => [ { text => { a => 1 } }, { text => { b => 2 } } ]
+            must   => [ { match => { c => 3 } } ],
+            should => [ { match => { a => 1 } }, { match => { b => 2 } } ]
 
         }
     },
@@ -92,19 +94,20 @@ my %and_or = (
             should => [ {
                     bool => {
                         must => [
-                            { text => { a => 1 } }, { text => { b => 2 } }
+                            { match => { a => 1 } },
+                            { match => { b => 2 } }
                         ]
                     }
                 },
-                { text => { c => 3 } }
+                { match => { c => 3 } }
             ]
         }
     },
     or_or => {
         bool => {
             should => [
-                { text => { a => 1 } }, { text => { b => 2 } },
-                { text => { c => 3 } }
+                { match => { a => 1 } }, { match => { b => 2 } },
+                { match => { c => 3 } }
 
             ]
         }
@@ -190,9 +193,9 @@ test_queries(
     { k => [ -and => 1, 2, 3 ] },
     {   bool => {
             must => [
-                { text => { k => 1 } },
-                { text => { k => 2 } },
-                { text => { k => 3 } }
+                { match => { k => 1 } },
+                { match => { k => 2 } },
+                { match => { k => 3 } }
             ]
         }
     },
@@ -201,9 +204,9 @@ test_queries(
     { k => [ -and => { '^' => 1 }, { '^' => 2 }, { '^' => 3 } ] },
     {   bool => {
             must => [
-                { text_phrase_prefix => { k => 1 } },
-                { text_phrase_prefix => { k => 2 } },
-                { text_phrase_prefix => { k => 3 } }
+                { match_phrase_prefix => { k => 1 } },
+                { match_phrase_prefix => { k => 2 } },
+                { match_phrase_prefix => { k => 3 } }
             ]
         }
     },
@@ -212,9 +215,9 @@ test_queries(
     { k => { '=' => [ '-and', 1, 2 ] } },
     {   bool => {
             should => [
-                { text => { k => '-and' } },
-                { text => { k => 1 } },
-                { text => { k => 2 } }
+                { match => { k => '-and' } },
+                { match => { k => 1 } },
+                { match => { k => 2 } }
             ]
         }
     },
@@ -226,8 +229,8 @@ test_queries(
     'K=>[-and[],{}]',
     { k => [ -and => [ 1, 2 ], { '^' => 3 } ] },
     {   bool => {
-            must => [ { text_phrase_prefix => { k => 3 } } ],
-            should => [ { text => { k => 1 } }, { text => { k => 2 } } ]
+            must => [ { match_phrase_prefix => { k => 3 } } ],
+            should => [ { match => { k => 1 } }, { match => { k => 2 } } ]
         }
     },
 
@@ -235,11 +238,11 @@ test_queries(
     { -and => [ a => 1, b => 2 ], x => 9, -or => { c => 3, d => 4 } },
     {   bool => {
             must => [
-                { text => { a => 1 } },
-                { text => { b => 2 } },
-                { text => { x => 9 } }
+                { match => { a => 1 } },
+                { match => { b => 2 } },
+                { match => { x => 9 } }
             ],
-            should => [ { text => { c => 3 } }, { text => { d => 4 } } ],
+            should => [ { match => { c => 3 } }, { match => { d => 4 } } ],
         }
     },
 
@@ -250,20 +253,20 @@ test_queries(
     },
     {   bool => {
             must => [
-                { text => { a => 1 } },
-                { text => { b => 2 } },
+                { match => { a => 1 } },
+                { match => { b => 2 } },
                 {   bool => {
                         should => [
-                            { text => { c => 3 } },
-                            { text => { d => 4 } },
-                            { text => { l => 21 } },
-                            { text => { l => 22 } },
+                            { match => { c => 3 } },
+                            { match => { d => 4 } },
+                            { match => { l => 21 } },
+                            { match => { l => 22 } },
                         ]
                     }
                 },
-                { text => { x => 9 } }
+                { match => { x => 9 } }
             ],
-            should => [ { text => { k => 11 } }, { text => { k => 12 } }, ]
+            should => [ { match => { k => 11 } }, { match => { k => 12 } }, ]
         }
     },
 
@@ -274,20 +277,20 @@ test_queries(
     },
     {   bool => {
             must => [
-                { text => { c => 3 } },
-                { text => { d => 4 } },
+                { match => { c => 3 } },
+                { match => { d => 4 } },
                 {   bool => {
                         should => [
-                            { text => { a => 1 } },
-                            { text => { b => 2 } },
-                            { text => { k => 11 } },
-                            { text => { k => 12 } },
+                            { match => { a => 1 } },
+                            { match => { b => 2 } },
+                            { match => { k => 11 } },
+                            { match => { k => 12 } },
                         ]
                     }
                 },
-                { text => { x => 9 } },
+                { match => { x => 9 } },
             ],
-            should => [ { text => { l => 21 } }, { text => { l => 22 } }, ]
+            should => [ { match => { l => 21 } }, { match => { l => 22 } }, ]
         }
     },
 
@@ -301,30 +304,31 @@ test_queries(
     ],
     {   bool => {
             should => [
-                { text => { a => 1 } },
-                { text => { b => 2 } },
-                { text => { c => 3 } },
-                { text => { d => 4 } },
-                { text => { e => 5 } },
+                { match => { a => 1 } },
+                { match => { b => 2 } },
+                { match => { c => 3 } },
+                { match => { d => 4 } },
+                { match => { e => 5 } },
                 {   bool => {
                         must => [
-                            { text => { f => 6 } }, { text => { g => 7 } }
+                            { match => { f => 6 } },
+                            { match => { g => 7 } }
                         ]
                     }
                 },
-                { text => { h => 8 } },
-                { text => { i => 9 } },
+                { match => { h => 8 } },
+                { match => { i => 9 } },
                 {   bool => {
                         must => [
-                            { text => { k => 10 } },
-                            { text => { l => 11 } }
+                            { match => { k => 10 } },
+                            { match => { l => 11 } }
                         ]
                     }
                 },
                 {   bool => {
                         must => [
-                            { text => { m => 12 } },
-                            { text => { n => 13 } }
+                            { match => { m => 12 } },
+                            { match => { n => 13 } }
                         ]
                     }
                 },
@@ -344,22 +348,22 @@ test_queries(
     },
     {   bool => {
             must => [
-                { text_phrase_prefix => { foo => 'bar' } },
-                { range              => { foo => { lt => 'baz' } } },
+                { match_phrase_prefix => { foo => 'bar' } },
+                { range               => { foo => { lt => 'baz' } } },
                 {   bool => {
                         should => [
-                            { text_phrase_prefix => { foo => 'alpha' } },
-                            { text_phrase_prefix => { foo => 'beta' } }
+                            { match_phrase_prefix => { foo => 'alpha' } },
+                            { match_phrase_prefix => { foo => 'beta' } }
                         ]
                     }
                 },
-                { text => { foo => 'koko' } }
+                { match => { foo => 'koko' } }
             ],
             should => [
-                { text_phrase_prefix => { foo => 'foo' } },
-                { range              => { foo => { gt => 'moo' } } }
+                { match_phrase_prefix => { foo => 'foo' } },
+                { range               => { foo => { gt => 'moo' } } }
             ],
-            must_not => [ { text => { foo => 'toto' } } ]
+            must_not => [ { match => { foo => 'toto' } } ]
         }
     },
 
@@ -372,16 +376,17 @@ test_queries(
             should => [ {
                     bool => {
                         must => [
-                            { text => { a => 1 } }, { text => { b => 2 } }
+                            { match => { a => 1 } },
+                            { match => { b => 2 } }
                         ]
                     }
                 },
-                { text => { c => 3 } },
-                { text => { d => 4 } },
+                { match => { c => 3 } },
+                { match => { d => 4 } },
                 {   bool => {
                         must => [
-                            { text_phrase_prefix => { e => 'foo' } },
-                            { text_phrase_prefix => { e => 'bar' } }
+                            { match_phrase_prefix => { e => 'foo' } },
+                            { match_phrase_prefix => { e => 'bar' } }
                         ]
                     }
                 }
@@ -395,12 +400,12 @@ test_queries(
             should => [ {
                     bool => {
                         must => [
-                            { text => { foo => 1 } },
-                            { text => { bar => 2 } }
+                            { match => { foo => 1 } },
+                            { match => { bar => 2 } }
                         ]
                     }
                 },
-                { text => { baz => 3 } }
+                { match => { baz => 3 } }
             ]
         }
     },
@@ -410,9 +415,9 @@ test_queries(
     { k => [ -and => [ { '=' => 1 }, { '=' => 2 }, { '=' => 3 } ] ] },
     {   bool => {
             should => [
-                { text => { k => 1 } },
-                { text => { k => 2 } },
-                { text => { k => 3 } }
+                { match => { k => 1 } },
+                { match => { k => 2 } },
+                { match => { k => 3 } }
             ]
         }
     }
@@ -427,19 +432,19 @@ test_queries(
 
     'not{k=>v}',
     { -not => { k => 'v' } },
-    { bool => { must_not => [ { text => { k => 'v' } } ] } },
+    { bool => { must_not => [ { match => { k => 'v' } } ] } },
 
     'not{k{=v}}',
     { -not => { k => { '=' => 'v' } } },
-    { bool => { must_not => [ { text => { k => 'v' } } ] } },
+    { bool => { must_not => [ { match => { k => 'v' } } ] } },
 
     'not[k=>v]',
     { -not => [ k => 'v' ] },
-    { bool => { must_not => [ { text => { k => 'v' } } ] } },
+    { bool => { must_not => [ { match => { k => 'v' } } ] } },
 
     'not[k{=v}]',
     { -not => [ k => { '=' => 'v' } ] },
-    { bool => { must_not => [ { text => { k => 'v' } } ] } },
+    { bool => { must_not => [ { match => { k => 'v' } } ] } },
 
     'not{k1=>v,k2=>v}',
     { -not => { k1 => 'v', k2 => 'v' } },
@@ -447,8 +452,8 @@ test_queries(
             must_not => [ {
                     bool => {
                         must => [
-                            { text => { k1 => 'v' } },
-                            { text => { k2 => 'v' } }
+                            { match => { k1 => 'v' } },
+                            { match => { k2 => 'v' } }
                         ]
                     }
                 }
@@ -462,8 +467,8 @@ test_queries(
             must_not => [ {
                     bool => {
                         must => [
-                            { text               => { k => 'v' } },
-                            { text_phrase_prefix => { k => 'v' } }
+                            { match               => { k => 'v' } },
+                            { match_phrase_prefix => { k => 'v' } }
                         ]
                     }
                 }
@@ -475,7 +480,7 @@ test_queries(
     { -not => [ k1 => 'v', k2 => 'v' ] },
     {   bool => {
             must_not =>
-                [ { text => { k1 => 'v' } }, { text => { k2 => 'v' } } ]
+                [ { match => { k1 => 'v' } }, { match => { k2 => 'v' } } ]
         }
     },
 
@@ -485,8 +490,8 @@ test_queries(
             must_not => [ {
                     bool => {
                         must => [
-                            { text               => { k => 'v' } },
-                            { text_phrase_prefix => { k => 'v' } }
+                            { match               => { k => 'v' } },
+                            { match_phrase_prefix => { k => 'v' } }
                         ]
                     }
                 }
@@ -495,12 +500,12 @@ test_queries(
     },
 
     'not not',
-    { -not => { -not => { k => 'v' } } },
-    { text => { k    => 'v' } },
+    { -not  => { -not => { k => 'v' } } },
+    { match => { k    => 'v' } },
 
     'not !=',
-    { -not => { k => { '!=' => 'v' } } },
-    { text => { k => 'v' } },
+    { -not  => { k => { '!=' => 'v' } } },
+    { match => { k => 'v' } },
 
     'not [{}{}]',
     { -not => { foo => [ 1, 2 ], bar => [ 1, 2 ], baz => { '!=' => 3 } } },
@@ -510,16 +515,16 @@ test_queries(
                         must => [ {
                                 bool => {
                                     should => [
-                                        { text => { foo => 1 } },
-                                        { text => { foo => 2 } }
+                                        { match => { foo => 1 } },
+                                        { match => { foo => 2 } }
                                     ]
                                 }
                             }
                         ],
-                        must_not => [ { text => { baz => 3 } } ],
+                        must_not => [ { match => { baz => 3 } } ],
                         should   => [
-                            { text => { bar => 1 } },
-                            { text => { bar => 2 } }
+                            { match => { bar => 1 } },
+                            { match => { bar => 2 } }
                         ]
                     }
                 }
