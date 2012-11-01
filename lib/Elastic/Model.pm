@@ -324,6 +324,10 @@ C<scrolled_results> C<----> L<Elastic::Model::Results::Scrolled>
 
 C<result> C<--------------> L<Elastic::Model::Result>
 
+=item *
+
+C<bulk> C<----------------> L<Elastic::Model::Bulk>
+
 =back
 
 =head1 SEE ALSO

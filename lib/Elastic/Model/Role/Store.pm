@@ -60,6 +60,13 @@ sub delete_doc {
     return $self->es->delete( %{ $uid->write_params }, %args );
 }
 
+#===================================
+sub bulk {
+#===================================
+    my ( $self, %args ) = @_;
+    return $self->es->bulk(%args);
+}
+
 1;
 
 __END__
@@ -125,6 +132,18 @@ Deletes a doc in the ElasticSearch backend and returns the raw
 result. Any failure throws an exception.  If the L<version|Elastic::Model::UID/"version">
 number does not match what is stored in ElasticSearch, then a conflict exception
 will be thrown.  Any C<%args> will be passed to L<ElasticSearch/"delete()">.
+
+=head2 bulk()
+
+    $result = $store->bulk(
+        actions     => $actions,
+        on_conflict => sub {...},
+        on_error    => sub {...},
+        %args
+    );
+
+Performs several actions in a single request. Any %agrs will be passed to
+L<ElasticSearch/bulk()>.
 
 =head2 search()
 

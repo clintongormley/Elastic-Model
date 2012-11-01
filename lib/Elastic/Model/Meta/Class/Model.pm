@@ -61,6 +61,7 @@ has 'classes' => (
             results          => 'Elastic::Model::Results',
             scrolled_results => 'Elastic::Model::Results::Scrolled',
             result           => 'Elastic::Model::Result',
+            bulk             => 'Elastic::Model::Bulk'
         };
     },
     handles => {

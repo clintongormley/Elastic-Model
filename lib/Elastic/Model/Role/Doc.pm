@@ -343,6 +343,8 @@ Saves the C<$doc> to ElasticSearch. If this is a new doc, and a doc with the
 same type and ID already exists in the same index, then ElasticSearch
 will throw an exception.
 
+Also see L<Elastic::Model::Bulk> for bulk indexing of multiple docs.
+
 If the doc was previously loaded from ElasticSearch, then that doc will be
 updated. However, because ElasticSearch uses
 L<optimistic locking|http://en.wikipedia.org/wiki/Optimistic_locking>

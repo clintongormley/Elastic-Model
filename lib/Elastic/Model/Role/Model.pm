@@ -16,7 +16,7 @@ use List::MoreUtils qw(uniq);
 use namespace::autoclean;
 my @wrapped_classes = qw(
     domain  namespace   store   view    scope
-    results scrolled_results    result
+    results scrolled_results    result  bulk
 );
 
 for my $class (@wrapped_classes) {
@@ -548,6 +548,10 @@ sub _delete_unique_keys {
 }
 
 #===================================
+sub bulk { shift->bulk_class->new(@_) }
+#===================================
+
+#===================================
 sub search { shift->store->search(@_) }
 #===================================
 
@@ -817,6 +821,17 @@ require only a few attributes, instead of the whole object.
 Attempting to save a partial doc will cause an error to be thrown.
 
 You shouldn't need to call this method yourself.
+
+=head3 bulk()
+
+Returns a new instance of L<Elastic::Model::Bulk> for fast indexing
+of multiple docs in batches.
+
+    $bulk = $model->bulk(
+        size        => 1000,
+        on_conflict => sub {....},
+        on_error    => sub {....}
+    );
 
 =head2 Miscellaneous
 
