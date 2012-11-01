@@ -3,7 +3,7 @@ package Elastic::Model::Role::Model;
 use Moose::Role;
 use Carp;
 use Elastic::Model::Types qw(ES ES_UniqueKey);
-use ElasticSearch 0.58             ();
+use ElasticSearch 0.59             ();
 use ElasticSearchX::UniqueKey 0.03 ();
 use Class::Load qw(load_class);
 use Moose::Util qw(does_role);
