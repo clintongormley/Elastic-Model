@@ -1,3 +1,11 @@
+0.14    2012-11-01
+        BREAKING CHANGE:
+         - upgraded minimum ES version to 0.19.11 to take advantage of the
+           new match queries
+
+        ENHANCEMENT:
+         - Added Elastic::Model::Bulk for bulk indexing of documents.
+
 0.13    2012-10-10
         BUG FIXES:
          - UIDs from search results were missing the routing value
