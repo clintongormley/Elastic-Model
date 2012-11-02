@@ -37,7 +37,9 @@ has 'wrapper' => (
     isa     => CodeRef,
     is      => 'rw',
     lazy    => 1,
-    default => sub { shift() },
+    default => sub {
+        sub { shift() }
+    },
 );
 
 #===================================
@@ -46,7 +48,9 @@ has 'multi_wrapper' => (
     isa     => CodeRef,
     is      => 'rw',
     lazy    => 1,
-    default => sub {@_},
+    default => sub {
+        sub {@_}
+    },
 );
 
 #===================================
