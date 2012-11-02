@@ -1,3 +1,12 @@
+0.15    2012-11-02
+        BUG FIX:
+         - the default values for wrapper/multi_wrapper in Iterator were
+           not being returned as code refs
+
+        ENHANCEMENT:
+         - added to_cache() to Elastic::Model::Results to return a cacheable
+           data structure which can later be reinflated to the full result set
+
 0.14    2012-11-01
         BREAKING CHANGE:
          - upgraded minimum ES version to 0.19.11 to take advantage of the
