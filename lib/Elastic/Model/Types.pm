@@ -5,7 +5,7 @@ use warnings;
 use ElasticSearch();
 use ElasticSearchX::UniqueKey();
 
-use MooseX::Types::Moose qw(:all);
+use MooseX::Types::Moose qw(HashRef ArrayRef Str Bool Num Int Defined Any);
 use MooseX::Types::Structured qw (Dict Optional Map);
 use namespace::autoclean;
 

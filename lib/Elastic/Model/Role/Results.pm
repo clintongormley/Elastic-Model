@@ -5,7 +5,7 @@ use Moose::Role;
 
 with 'Elastic::Model::Role::Iterator';
 
-use MooseX::Types::Moose qw(:all);
+use MooseX::Types::Moose qw(HashRef Int Num CodeRef);
 use namespace::autoclean;
 
 #===================================

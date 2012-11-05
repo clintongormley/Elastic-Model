@@ -1,7 +1,7 @@
 package Elastic::Model::UID;
 
 use Moose;
-use MooseX::Types::Moose qw(:all);
+use MooseX::Types::Moose qw(Str Int Maybe Bool);
 use namespace::autoclean;
 
 #===================================

@@ -2,7 +2,7 @@ package Elastic::Model::Meta::Class::Model;
 
 use Moose::Role;
 use List::Util ();
-use MooseX::Types::Moose qw(:all);
+use MooseX::Types::Moose qw(HashRef Str);
 use Carp;
 use Data::Dump qw(pp);
 use namespace::autoclean;

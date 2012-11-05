@@ -2,7 +2,7 @@ package Elastic::Model::Trait::Exclude;
 
 use Moose::Role;
 use Moose::Exporter;
-use MooseX::Types::Moose qw(:all);
+use MooseX::Types::Moose qw(Bool);
 use namespace::autoclean;
 
 Moose::Exporter->setup_import_methods(

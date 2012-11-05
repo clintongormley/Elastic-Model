@@ -4,7 +4,7 @@ use Moose;
 
 use Carp;
 use Elastic::Model::Types qw(UID);
-use MooseX::Types::Moose qw(:all);
+use MooseX::Types::Moose qw(HashRef Maybe Num);
 
 use namespace::autoclean;
 

@@ -3,7 +3,7 @@ package Elastic::Model::Results::Scrolled;
 use Carp;
 use Moose;
 with 'Elastic::Model::Role::Results';
-use MooseX::Types::Moose qw(:all);
+use MooseX::Types::Moose qw(Int);
 
 use namespace::autoclean;
 

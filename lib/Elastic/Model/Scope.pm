@@ -2,7 +2,7 @@ package Elastic::Model::Scope;
 
 use Moose;
 use namespace::autoclean;
-use MooseX::Types::Moose qw(:all);
+use MooseX::Types::Moose qw(HashRef);
 use Scalar::Util qw(refaddr);
 use Devel::GlobalDestruction;
 

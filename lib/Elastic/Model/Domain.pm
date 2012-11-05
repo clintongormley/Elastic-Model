@@ -3,7 +3,7 @@ package Elastic::Model::Domain;
 use Carp;
 use Moose;
 use namespace::autoclean;
-use MooseX::Types::Moose qw(:all);
+use MooseX::Types::Moose qw(Maybe Str);
 
 #===================================
 has 'name' => (
