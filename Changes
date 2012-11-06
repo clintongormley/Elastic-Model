@@ -1,3 +1,10 @@
+0.16    2012-11-06
+        BREAKING CHANGE:
+         - removed the to_cache() method that was added in v0.15
+
+        ENHANCEMENT:
+         - added integration with a CHI-compatible cache for bounded searches
+
 0.15    2012-11-02
         BUG FIX:
          - the default values for wrapper/multi_wrapper in Iterator were
