@@ -146,12 +146,10 @@ cmp_deeply $good->index_config(),
     },
     'All good';
 
-throws_ok
-    sub { cmp_deeply $bad->index_config( types => ['bad_analyzer'] ) },
+throws_ok sub { cmp_deeply $bad->index_config( types => ['bad_analyzer'] ) },
     qr/Unknown analyzer \(not_defined\)/, 'Bad analyzer';
 
-throws_ok
-    sub { cmp_deeply $bad->index_config( types => ['bad_tokenizer'] ) },
+throws_ok sub { cmp_deeply $bad->index_config( types => ['bad_tokenizer'] ) },
     qr/Unknown tokenizer \(foo\)/, 'Bad tokenizer';
 
 done_testing;

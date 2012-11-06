@@ -95,8 +95,8 @@ sub _map_class {
 
     return ( type => 'object', enabled => 0 )
         if $attr->can('has_enabled')
-            && $attr->has_enabled
-            && !$attr->enabled;
+        && $attr->has_enabled
+        && !$attr->enabled;
 
     my $class = $tc->name;
     my $attrs = _class_attrs( $map, $class, $attr )

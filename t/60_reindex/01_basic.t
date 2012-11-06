@@ -77,8 +77,8 @@ sub compare_results {
             query  => { match_all => {} },
             'sort' => ['timestamp'],
             %$q1
-            )->{hits}{hits}
-        };
+        )->{hits}{hits}
+    };
 
     my @r2 = map { delete $_->{_index}; $_ } @{
         $model->es->search(
@@ -86,8 +86,8 @@ sub compare_results {
             query  => { match_all => {} },
             'sort' => ['timestamp'],
             %$q2
-            )->{hits}{hits}
-        };
+        )->{hits}{hits}
+    };
 
     cmp_deeply \@r1, \@r2, $desc;
 }

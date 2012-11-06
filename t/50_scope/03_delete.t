@@ -133,8 +133,7 @@ done_testing;
 sub create_user {
 #===================================
     my $name = shift;
-    isa_ok my $user
-        = $domain->create( user => { id => 1, name => 'Clint' } ),
+    isa_ok my $user = $domain->create( user => { id => 1, name => 'Clint' } ),
         'MyApp::User', $name;
     return $user;
 }

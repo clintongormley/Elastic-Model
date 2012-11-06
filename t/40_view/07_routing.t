@@ -49,7 +49,6 @@ is $model->view->domain('myapp')->scan->first_object->uid->routing, 'foo',
 is $model->view->domain('myapp')->include_paths('*')
     ->scan->first_object->uid->routing, 'foo', 'scan myapp/partial';
 
-
 note "Routing from real index";
 
 is $model->view->domain('myapp2')->search->first_result->uid->routing, 'foo',
@@ -72,7 +71,6 @@ is $model->view->domain('myapp2')->scan->first_object->uid->routing, 'foo',
     'scan myapp2/object';
 is $model->view->domain('myapp2')->include_paths('*')
     ->scan->first_object->uid->routing, 'foo', 'scan myapp2/partial';
-
 
 note "Routing from filtered alias";
 

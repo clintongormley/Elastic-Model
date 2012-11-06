@@ -349,7 +349,7 @@ sub _fixup_mapping {
     # make 'undef' a false value for boolean fields
     $defn->{null_value} = 0
         if $defn->{type} eq 'boolean'
-            and not exists $defn->{null_value};
+        and not exists $defn->{null_value};
 
     return $defn;
 }
