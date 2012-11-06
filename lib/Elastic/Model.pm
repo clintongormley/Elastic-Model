@@ -318,6 +318,10 @@ C<results> C<-------------> L<Elastic::Model::Results>
 
 =item *
 
+C<cached_results> C<------> L<Elastic::Model::Results::Cached>
+
+=item *
+
 C<scrolled_results> C<----> L<Elastic::Model::Results::Scrolled>
 
 =item *

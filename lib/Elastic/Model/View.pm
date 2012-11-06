@@ -232,6 +232,20 @@ has 'search_builder' => (
 );
 
 #===================================
+has 'cache' => (
+#===================================
+    is  => 'rw',
+    isa => Object,
+);
+
+#===================================
+has 'cache_opts' => (
+#===================================
+    is  => 'rw',
+    isa => HashRef,
+);
+
+#===================================
 sub _build_search_builder { Elastic::Model::SearchBuilder->new }
 #===================================
 
@@ -265,9 +279,9 @@ sub post_filterb {
 
 around [
 #===================================
-    'from',           'size',       'timeout',   'track_scores',
-    'search_builder', 'preference', 'min_score', 'explain',
-    'consistency',    'replication'
+    'from',           'size',        'timeout',   'track_scores',
+    'search_builder', 'preference',  'min_score', 'explain',
+    'consistency',    'replication', 'cache'
 #===================================
 ] => sub { _clone_args( \&_scalar_args, @_ ) };
 
@@ -281,7 +295,7 @@ around [
 around [
 #===================================
     'facets', 'index_boosts', 'script_fields', 'highlighting',
-    'query',  'filter',       'post_filter'
+    'query',  'filter',       'post_filter',   'cache_opts'
 #===================================
 ] => sub { _clone_args( \&_hash_args, @_ ) };
 
@@ -372,6 +386,23 @@ sub search {
     my $self = shift;
     $self->model->results_class->new( search => $self->_build_search )
         ->as_results;
+}
+
+#===================================
+sub cached_search {
+#===================================
+    my $self  = shift;
+    my $cache = $self->cache
+        or return $self->search;
+
+    my %cache_opts
+        = ( %{ $self->cache_opts || {} }, @_ == 1 ? %{ $_[0] } : @_ );
+
+    $self->model->cached_results_class->new(
+        search     => $self->_build_search,
+        cache      => $cache,
+        cache_opts => \%cache_opts
+    )->as_results;
 }
 
 #===================================
@@ -518,6 +549,14 @@ Efficiently retrieve all posts, unsorted:
         do_something_with($result);
     );
 
+Cached results:
+
+    $cache   = CHI->new(....);
+    $view    = $view->cache( $cache )->cache_opts( expires_in => '2 min');
+
+    $results = $view->queryb( 'perl' )->cached_search();
+    $results = $view->queryb( 'perl' )->cached_search( expires => '30 sec');
+
 =head1 DESCRIPTION
 
 L<Elastic::Model::View> is used to query your docs in ElasticSearch.
@@ -561,6 +600,41 @@ with at most L</size> results.
 
 This is useful for returning finite results, ie where you know how many
 results you want.  For instance: I<"give me the 10 best results">.
+
+=head2 cached_search()
+
+B<NOTE: Think carefully before you cache data outside of Elasticsearch.
+Elasticsearch already has smart filter caches, which are updated as your data
+changes. Most of the time, you will be better off using those directly,
+instead of an external cache.>
+
+    $results = $view->cache( $cache )->cached_search( %opts );
+
+If a L</cache> attribute has been specified for the current view, then
+L</cached_search()> tries to retrieve the search results from the L</cache>.
+If it fails, then a L</search()> is executed, and the results are stored in
+the L</cache>. An L<Elastic::Model::Results::Cached> object is returned.
+
+Any C<%opts> that are passed in override any default L</cache_opts>, and are
+passed to L<CHI's get() or set()|'https://metacpan.org/module/CHI#Getting-and-setting>
+methods.
+
+    $view    = $view->cache_opts( expires_in => '30 sec' );
+
+    $results = $view->cached_search;                            # 30 seconds
+    $results = $view->cached_search( expires_in => '2 min' );   #  2 minutes
+
+Given the near-real-time nature of Elasticsearch, you sometimes want to
+invalidate a cached result in the near future.  For instance, if you have
+cached a list of comments on a blog post, but then you add a new comment,
+you want to invalidate the cached comments list.  However, the new
+comment will only become visible to search sometime within the next second, so
+invalidating the cache immediately may or may not be useful.
+
+Use the special argument C<force_set> to bypass the cache C<get()> and to force
+the cached version to be updated, along with a new expiry time:
+
+    $results = $view->cached_search( force_set => 1, expires_in => '2 sec');
 
 =head2 scroll()
 
@@ -924,6 +998,27 @@ with whatever results it has managed to receive up until that point.
 By default, If you sort on a field other than C<_score>, ElasticSearch
 does not return the calculated relevance score for each doc.  If
 L</track_scores> is true, these scores will be returned regardless.
+
+=head1 CACHING ATTRIBUTES
+
+Bounded searches (those returned by calling L</search()>) can be stored
+in a L<CHI>-compatible cache.
+
+=head2 cache
+
+    $cache    = CHI->new(...);
+    $new_view = $view->cache( $cache );
+
+Stores an instance of a L<CHI>-compatible cache, to be used with
+L</cached_search()>.
+
+=head2 cache_opts
+
+    $new_view = $view->cache_opts( expires_in => '20 sec', ...);
+
+Stores the default options that should be passed to
+L<CHI's get() or set()|'https://metacpan.org/module/CHI#Getting-and-setting>.
+These can be overridden by passing options to L</cached_search()>.
 
 =head1 DEBUGGING ATTRIBUTES
 

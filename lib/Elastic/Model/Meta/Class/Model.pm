@@ -59,6 +59,7 @@ has 'classes' => (
             view             => 'Elastic::Model::View',
             scope            => 'Elastic::Model::Scope',
             results          => 'Elastic::Model::Results',
+            cached_results   => 'Elastic::Model::Results::Cached',
             scrolled_results => 'Elastic::Model::Results::Scrolled',
             result           => 'Elastic::Model::Result',
             bulk             => 'Elastic::Model::Bulk'

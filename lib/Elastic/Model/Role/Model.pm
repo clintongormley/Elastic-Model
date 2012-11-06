@@ -15,8 +15,8 @@ use List::MoreUtils qw(uniq);
 
 use namespace::autoclean;
 my @wrapped_classes = qw(
-    domain  namespace   store   view    scope
-    results scrolled_results    result  bulk
+    domain  namespace      store   view     scope
+    results cached_results scrolled_results result  bulk
 );
 
 for my $class (@wrapped_classes) {
@@ -1018,6 +1018,10 @@ C<scope_class> C<---------------> L<Elastic::Model::Scope>
 =item *
 
 C<results_class> C<-------------> L<Elastic::Model::Results>
+
+=item *
+
+C<cached_results_class> C<------> L<Elastic::Model::Results::Cached>
 
 =item *
 

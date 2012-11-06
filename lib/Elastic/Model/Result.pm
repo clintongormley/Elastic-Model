@@ -190,7 +190,8 @@ __END__
 =head1 DESCRIPTION
 
 L<Elastic::Model::Result> wraps the individual result returned from
-L<Elastic::Model::Results> or L<Elastic::Model::Results::Scrolled>.
+L<Elastic::Model::Results>, L<Elastic::Model::Results::Cached>
+or L<Elastic::Model::Results::Scrolled>.
 
 =head1 ATTRIBUTES
 

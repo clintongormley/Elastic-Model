@@ -275,8 +275,8 @@ __END__
 
 L<Elastic::Model::Role::Results> adds a number of methods and attributes
 to those provided by L<Elastic::Model::Role::Iterator> to better handle
-result sets from ElasticSearch.  It is used by L<Elastic::Model::Results>
-and by L<Elastic::Model::Results::Scrolled>.
+result sets from ElasticSearch.  It is used by L<Elastic::Model::Results>,
+L<Elastic::Model::Results::Cached> and by L<Elastic::Model::Results::Scrolled>.
 
 See those modules for more complete documentation. This module just
 documents the attributes and methods added in L<Elastic::Model::Role::Results>
