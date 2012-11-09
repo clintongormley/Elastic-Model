@@ -148,6 +148,25 @@ test_view(
     }
 );
 
+test_view(
+    'Set-queryb-empty-list',
+    $view->queryb(),
+    { query => { match_all => {} } }
+);
+
+test_view(
+    'Set-queryb-empty-hashref',
+    $view->queryb({}),
+    { query => { match_all => {} } }
+);
+
+test_view(
+    'Set-queryb-empty-arrayref',
+    $view->queryb([]),
+    { query => { match_all => {} } }
+);
+
+
 ## filter ##
 test_view(
     'New-filter',

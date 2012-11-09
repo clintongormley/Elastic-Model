@@ -252,25 +252,31 @@ sub _build_search_builder { Elastic::Model::SearchBuilder->new }
 #===================================
 sub queryb {
 #===================================
-    my $self = shift;
-    my @args = @_ > 1 ? {@_} : shift();
-    $self->query( $self->search_builder->query(@args)->{query} );
+    my $self  = shift;
+    my @args  = @_ > 1 ? {@_} : shift();
+    my $query = $self->search_builder->query(@args)
+        or return $self->_clone_self;
+    $self->query( $query->{query} );
 }
 
 #===================================
 sub filterb {
 #===================================
-    my $self = shift;
-    my @args = @_ > 1 ? {@_} : shift();
-    $self->filter( $self->search_builder->filter(@args)->{filter} );
+    my $self   = shift;
+    my @args   = @_ > 1 ? {@_} : shift();
+    my $filter = $self->search_builder->filter(@args)
+        or return $self->_clone_self;
+    $self->filter( $filter->{filter} );
 }
 
 #===================================
 sub post_filterb {
 #===================================
-    my $self = shift;
-    my @args = @_ > 1 ? {@_} : shift();
-    $self->post_filter( $self->search_builder->filter(@args)->{filter} );
+    my $self   = shift;
+    my @args   = @_ > 1 ? {@_} : shift();
+    my $filter = $self->search_builder->filter(@args)
+        or return $self->_clone_self;
+    $self->post_filter( $filter->{filter} );
 }
 
 #===================================
@@ -337,6 +343,13 @@ sub _clone_args {
         return $self;
     }
     $self->$orig();
+}
+
+#===================================
+sub _clone_self {
+#===================================
+    my $self = shift;
+    return bless {%$self}, ref $self;
 }
 
 #===================================
