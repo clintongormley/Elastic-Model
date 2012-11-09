@@ -1,3 +1,7 @@
+0.17    2012-11-09
+        ENHANCMENT
+         - handle empty queryb/fiterb/post_filterb clauses gracefully
+
 0.16    2012-11-06
         BREAKING CHANGE:
          - removed the to_cache() method that was added in v0.15
