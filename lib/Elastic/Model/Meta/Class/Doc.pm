@@ -2,13 +2,22 @@ package Elastic::Model::Meta::Class::Doc;
 
 use Moose::Role;
 
-use MooseX::Types::Moose qw(Maybe HashRef);
+use MooseX::Types::Moose qw(Maybe HashRef CodeRef);
 use Carp;
 use namespace::autoclean;
 use Variable::Magic 0.51 qw(cast wizard dispell);
 
 my $wiz = wizard( map { $_ => \&_inflate } qw(fetch store exists delete) );
 my %exclude = map { $_ => 1 } qw(uid _can_inflate _source);
+
+#===================================
+has 'stub_initializer' => (
+#===================================
+    isa     => CodeRef,
+    is      => 'ro',
+    lazy    => 1,
+    builder => '_build_stub_initializer'
+);
 
 #===================================
 has 'mapping' => (
@@ -32,8 +41,7 @@ sub new_stub {
 #===================================
     my ( $self, $uid, $source ) = @_;
 
-    my $obj = $self->get_meta_instance->create_instance;
-
+    my $obj = $self->stub_initializer->();
     croak "Invalid UID"
         unless $uid && $uid->isa('Elastic::Model::UID') && $uid->from_store;
 
@@ -62,6 +70,17 @@ sub _build_unique_keys {
         $keys{ $attr->name } = $key;
     }
     return %keys ? \%keys : undef;
+}
+
+#===================================
+sub _build_stub_initializer {
+#===================================
+    my $self = shift;
+    my $src  = 'sub {'
+        . $self->_inline_generate_instance( '$instance',
+        '"' . $self->name . '"' )
+        . 'return $instance' . '}';
+    return eval($src) or croak $@;
 }
 
 #===================================
