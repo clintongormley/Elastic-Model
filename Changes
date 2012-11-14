@@ -1,3 +1,8 @@
+0.18    2012-11-14
+        ENHANCEMENT
+         - Optimized UID and stub object creation - big performance improvement
+           when retrieving docs from elasticsearch
+
 0.17    2012-11-09
         ENHANCMENT
          - handle empty queryb/fiterb/post_filterb clauses gracefully
