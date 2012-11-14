@@ -152,6 +152,8 @@ sub _build_cache_key {
     return join ";", map { s/;/;;/g; $_ } map { $self->$_ } qw(type id);
 }
 
+__PACKAGE__->meta->make_immutable;
+
 1;
 
 __END__

@@ -84,6 +84,8 @@ sub _add_aliases {
     return %indices;
 }
 
+__PACKAGE__->meta->make_immutable;
+
 1;
 
 __END__
