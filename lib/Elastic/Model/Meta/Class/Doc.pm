@@ -42,10 +42,10 @@ sub new_stub {
     my ( $self, $uid, $source ) = @_;
 
     my $obj = $self->stub_initializer->();
-    croak "Invalid UID"
-        unless $uid && $uid->isa('Elastic::Model::UID') && $uid->from_store;
 
     $obj->_set_uid($uid);
+    croak "Invalid UID" unless $uid->from_store;
+
     $obj->_set_source($source) if $source;
     $obj->_can_inflate(1);
     cast %$obj, $wiz;
