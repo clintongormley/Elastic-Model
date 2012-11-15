@@ -117,13 +117,14 @@ sub _inflate_doc {
         or return bless( $self, 'Elastic::Model::Deleted' )->croak;
 
     $self->_can_inflate(0);
-    try {
+    eval {
         $self->model->inflate_object( $self, $source );
-    }
-    catch {
+        1
+    } or do {
+        my $error = $@;
         $self->_can_inflate(1);
-        die $_;
-    };
+        die $error
+    }
 }
 
 #===================================
