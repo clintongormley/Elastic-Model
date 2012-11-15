@@ -1,3 +1,8 @@
+0.19    2012-11-15
+        ENHANCEMENT
+         - Inflators and deflators are now inlined whenever possible, resulting
+           in  a big performance boost
+
 0.18    2012-11-14
         ENHANCEMENT
          - Optimized UID and stub object creation - big performance improvement
