@@ -10,17 +10,14 @@ use namespace::autoclean;
 has_type 'Elastic::Model::Types::UID',
 #===================================
     deflate_via {
-    sub {
-        die "Cannot deflate UID as it not saved\n"
-            unless $_[0]->from_store;
-        $_[0]->read_params;
-        }
+    'do {'
+        . 'die "Cannot deflate UID as it not saved\n"'
+        . 'unless $val->from_store;'
+        . '$val->read_params;' . '}';
     },
 
     inflate_via {
-    sub {
-        Elastic::Model::UID->new( from_store => 1, @{ $_[0] } );
-        }
+    'Elastic::Model::UID->new( from_store => 1, %$val  )';
     },
 
     map_via {
@@ -58,14 +55,8 @@ has_type 'Elastic::Model::Types::Keyword',
 #===================================
 has_type 'Elastic::Model::Types::GeoPoint',
 #===================================
-    deflate_via {
-    sub { $_[0] }
-    },
-
-    inflate_via {
-    sub { $_[0] }
-    },
-
+    deflate_via {'$val'},
+    inflate_via {'$val'},
     map_via { type => 'geo_point' };
 
 #===================================
@@ -73,12 +64,11 @@ has_type 'Elastic::Model::Types::Binary',
 #===================================
     deflate_via {
     require MIME::Base64;
-    sub { MIME::Base64::encode_base64( $_[0] ) };
-
+    'MIME::Base64::encode_base64( $val )';
     },
 
     inflate_via {
-    sub { MIME::Base64::decode_base64( $_[0] ) }
+    'MIME::Base64::decode_base64( $val )';
     },
 
     map_via { type => 'binary' };
@@ -86,14 +76,8 @@ has_type 'Elastic::Model::Types::Binary',
 #===================================
 has_type 'Elastic::Model::Types::Timestamp',
 #===================================
-    deflate_via {
-    sub { int( $_[0] * 1000 + 0.5 ) }
-    },
-
-    inflate_via {
-    sub { sprintf "%.3f", $_[0] / 1000 }
-    },
-
+    deflate_via {'int( $val * 1000 + 0.5 )'},
+    inflate_via {'sprintf "%.3f", $val / 1000'},
     map_via { type => 'date' };
 
 1;

@@ -49,6 +49,16 @@ sub import {
 sub find_deflator {
 #===================================
     my ( $map, $attr ) = @_;
+    my $deflator = $map->find_raw_deflator($attr);
+    return $deflator if ref $deflator;
+    Eval::Closure::eval_closure(
+        source => [ 'sub { my $val = $_[0];', $deflator, '}' ] );
+}
+
+#===================================
+sub find_raw_deflator {
+#===================================
+    my ( $map, $attr ) = @_;
     $attr->can('deflator') && $attr->deflator
         || eval { $map->find( 'deflator', $attr->type_constraint, $attr ) }
         || die _type_error( 'deflator', $attr, $@ );
@@ -56,6 +66,16 @@ sub find_deflator {
 
 #===================================
 sub find_inflator {
+#===================================
+    my ( $map, $attr ) = @_;
+    my $inflator = $map->find_raw_inflator($attr);
+    return $inflator if ref $inflator;
+    Eval::Closure::eval_closure(
+        source => [ 'sub { my $val = $_[0];', $inflator, '}' ] );
+}
+
+#===================================
+sub find_raw_inflator {
 #===================================
     my ( $map, $attr ) = @_;
     $attr->can('inflator') && $attr->inflator
@@ -123,27 +143,53 @@ sub class_deflator {
 
     $attrs ||= $map->indexable_attrs($class);
 
-    my %deflators = map { $_ => $map->find_deflator( $attrs->{$_} ) }
+    my %deflators = map { $_ => $map->find_raw_deflator( $attrs->{$_} ) }
         keys %$attrs;
 
-    my $has_uid = $class->can('uid');
-    return sub {
-        my $obj = shift;
-        my %hash;
-        for ( keys %deflators ) {
-            my $attr = $attrs->{$_};
-            unless ( $attr->has_value($obj) ) {
-                next unless $attr->has_builder || $attr->has_default;
-                $attr->get_read_method_ref->($obj);
-            }
-            my $val = $attr->get_raw_value($obj);
-            eval { $hash{$_} = $deflators{$_}->($val); 1 } and next;
-            die "Error deflating attribute ($_) in class "
-                . blessed($obj) . ":\n  "
-                . ( $@ || 'Unknown error' );
+    my @src = ( 'sub {', 'my $self = shift;', 'my (%hash,$attr,$val);',
+        'eval {', );
+
+    my %readers;
+    for my $name ( sort keys %deflators ) {
+        my $attr     = $attrs->{$name};
+        my $deflator = $deflators{$name};
+        if ( ref $deflator ) {
+            $deflator = '$deflators{"' . $name . '"}->($val)';
         }
-        return \%hash;
-    };
+        my $is_lazy = $attr->is_lazy;
+        my $get_raw = $attr->_inline_instance_get('$self');
+        my $exists  = $attr->_inline_instance_has('$self');
+
+        push @src, '$attr="' . $name . '";';
+        if ($is_lazy) {
+            $readers{$name} = $attr->get_read_method_ref;
+            push @src, '$readers{"' . $name . '"}->($self);';
+        }
+        else {
+            push @src, "if ($exists) {";
+        }
+        push @src, '$val = ' . $get_raw . ';',
+            '$hash{"' . $name . '"} = ' . $deflator . ';';
+        push @src, '}' unless $is_lazy;
+    }
+
+    push @src,
+        (
+        '1;} ',
+        'or die "Error deflating attribute ($attr) in class ".',
+        'Scalar::Util::blessed($self).',
+        '":\n ".($@ || "Unknown error");',
+        'return \%hash',
+        '}'
+        );
+
+    Eval::Closure::eval_closure(
+        source      => \@src,
+        environment => {
+            '%deflators' => \%deflators,
+            '%readers'   => \%readers
+        }
+    );
 }
 
 #===================================
@@ -152,19 +198,47 @@ sub class_inflator {
     my ( $map, $class, $attrs ) = @_;
 
     $attrs ||= $map->indexable_attrs($class);
-    my %inflators = map { $_ => $map->find_inflator( $attrs->{$_} ) }
+    my %inflators = map { $_ => $map->find_raw_inflator( $attrs->{$_} ) }
         keys %$attrs;
 
-    return sub {
-        my ( $obj, $hash ) = @_;
-        for ( keys %$hash ) {
-            my $attr = $attrs->{$_} or next;
-            my $val = $inflators{$_}->( $hash->{$_} );
-            $attr->set_raw_value( $obj, $val );
-            $attr->_weaken_value($obj) if $attr->is_weak_ref;
+    my @src = (
+        'sub {',
+        'my ($self,$hash) = @_;',
+        'my ($attr,$val,$res);',
+        'eval {'
+    );
+    for my $name ( sort keys %inflators ) {
+        my $attr     = $attrs->{$name};
+        my $inflator = $inflators{$name};
+        my $set_raw  = $attr->_inline_instance_set( '$self', '$res' );
+        if ( ref $inflator ) {
+            $inflator = '$inflators{"' . $name . '"}->($val)';
         }
-        return $obj;
-    };
+        push @src,
+            (
+            '$attr = "' . $name . '";',
+            'if (exists $hash->{"' . $name . '"}) {',
+            '$val = $hash->{"' . $name . '"};',
+            '$res = ' . $inflator . ';',
+            $set_raw . ';',
+            $attr->_inline_weaken_value( '$self', '$res' ),
+            '}'
+            );
+    }
+    push @src,
+        (
+        '1}',
+        'or die "Error inflating attribute ($attr) in class ".',
+        'Scalar::Util::blessed($self).',
+        '":\n ".($@ || "Unknown error");',
+        'return $self',
+        '}'
+        );
+
+    Eval::Closure::eval_closure(
+        source      => \@src,
+        environment => { '%inflators' => \%inflators, }
+    );
 }
 
 our %Allowed_Attrs = (
@@ -433,6 +507,12 @@ __END__
         inflate_via { sub { ... }},
         map_via     { type => 'string' };
 
+    # Inlined in/deflation
+    has_type 'MyCustomType',
+        deflate_via { '$val * 1000'},
+        inflate_via { '$val / 1000'},
+        map_via     { type => 'string' };
+
 
 =head2 Use your type map by declaring it in your Model
 
@@ -529,6 +609,16 @@ returns a coderef:
         }
     }
 
+Alternatively, the C<deflate_via> and C<inflate_via> coderefs can, when
+executed, return a string of Perl code which can be inlined for more
+efficient flation.  Both the inflator and deflator are passed the value
+that needs to be converted in C<$val>. For instance:
+
+    has_type 'MyDateType',
+        deflate_via { '$val->to_string'            },
+        inflate_via { 'My::Date::Class->new($val)' },
+        map_via     { 'type' => 'date'             };
+
 C<map_via> expects a coderef which returns the mapping for that type as a list,
 not as a hashref:
 
@@ -545,19 +635,36 @@ Here is an example of how to define a type map for DateTime objects:
 
     has_type 'DateTime',
 
-        deflate_via {
-            sub { $_[0]->set_time_zone('UTC')->iso8601 };
-        },
+    deflate_via {
+        sub { $_[0]->set_time_zone('UTC')->iso8601 };
+    },
 
-        inflate_via {
-            sub {
-                my %args;
-                @args{ (qw(year month day hour minute second)) } = split /\D/, shift;
-                DateTime->new(%args);
-            };
-        },
+    inflate_via {
+        sub {
+            my %args;
+            @args{ (qw(year month day hour minute second)) } = split /\D/, shift;
+            DateTime->new(%args);
+        };
+    },
 
-        map_via { type => 'date' };
+    map_via { type => 'date' };
+
+=head2 An inlined example:
+
+    use DateTime;
+
+    has_type 'DateTime',
+
+    deflate_via { '$val->set_time_zone("UTC")->iso8601' },
+    inflate_via {
+         'do {'
+       . '  my %args;'
+       . '  @args{ (qw(year month day hour minute second)) } = split /\D/, $val;'
+       . '  DateTime->new(%args);'
+       . '}'
+    },
+
+    map_via { type => 'date' };
 
 =head1 ATTRIBUTES
 
@@ -602,12 +709,28 @@ and no C<new()>.
     $deflator = $class->find_deflator($attr)
 
 Returns a coderef which knows how to deflate C<$attr>, or throws an exception.
+Any inlined deflators are eval'ed into an anonymous sub.
+
+=head2 find_raw_deflator()
+
+    $deflator = $class->find_deflator($attr)
+
+Returns a coderef which knows how to deflate C<$attr>, or throws an exception.
+Any inlined deflators are returned as strings.
 
 =head2 find_inflator()
 
     $inflator = $class->find_inflator($attr)
 
 Returns a coderef which knows how to inflate C<$attr>, or throws an exception.
+Any inlined inflators are eval'ed into an anonymous sub.
+
+=head2 find_raw_inflator()
+
+    $inflator = $class->find_inflator($attr)
+
+Returns a coderef which knows how to inflate C<$attr>, or throws an exception.
+Any inlined inflators are returned as strings.
 
 =head2 find_mapper()
 
