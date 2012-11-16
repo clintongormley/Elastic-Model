@@ -61,7 +61,7 @@ sub save {
     my $self = shift;
     my $doc  = shift;
 
-    return unless $doc->has_changed || !$doc->uid->from_store;
+    return if $doc->_can_inflate;
 
     my $meta = Class::MOP::class_of($doc);
     die "Cannot bulk index class ("

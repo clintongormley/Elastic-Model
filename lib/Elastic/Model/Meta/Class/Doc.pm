@@ -37,6 +37,14 @@ has 'unique_keys' => (
 );
 
 #===================================
+has 'inflators' => (
+#===================================
+    is      => 'ro',
+    isa     => HashRef,
+    default => sub { {} }
+);
+
+#===================================
 sub new_stub {
 #===================================
     my ( $self, $uid, $source ) = @_;
@@ -93,6 +101,13 @@ sub _inflate {
     $obj->_inflate_doc if $obj->{_can_inflate};
 }
 
+#===================================
+sub inflator_for {
+#===================================
+    my ( $self, $model, $name ) = @_;
+    $self->inflators->{$name} ||= $model->typemap->find_inflator(
+        $self->find_attribute_by_name($name) );
+}
 1;
 
 __END__

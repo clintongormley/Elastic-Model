@@ -196,8 +196,8 @@ original value:
     say $user->has_changed('email');
     # 1
 
-    say $user->old_value('email');
-    # 'clint@domain.com';
+    dump $user->old_values;
+    # { email => 'clint@domain.com' };
 
 The L<UID|Elastic::Model::UID> (unique ID) of the object tracks (amongst other
 things) the current version number. ElasticSearch uses this version

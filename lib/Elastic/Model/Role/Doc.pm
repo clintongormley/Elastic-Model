@@ -54,48 +54,55 @@ has '_source' => (
     writer  => '_set_source',
 );
 
-#===================================
-has '_old_value' => (
-#===================================
-    is        => 'ro',
-    isa       => HashRef,
-    traits    => ['Elastic::Model::Trait::Exclude'],
-    exclude   => 1,
-    writer    => '_set_old_value',
-    clearer   => '_clear_old_value',
-    predicate => '_has_old_value'
-);
-
 no Moose::Role;
 
 #===================================
 sub has_changed {
 #===================================
     my $self = shift;
-    if (@_) {
-        my $attr = shift;
-        my $old = $self->_old_value || {};
-        if ( $attr eq "1" or @_ ) {
-            $old->{$attr} = shift()
-                unless $attr eq "1" || exists $old->{$attr};
-            $self->_set_old_value($old);
-            return 1;
-        }
-        return exists $old->{$attr};
-    }
-    return $self->_has_old_value;
+    my $old  = $self->old_values;
+    return '' unless keys %$old;
+    return @_
+        ? exists $old->{ $_[0] }
+        : 1;
 }
 
 #===================================
-sub old_values { shift->_old_value || {} }
+sub old_values {
 #===================================
+    my $self = shift;
+    return {} if $self->_can_inflate;
+    my $current  = $self->model->deflate_object($self);
+    my %original = %{ $self->uid->from_store ? $self->_source : {} };
+    my $json     = $self->model->json;
+    my %old;
+
+    my ( $o, $c );
+    my $meta  = Class::MOP::class_of($self);
+    my $model = $self->model;
+    for my $key ( keys %$current ) {
+        unless ( exists $original{$key} ) {
+            $old{$key} = undef;
+            next;
+        }
+        no warnings 'uninitialized';
+        ( $o, $c )
+            = map { ref $_ ? $json->encode($_) : $_ }
+            ( delete $original{$key}, $current->{$key} );
+
+        if ( $o ne $c ) {
+            $old{$key} = $meta->inflator_for( $model, $key )->($o);
+        }
+    }
+    $old{$_} = $meta->inflator_for( $model, $_ )->( $original{$_} )
+        for keys %original;
+    return \%old;
+}
 
 #===================================
 sub old_value {
 #===================================
-    my $self = shift;
-    my $attr = shift or croak "No (attr) passed to old_value()";
-    return $self->old_values->{$attr};
+    die('old_value($attr) has been removed. Use old_values->{$attr} instead');
 }
 
 #===================================
@@ -119,12 +126,12 @@ sub _inflate_doc {
     $self->_can_inflate(0);
     eval {
         $self->model->inflate_object( $self, $source );
-        1
+        1;
     } or do {
         my $error = $@;
         $self->_can_inflate(1);
-        die $error
-    }
+        die $error;
+    };
 }
 
 #===================================
@@ -140,10 +147,9 @@ sub save {
 #===================================
     my $self = shift;
 
-    if ( $self->has_changed || !$self->uid->from_store ) {
+    unless ( $self->_can_inflate ) {
         $self->touch;
-        $self->model->save_doc( doc => $self, @_ )
-            and $self->_clear_old_value;
+        $self->model->save_doc( doc => $self, @_ );
     }
     $self;
 }
@@ -217,7 +223,7 @@ __END__
     print $doc->has_changed();              # 1
     print $doc->has_changed('name');        # 1
     print $doc->has_changed('email');       # 0
-    print $doc->old_value('name');          # Clint
+    dump $doc->old_values;                  # { name => 'Clint' }
 
     $doc->save;
     print $doc->has_changed();              # 0
@@ -328,11 +334,6 @@ inflated already or not.
 =head3 _source
 
 The raw uninflated source value as loaded from ElasticSearch.
-
-=head3 _old_value
-
-If any attribute value has changed, the original value will be stored in
-C<_old_value>. See L</"old_value()"> and L</"has_changed()">.
 
 =head1 METHODS
 
@@ -445,7 +446,7 @@ might have an L</on_conflict> handler which looks like this:
             return $original->overwrite
                 if $new->has_been_deleted;
 
-            for my $attr ( keys %{ $old->old_value }) {
+            for my $attr ( keys %{ $old->old_values }) {
                 $new->$attr( $old->$attr ):
             }
 
@@ -473,23 +474,17 @@ Has the value of attribute C<$attr_name> changed?
 
     $bool = $doc->has_changed($attr_name);
 
-Mark the object as changed without specifying an attribute:
-
-    $doc->has_changed(1);
+B<Note:> If you're going to check more than one attribute, rather get
+all the L</old_values()> and check if the attribute name exists in the
+returned hash, rather than calling L<has_changed()> multiple times.
 
 =head2 old_values()
 
     \%old_vals  = $doc->old_values();
 
 Returns a hashref containing the original values of any attributes that have
-been changed.
-
-=head2 old_value()
-
-    $old_val    = $doc->old_value($attr_name);
-
-Returns the original value that an attribute had before being changed, or
-C<undef>.
+been changed. If an attribute wasn't set originally, but is now, it will
+be included in the hash with the value C<undef>.
 
 =head2 terms_indexed_for_field()
 
@@ -511,7 +506,3 @@ Inflates the attribute values from the hashref stored in L</"_source">.
 =head3 _get_source / _set_source
 
 The raw doc source from ElasticSearch.
-
-=head3 _set_old_value / _clear_old_value / _has_old_value
-
-Accessors for L</"_old_value">.

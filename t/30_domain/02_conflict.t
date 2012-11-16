@@ -57,10 +57,9 @@ sub on_conflict {
     is $old->has_changed, 1, 'Old has changed';
     is $old->has_changed('email'), 1,  'Old email has changed';
     is $old->has_changed('name'),  '', 'Old name has not changed';
-    cmp_deeply [ keys %{ $old->old_values } ], [ 'email', 'timestamp' ],
+    my $old_values = $old->old_values;
+    cmp_deeply [ keys %$old_values ], [ 'email', 'timestamp' ],
         'Old values keys';
-    is $old->old_value('email'), 'clint@foo', 'Old value email';
-    is $old->old_value('name'),  undef,       'Old value name';
     is $new->has_changed(), '', 'New not changed';
     cmp_deeply $new->old_values, {}, 'New old values';
 

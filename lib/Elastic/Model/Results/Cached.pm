@@ -42,14 +42,11 @@ has 'cache_key' => (
 
 no Moose;
 
-our $json;
 #===================================
 sub _build_cache_key {
 #===================================
     my $self = shift;
-    require JSON;
-    $json ||= JSON->new->canonical->utf8;
-    return $json->encode( $self->search );
+    return $self->model->json->encode( $self->search );
 }
 
 #===================================

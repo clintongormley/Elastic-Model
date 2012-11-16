@@ -12,6 +12,8 @@ use Elastic::Model::UID();
 use Elastic::Model::Deleted();
 use Scalar::Util qw(blessed refaddr weaken);
 use List::MoreUtils qw(uniq);
+use JSON();
+our $JSON = JSON->new->canonical->utf8;
 
 use namespace::autoclean;
 my @wrapped_classes = qw(
@@ -441,18 +443,15 @@ sub _update_unique_keys {
     for my $key ( keys %$uniques ) {
         my $unique_key = $uniques->{$key};
         my $new        = $doc->$key;
+        no warnings 'uninitialized';
 
         if ($from_store) {
-            my $old
-                = $doc->has_changed($key)
-                ? $doc->old_value($key)
-                : $doc->$key;
-            no warnings 'uninitialized';
-            next if $from_store and $old eq $new;
-            $old{$unique_key} = $old if defined $old and length $old;
+            my $old = $doc->_source->{$key};
+            next if $old eq $new;
+            $old{$unique_key} = $old if length $old;
         }
 
-        $new{$unique_key} = $new if defined $new and length $new;
+        $new{$unique_key} = $new if length $new;
     }
 
     my $uniq = $self->es_unique;
@@ -535,11 +534,9 @@ sub _delete_unique_keys {
 
     my %old;
     for my $key ( keys %$uniques ) {
-        my $old
-            = $doc->has_changed($key)
-            ? $doc->old_value($key)
-            : $doc->$key;
-        $old{ $uniques->{$key} } = $old if defined $old and length $old;
+        no warnings 'uninitialized';
+        my $old = $doc->_source->{$key};
+        $old{ $uniques->{$key} } = $old if length $old;
     }
     my $uniq = $self->es_unique;
     return {
@@ -623,6 +620,10 @@ sub map_class {
     $mapping{_source}{compress} = 1;
     return \%mapping;
 }
+
+#===================================
+sub json {$JSON}
+#===================================
 
 1;
 

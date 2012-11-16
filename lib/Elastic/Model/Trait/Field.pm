@@ -13,68 +13,6 @@ use Carp;
 use namespace::autoclean;
 
 #===================================
-around '_inline_instance_clear' => sub {
-#===================================
-    my ( $orig, $attr, $instance, @args ) = @_;
-    my $inline = $attr->$orig( $instance, @args );
-    unless ( $attr->exclude ) {
-        my $name       = $attr->name;
-        my $inline_has = $attr->_inline_instance_has($instance);
-        my $inline_get = $attr->_inline_instance_get($instance);
-        $inline = <<"INLINE"
-    do {
-        my \@val = $inline_get;
-        $inline_has && $instance->has_changed('$name',\@val);
-        $inline
-    }
-INLINE
-    }
-    return $inline;
-};
-
-#===================================
-around 'clear_value' => sub {
-#===================================
-    my ( $orig, $attr, $instance, @args ) = @_;
-    unless ( $attr->exclude ) {
-        my @val = $attr->get_value($instance);
-        $attr->has_value($instance)
-            && $instance->has_changed( $attr->name, @val );
-    }
-    return $attr->$orig( $instance, @args );
-};
-
-#===================================
-before '_process_options' => sub {
-#===================================
-    my ( $class, $name, $opts ) = @_;
-    if ( my $orig = $opts->{trigger} ) {
-        ( 'CODE' eq ref $orig )
-            || $class->throw_error(
-            "Trigger must be a CODE ref on attribute ($name)",
-            data => $opts->{trigger} );
-        $opts->{trigger} = sub {
-            my $self = shift;
-            no warnings 'uninitialized';
-            unless ( @_ == 2 && $_[1] eq $_[0] ) {
-                $self->has_changed( $name, $_[1] );
-            }
-            $self->$orig(@_);
-        };
-    }
-    else {
-
-        $opts->{trigger} = sub {
-            my $self = shift;
-            no warnings 'uninitialized';
-            unless ( @_ == 2 && $_[1] eq $_[0] ) {
-                $self->has_changed( $name, $_[1] );
-            }
-        };
-    }
-};
-
-#===================================
 has 'type' => (
 #===================================
     isa       => FieldType,
