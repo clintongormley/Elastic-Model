@@ -1,6 +1,8 @@
 package Elastic::Model::Trait::Field;
 
 use Moose::Role;
+Moose::Util::meta_attribute_alias('ElasticField');
+
 use MooseX::Types::Moose qw(
     Str HashRef ArrayRef Bool Num Int CodeRef
 );
@@ -16,7 +18,7 @@ use namespace::autoclean;
 has 'type' => (
 #===================================
     isa       => FieldType,
-    is        => 'ro',
+    is        => 'rw',
     predicate => 'has_type'
 );
 
@@ -24,35 +26,35 @@ has 'type' => (
 has 'mapping' => (
 #===================================
     isa => HashRef [Str],
-    is => 'ro'
+    is => 'rw'
 );
 
 #===================================
 has 'exclude' => (
 #===================================
     isa => Bool,
-    is  => 'ro'
+    is  => 'rw'
 );
 
 #===================================
 has 'include_in_all' => (
 #===================================
     isa => Bool,
-    is  => 'ro'
+    is  => 'rw'
 );
 
 #===================================
 has 'index' => (
 #===================================
     isa => IndexMapping,
-    is  => 'ro'
+    is  => 'rw'
 );
 
 #===================================
 has 'store' => (
 #===================================
     isa    => StoreMapping,
-    is     => 'ro',
+    is     => 'rw',
     coerce => 1
 );
 
@@ -60,35 +62,35 @@ has 'store' => (
 has 'multi' => (
 #===================================
     isa => MultiFields,
-    is  => 'ro'
+    is  => 'rw'
 );
 
 #===================================
 has 'index_name' => (
 #===================================
     isa => Str,
-    is  => 'ro'
+    is  => 'rw'
 );
 
 #===================================
 has 'boost' => (
 #===================================
     isa => Num,
-    is  => 'ro'
+    is  => 'rw'
 );
 
 #===================================
 has 'null_value' => (
 #===================================
     isa => Str,
-    is  => 'ro'
+    is  => 'rw'
 );
 
 #===================================
 has 'unique_key' => (
 #===================================
     isa => Str,
-    is  => 'ro'
+    is  => 'rw'
 );
 
 # strings
@@ -97,49 +99,49 @@ has 'unique_key' => (
 has 'analyzer' => (
 #===================================
     isa => Str,
-    is  => 'ro'
+    is  => 'rw'
 );
 
 #===================================
 has 'index_analyzer' => (
 #===================================
     isa => Str,
-    is  => 'ro'
+    is  => 'rw'
 );
 
 #===================================
 has 'search_analyzer' => (
 #===================================
     isa => Str,
-    is  => 'ro'
+    is  => 'rw'
 );
 
 #===================================
 has 'search_quote_analyzer' => (
 #===================================
     isa => Str,
-    is  => 'ro'
+    is  => 'rw'
 );
 
 #===================================
 has 'omit_norms' => (
 #===================================
     isa => Bool,
-    is  => 'ro'
+    is  => 'rw'
 );
 
 #===================================
 has 'omit_term_freq_and_positions' => (
 #===================================
     isa => Bool,
-    is  => 'ro'
+    is  => 'rw'
 );
 
 #===================================
 has 'term_vector' => (
 #===================================
     isa => TermVectorMapping,
-    is  => 'ro'
+    is  => 'rw'
 );
 
 # dates
@@ -148,14 +150,14 @@ has 'term_vector' => (
 has 'format' => (
 #===================================
     isa => Str,
-    is  => 'ro'
+    is  => 'rw'
 );
 
 #===================================
 has 'precision_step' => (
 #===================================
     isa => Int,
-    is  => 'ro'
+    is  => 'rw'
 );
 
 # geo-point
@@ -164,21 +166,21 @@ has 'precision_step' => (
 has 'geohash' => (
 #===================================
     isa => Bool,
-    is  => 'ro'
+    is  => 'rw'
 );
 
 #===================================
 has 'lat_lon' => (
 #===================================
     isa => Bool,
-    is  => 'ro'
+    is  => 'rw'
 );
 
 #===================================
 has 'geohash_precision' => (
 #===================================
     isa => Int,
-    is  => 'ro'
+    is  => 'rw'
 );
 
 # object
@@ -187,7 +189,7 @@ has 'geohash_precision' => (
 has 'enabled' => (
 #===================================
     isa       => Bool,
-    is        => 'ro',
+    is        => 'rw',
     predicate => 'has_enabled'
 );
 
@@ -195,14 +197,14 @@ has 'enabled' => (
 has 'dynamic' => (
 #===================================
     isa => DynamicMapping,
-    is  => 'ro'
+    is  => 'rw'
 );
 
 #===================================
 has 'path' => (
 #===================================
     isa => PathMapping,
-    is  => 'ro'
+    is  => 'rw'
 );
 
 # nested
@@ -211,14 +213,14 @@ has 'path' => (
 has 'include_in_parent' => (
 #===================================
     isa => Bool,
-    is  => 'ro'
+    is  => 'rw'
 );
 
 #===================================
 has 'include_in_root' => (
 #===================================
     isa => Bool,
-    is  => 'ro'
+    is  => 'rw'
 );
 
 # deflation
@@ -227,14 +229,14 @@ has 'include_in_root' => (
 has 'deflator' => (
 #===================================
     isa => CodeRef,
-    is  => 'ro'
+    is  => 'rw'
 );
 
 #===================================
 has 'inflator' => (
 #===================================
     isa => CodeRef,
-    is  => 'ro'
+    is  => 'rw'
 );
 
 # esdocs
@@ -243,14 +245,14 @@ has 'inflator' => (
 has 'include_attrs' => (
 #===================================
     isa => ArrayRef [Str],
-    is => 'ro'
+    is => 'rw'
 );
 
 #===================================
 has 'exclude_attrs' => (
 #===================================
     isa => ArrayRef [Str],
-    is => 'ro'
+    is => 'rw'
 );
 
 1;
