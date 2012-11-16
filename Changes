@@ -1,3 +1,33 @@
+0.20    2012-11-16
+        BREAKING CHANGE
+         - has_changed() and old_values() was implemented with triggers on
+           every doc class attribute.  This was buggy because
+           1) it wasn't applied to attributes from roles
+           2) it didn't check arrays/hashes correctly
+           3) it was slow
+           We now handle all of the above correctly, by comparing canonical
+           versions of the deflated object with the data loaded from ES.
+
+           has_changed() was called by save() to prevent saving if the
+           object hadn't actually changed.  We no longer do this - if you
+           call save(), your object will be saved. If you want to run this
+           check yourself, you can do:
+
+               $doc->save if $doc->has_changed;
+
+           old_value() has been removed because it requires old_values() to
+           build a comparison of all attributes that have changed, so it
+           is more efficient to just call old_values() once, eg:
+
+                $old = $doc->old_values;
+                if (exists $old->{foo}) {...}
+                if (exists $old->{bar}) {...}
+
+        ENHANCEMENT
+         - added apply_field_settings() to Elastic::Doc to make it easier
+           to configure attributes applied from roles, when you may not
+           have edit access to the role itself.
+
 0.19    2012-11-15
         ENHANCEMENT
          - Inflators and deflators are now inlined whenever possible, resulting
