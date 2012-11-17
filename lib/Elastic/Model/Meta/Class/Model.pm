@@ -21,7 +21,7 @@ for my $k (qw(namespace char_filter analyzer filter tokenizer)) {
         is      => 'ro',
         traits  => ['Hash'],
         isa     => HashRef,
-        default => sub { \%default },
+        default => sub { +{%default} },
         handles => {
             $k          => 'get',
             "add_${k}"  => 'set',
