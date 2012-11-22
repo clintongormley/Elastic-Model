@@ -85,8 +85,13 @@ has_type 'HashRef',
 has_type 'Maybe',
 #===================================
     deflate_via { _flate_maybe( 'deflator', @_ ) },
-    inflate_via { _flate_maybe( 'inflator', @_ ) },
-    map_via { _content_handler( 'mapper', @_ ) };
+    inflate_via { _flate_maybe( 'inflator', @_ ) }, map_via {
+    my $tc = $_[0];
+    return ( type => 'boolean' )
+        if $tc->can('type_parameter')
+        and $tc->type_parameter->name eq 'Bool';
+    _content_handler( 'mapper', @_ );
+    };
 
 #===================================
 has_type 'Moose::Meta::TypeConstraint::Enum',
@@ -235,7 +240,12 @@ In/deflation via L</Any>. It is mapped as:
 
 An undef value is stored as a JSON C<null>. The mapping and in/deflation depend
 on the content type, eg C<Maybe[Int]>.  A C<Maybe> without a content
-type is mapped and in/deflated via L</Any>
+type is mapped and in/deflated via L</Any>.  C<Maybe[Bool]> is special cased
+to be mapped as:
+
+    { type => 'boolean' }
+
+See L<Elastic::Manual::Attributes/BOOLEAN FIELDS> for an explanation.
 
 =head2 Undef
 

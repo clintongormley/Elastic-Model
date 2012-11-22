@@ -615,17 +615,42 @@ memory used.
 
 =head1 BOOLEAN FIELDS
 
-Boolean fields accept C<undef>, C<0>, C<""> and C<"false"> as C<false> values,
+Boolean fields accept C<0>, C<""> and C<"false"> as C<false> values,
 and any other value as C<true>.
 
 There are no C<boolean>-specific keywords, but the general keywords apply:
 L</index>, L</include_in_all>, L</boost>, L</multi>,
 L</index_name>, L</store> and L</null_value>.
 
-B<Note>: By default, ElasticSearch treats C<undef> as NEITHER C<true> NOR
-C<false>, but as C<null> (ie missing). To work around this, we automatically
-set L</null_value> to C<0> to make C<boolean> fields more Perlish. If you
-would like to revert to the default behaviour, set L</null_value> to C<undef>.
+B<IMPORTANT>: Moose and Perl consider C<undef> to be an acceptable C<false>
+value. However, an C<undef> in Perl is converted to a C<null> in JSON, which
+Elasticsearch would understand as meaning "this field has no value" or
+"is missing".
+For this reason we distinguish fields the type constraint of C<Bool>
+from the type constraint of C<Maybe[Bool]> (although functionally they
+are identical in Moose).
+
+C<Bool> fields regard C<undef> as C<false>, while C<Maybe[Bool]> would regard
+C<undef> as C<NULL>, "missing" or "not set".
+
+    Value           Bool            Maybe[Bool]
+    ---------------------------------------------
+    1               True            True
+    0               False           False
+    Empty string    False           False
+    Undef           False           NULL / missing
+    No value        NULL / missing  NULL / missing
+
+This is done by mapping C<Maybe[Bool]> fields as:
+
+    { type => 'boolean' }
+
+and mapping C<Maybe[Bool]> fields as:
+
+    { type => 'boolean', null_value => 0 }
+
+B<Note:> the `null_value` setting only affects how a boolean field is
+queryable - it doesn't change the actual value of the field in the object.
 
 =head1 BINARY FIELDS
 
