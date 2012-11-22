@@ -187,7 +187,7 @@ L<https://metacpan.org/module/Elastic::Model>
 
 =head1 ACKNOWLEDGEMENTS
 
-Thanks to Shay Bannon, the ElasticSearch author, for producing an amazingly
+Thanks to Shay Banon, the ElasticSearch author, for producing an amazingly
 easy to use search engine, to L<PERLER|https://metacpan.org/author/PERLER>
 for writing L<ElasticSearchX::Model>, which was the original inspiration,
 to L<FLORA|https://metacpan.org/author/FLORA> and
