@@ -420,11 +420,6 @@ sub _fixup_mapping {
     delete $defn->{analyzer}
         if $defn->{index_analyzer} && $defn->{search_analyzer};
 
-    # make 'undef' a false value for boolean fields
-    $defn->{null_value} = 0
-        if $defn->{type} eq 'boolean'
-        and not exists $defn->{null_value};
-
     return $defn;
 }
 
