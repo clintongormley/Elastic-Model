@@ -630,8 +630,9 @@ For this reason we distinguish fields the type constraint of C<Bool>
 from the type constraint of C<Maybe[Bool]> (although functionally they
 are identical in Moose).
 
-C<Bool> fields regard C<undef> as C<false>, while C<Maybe[Bool]> would regard
-C<undef> as C<NULL>, "missing" or "not set".
+For the purposes of querying, Elastic::Model treats C<Bool> fields set to
+C<undef> as C<false>, and C<Maybe[Bool]> set to C<undef> as C<NULL>,
+"missing" or "not set".
 
     Value           Bool            Maybe[Bool]
     ---------------------------------------------
@@ -645,12 +646,13 @@ This is done by mapping C<Maybe[Bool]> fields as:
 
     { type => 'boolean' }
 
-and mapping C<Maybe[Bool]> fields as:
+and mapping C<Bool> fields as:
 
     { type => 'boolean', null_value => 0 }
 
 B<Note:> the `null_value` setting only affects how a boolean field is
-queryable - it doesn't change the actual value of the field in the object.
+indexed by Elasticseach - it doesn't change the actual value of the field in
+the object.
 
 =head1 BINARY FIELDS
 
