@@ -3,7 +3,6 @@ package Elastic::Model::Role::Iterator;
 use Carp;
 use Moose::Role;
 use MooseX::Types::Moose qw(ArrayRef Int CodeRef);
-use MooseX::Attribute::Chained;
 use namespace::autoclean;
 
 #===================================
