@@ -1,3 +1,6 @@
+0.23    2012-11-23
+        Doc corrections
+
 0.22    2012-11-22
         ENHANCEMENT
          - Add specific mapping for Maybe[Bool] which treats undef values
