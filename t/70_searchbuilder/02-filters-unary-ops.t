@@ -4,7 +4,8 @@ use strict;
 use warnings;
 
 use Test::More;
-use Test::Differences;
+use Test::Deep qw(cmp_details deep_diag bag);
+use Data::Dump qw(pp);
 use Test::Exception;
 use Elastic::Model::SearchBuilder;
 
@@ -329,10 +330,10 @@ test_filters(
 
     'RANGES WITH CACHE',
     { k => { gt => 5 }, -cache => { k => { lt => 10 } } },
-    {   and => [
+    {   and => bag(
             { range => { _cache => 1, k => { lt => 10 } } },
             { range => { k => { gt => 5 } } }
-        ]
+        )
     },
 
     'CACHE WITH QUERY',
@@ -342,8 +343,9 @@ test_filters(
     'CACHE WITH AND',
     { -cache => { foo => 1, bar => 2 } },
     {   and => {
-            _cache  => 1,
-            filters => [ { term => { bar => 2 } }, { term => { foo => 1 } } ]
+            _cache => 1,
+            filters =>
+                bag( { term => { bar => 2 } }, { term => { foo => 1 } } )
         }
     },
 
@@ -377,10 +379,10 @@ test_filters(
             bar => { b => 1 }
         }
     },
-    {   and => [
+    {   and => bag(
             { term => { _cache_key => 'bar', b => 1 } },
             { term => { _cache_key => 'foo', a => 1 } }
-        ]
+        )
     },
 
     '-cache_key: []',
@@ -455,13 +457,26 @@ sub test_filters {
         my $out  = shift;
         if ( ref $out eq 'Regexp' ) {
             throws_ok { $a->filter($in) } $out, $name;
+            next;
         }
-        else {
-            eval {
-                eq_or_diff scalar $a->filter($in), { filter => $out }, $name;
-                1;
-            }
-                or die "*** FAILED TEST $name:***\n$@";
+
+        my $got = $a->filter($in);
+        my $expect = { filter => $out };
+        my ( $ok, $stack ) = cmp_details( $got, $expect );
+
+        if ($ok) {
+            pass $name;
+            next;
         }
+
+        fail($name);
+
+        note("Got:");
+        note( pp($got) );
+        note("Expected:");
+        note( pp($expect) );
+
+        diag( deep_diag($stack) );
+
     }
 }

@@ -4,7 +4,8 @@ use strict;
 use warnings;
 
 use Test::More;
-use Test::Differences;
+use Test::Deep qw(cmp_details deep_diag bag);
+use Data::Dump qw(pp);
 use Test::Exception;
 use Elastic::Model::SearchBuilder;
 
@@ -203,13 +204,26 @@ sub test_queries {
         my $out  = shift;
         if ( ref $out eq 'Regexp' ) {
             throws_ok { $a->query($in) } $out, $name;
+            next;
         }
-        else {
-            eval {
-                eq_or_diff scalar $a->query($in), { query => $out }, $name;
-                1;
-            }
-                or die "*** FAILED TEST $name:***\n$@";
+
+        my $got = $a->query($in);
+        my $expect = { query => $out };
+        my ( $ok, $stack ) = cmp_details( $got, $expect );
+
+        if ($ok) {
+            pass $name;
+            next;
         }
+
+        fail($name);
+
+        note("Got:");
+        note( pp($got) );
+        note("Expected:");
+        note( pp($expect) );
+
+        diag( deep_diag($stack) );
+
     }
 }

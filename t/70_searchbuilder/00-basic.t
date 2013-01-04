@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use Test::More;
-use Test::Differences;
+use Test::Deep;
 use Test::Exception;
 
 BEGIN {
@@ -22,7 +22,7 @@ is( scalar $a->filter( {} ), undef, 'Empty {}' );
 is( scalar $a->filter( [ [], {} ] ), undef, 'Empty [[]{}]' );
 is( scalar $a->filter( { [], {} } ), undef, 'Empty {[]{}}' );
 is( scalar $a->filter( { -ids => [] } ), undef, 'IDS=>[]' );
-eq_or_diff $a->filter( \{ term => { foo => 1 } } ),
+cmp_deeply $a->filter( \{ term => { foo => 1 } } ),
     { filter => { term => { foo => 1 } } },
     '\\{}';
 

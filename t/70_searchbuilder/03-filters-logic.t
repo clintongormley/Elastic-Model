@@ -4,7 +4,8 @@ use strict;
 use warnings;
 
 use Test::More;
-use Test::Differences;
+use Test::Deep qw(cmp_details deep_diag bag);
+use Data::Dump qw(pp);
 use Test::Exception;
 use Elastic::Model::SearchBuilder;
 
@@ -73,17 +74,17 @@ test_filters(
 );
 
 my %and_or = (
-    and    => { and => [ { term => { a => 1 } }, { term => { b => 2 } } ] },
-    or     => { or  => [ { term => { a => 1 } }, { term => { b => 2 } } ] },
+    and => { and => bag( { term => { a => 1 } }, { term => { b => 2 } } ) },
+    or  => { or  => [    { term => { a => 1 } }, { term => { b => 2 } } ] },
     or_and => {
-        and => [
+        and => bag(
             { or   => [   { term => { a => 1 } }, { term => { b => 2 } } ] },
             { term => { c => 3 } }
-        ]
+        )
     },
     and_or => {
         or => [
-            { and  => [   { term => { a => 1 } }, { term => { b => 2 } } ] },
+            { and => bag( { term => { a => 1 } }, { term => { b => 2 } } ) },
             { term => { c => 3 } }
         ]
     },
@@ -375,8 +376,10 @@ test_filters(
     { -not => { k1 => 'v', k2 => 'v' } },
     {   not => {
             filter => {
-                and =>
-                    [ { term => { k1 => 'v' } }, { term => { k2 => 'v' } } ]
+                and => bag(
+                    { term => { k1 => 'v' } },
+                    { term => { k2 => 'v' } }
+                )
             }
         }
     },
@@ -385,8 +388,10 @@ test_filters(
     { -not => { k => { '=' => 'v', '^' => 'v' } } },
     {   not => {
             filter => {
-                and =>
-                    [ { term => { k => 'v' } }, { prefix => { k => 'v' } } ]
+                and => bag(
+                    { term   => { k => 'v' } },
+                    { prefix => { k => 'v' } }
+                )
             }
         }
     },
@@ -404,8 +409,10 @@ test_filters(
     { -not => [ k => { '=' => 'v', '^' => 'v' } ] },
     {   not => {
             filter => {
-                and =>
-                    [ { term => { k => 'v' } }, { prefix => { k => 'v' } } ]
+                and => bag(
+                    { term   => { k => 'v' } },
+                    { prefix => { k => 'v' } }
+                )
             }
         }
     },
@@ -473,16 +480,28 @@ sub test_filters {
         my $name = shift;
         my $in   = shift;
         my $out  = shift;
-
         if ( ref $out eq 'Regexp' ) {
             throws_ok { $a->filter($in) } $out, $name;
+            next;
         }
-        else {
-            eval {
-                eq_or_diff scalar $a->filter($in), { filter => $out }, $name;
-                1;
-            }
-                or die "*** FAILED TEST $name:***\n$@";
+
+        my $got = $a->filter($in);
+        my $expect = { filter => $out };
+        my ( $ok, $stack ) = cmp_details( $got, $expect );
+
+        if ($ok) {
+            pass $name;
+            next;
         }
+
+        fail($name);
+
+        note("Got:");
+        note( pp($got) );
+        note("Expected:");
+        note( pp($expect) );
+
+        diag( deep_diag($stack) );
+
     }
 }

@@ -4,13 +4,13 @@ use strict;
 use warnings;
 
 use Test::More;
-use Test::Differences;
+use Test::Deep;
 use Test::Exception;
 use Elastic::Model::SearchBuilder;
 
 my $a = Elastic::Model::SearchBuilder->new;
 
-eq_or_diff $a->query( { k => { '=' => { query => 0 } } } ),
+cmp_deeply $a->query( { k => { '=' => { query => 0 } } } ),
     { query => { match => { k => { query => 0 } } } },
     'False string hash_param';
 
