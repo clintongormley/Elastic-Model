@@ -1,3 +1,14 @@
+0.24    2013-01-04
+        BUG FIX
+         - has_changed was failing when comparing attributes that contained
+           references.
+         - Fixed tests for SearchBuilder that were failing with the new
+           hash changes in perl 5.17
+
+         ENHANCEMENT
+          - update_mapping and delete_mapping now accept optional \%args
+            which get passed on to ElasticSearch.pm
+
 0.23    2012-11-23
         Doc corrections
 
