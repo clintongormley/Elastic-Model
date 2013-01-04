@@ -117,6 +117,7 @@ sub is_index {
 sub update_mapping {
 #===================================
     my $self     = shift;
+    my %args     = ref $_[-1] eq 'HASH' ? %{ pop() } : ();
     my $mappings = $self->mappings(@_);
     my $es       = $self->es;
     my $name     = $self->name;
@@ -124,7 +125,8 @@ sub update_mapping {
         $es->put_mapping(
             index   => $name,
             type    => $type,
-            mapping => $mappings->{$type}
+            mapping => $mappings->{$type},
+            %args,
         );
     }
     return $self;
@@ -134,9 +136,10 @@ sub update_mapping {
 sub delete_mapping {
 #===================================
     my $self = shift;
+    my %args = ref $_[-1] eq 'HASH' ? %{ pop() } : ();
     my $es   = $self->es;
     my $name = $self->name;
-    $es->delete_mapping( index => $name, type => $_ ) for @_;
+    $es->delete_mapping( index => $name, type => $_, %args ) for @_;
     return $self;
 }
 
@@ -270,6 +273,7 @@ L</namespace>.
 
     $admin = $admin->update_mapping();
     $admin = $admin->update_mapping( @type_names );
+    $admin = $admin->update_mapping( @type_names, { ignore_conflicts=> 1 } );
 
 Type mappings B<cannot be changed> on an existing index, but they B<can be
 added to>.  L</update_mapping()> will generate a new type mapping from your
@@ -281,12 +285,19 @@ update all types known to the L</namespace>.
 
     $admin->update_mapping( 'user','post');
 
+Any optional args passed
+as a hashref as the final parameter will be passed to
+L<ElasticSearch/put_mapping()>
+
 =head2 delete_mapping();
 
     $admin = $admin->delete_mapping( @types );
+    $admin = $admin->delete_mapping( @types, { ignore_missing => 1 });
 
 Deletes the type mapping B<AND THE DOCUMENTS> for the listed types in the index
-(or the indices pointed to by alias) L</name>.
+(or the indices pointed to by alias) L</name>. Any optional args passed
+as a hashref as the final parameter will be passed to
+L<ElasticSearch/delete_mapping()>.
 
 =head2 exists()
 

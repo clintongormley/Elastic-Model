@@ -5,6 +5,7 @@ use warnings;
 use Test::More 0.96;
 use Test::Moose;
 use Test::Deep;
+use Test::Exception;
 
 use lib 't/lib';
 
@@ -79,6 +80,12 @@ sub test_domain {
     ok $index->update_mapping("post"), "Update $desc mapping";
     ok $es->mapping( index => $name, type => "post" )->{post},
         "Mapping $desc recreated";
+
+    throws_ok sub { $index->delete_mapping("foo") }, qr/Missing/,
+        "Non-existent mapping throws error";
+
+    ok $index->delete_mapping( "foo", { ignore_missing => 1 } ),
+        "Ignore missing mapping";
 
     ## Refresh ##
     ok $index->refresh, "$desc refreshed";
