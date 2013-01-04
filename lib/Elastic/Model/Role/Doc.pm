@@ -77,7 +77,7 @@ sub old_values {
     my $json     = $self->model->json;
     my %old;
 
-    my ( $o, $c );
+    my ( $o, $c, $o_str, $c_str );
     my $meta  = Class::MOP::class_of($self);
     my $model = $self->model;
     for my $key ( keys %$current ) {
@@ -86,11 +86,11 @@ sub old_values {
             next;
         }
         no warnings 'uninitialized';
-        ( $o, $c )
-            = map { ref $_ ? $json->encode($_) : $_ }
-            ( delete $original{$key}, $current->{$key} );
+        ( $o, $c ) = ( delete $original{$key}, $current->{$key} );
+        ( $o_str, $c_str )
+            = map { ref $_ ? $json->encode($_) : $_ } ( $o, $c );
 
-        if ( $o ne $c ) {
+        if ( $o_str ne $c_str ) {
             $old{$key} = $meta->inflator_for( $model, $key )->($o);
         }
     }
