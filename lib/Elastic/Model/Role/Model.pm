@@ -27,6 +27,7 @@ for my $class (@wrapped_classes) {
 #===================================
         isa     => Str,
         is      => 'ro',
+        lazy    => 1,
         default => sub { shift->wrap_class($class) }
     );
 }
