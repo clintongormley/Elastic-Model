@@ -819,8 +819,10 @@ B<Note:> Sorting cannot be combined with L</scan()>.
 
     $from     = $view->from;
 
-By default, results are returned from the first result. If you would like to
-start at a later result (eg for paging), you can set L</from>.
+By default, results are returned from the first result. Think of it as
+I<"the number of docs to skip">, so setting C<from> to C<0> would start from
+the first result. Setting C<from> to C<10> would skip the first 10 results
+and return docs from result number 11 onwards.
 
 =head2 size
 
