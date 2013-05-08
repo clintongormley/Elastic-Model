@@ -37,9 +37,11 @@ no Moose;
 #===================================
 sub _get_default_routing {
 #===================================
-    my $self    = shift;
-    my $name    = $self->name;
-    my $aliases = $self->model->es->get_aliases( index => $name );
+    my $self = shift;
+    my $name = $self->name;
+    my $aliases
+        = $self->model->es->get_aliases( index => $name, ignore_missing => 1 )
+        || {};
 
     croak "Domain ($name) doesn't exist either as an index or an alias"
         unless %$aliases;

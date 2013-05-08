@@ -99,9 +99,10 @@ sub update_analyzers {
 #===================================
 sub is_alias {
 #===================================
-    my $self    = shift;
-    my $name    = $self->name;
-    my $indices = $self->es->get_aliases( index => $name );
+    my $self = shift;
+    my $name = $self->name;
+    my $indices
+        = $self->es->get_aliases( index => $name, ignore_missing => 1 ) || {};
     return !!( %$indices && !$indices->{$name} );
 }
 
@@ -110,7 +111,9 @@ sub is_index {
 #===================================
     my $self = shift;
     my $name = $self->name;
-    return !!$self->es->get_aliases( index => $name )->{$name};
+    my $aliases
+        = $self->es->get_aliases( index => $name, ignore_missing => 1 ) || {};
+    return !!$aliases->{$name};
 }
 
 #===================================
