@@ -1,3 +1,7 @@
+0.26    2013-05-08
+        Upgraded ElasticSearch.pm to v0.65
+        Calls to non-existent indices/aliases throws a 404 in v0.90
+
 0.25    2013-02-26
         Made Test::Strict an author only test
 
