@@ -68,8 +68,8 @@ sub test_domain {
         "$desc mapping from ES";
 
     cmp_deeply
-        [ keys %$mapping ],
-        [ "user", "post" ],
+        [ sort keys %$mapping ],
+        [ "post", "user" ],
         "$desc ES mapping has both types";
 
     ok $index->delete_mapping("post"), "Delete $desc mapping";
