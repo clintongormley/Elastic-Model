@@ -14,8 +14,8 @@ my $trace
 
 if ( $ENV{ES} ) {
     $es = Elasticsearch::Compat->new(
-        servers => $ENV{ES},
-        trace   => $ENV{TRACE},
+        servers        => $ENV{ES},
+        trace_requests => $ENV{TRACE},
     );
     eval { $es->current_server_version; } or do {
         diag $@;

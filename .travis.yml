@@ -4,7 +4,7 @@ perl:
   - "5.16"
   - "5.14"
   - "5.12"
-env: PERL_CPANM_OPT="--mirror http://cpan.mirrors.travis-ci.org  --mirror http://cpan.cpantesters.org/ --mirror http://search.cpan.org/CPAN --cascade-search --notest --force --skip-satisfied" ES="localhost:9200"
+env: ES="localhost:9200"
 before_install:
   - export OLD_DIR=`pwd`
   - cd /tmp
