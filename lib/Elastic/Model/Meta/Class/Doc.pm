@@ -88,7 +88,7 @@ sub _build_stub_initializer {
         . $self->_inline_generate_instance( '$instance',
         '"' . $self->name . '"' )
         . 'return $instance' . '}';
-    return eval($src) or croak $@;
+    return eval($src) || croak $@;
 }
 
 #===================================
