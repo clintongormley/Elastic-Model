@@ -468,8 +468,8 @@ sub _build_search {
     $partial{exclude} = $self->exclude_paths
         if $self->_has_exclude_paths;
 
-    my %args = ( (
-            map { $_ => $self->$_ }
+    my %args = (
+        (   map { $_ => $self->$_ }
                 qw(
                 type sort from size facets
                 min_score preference routing stats
@@ -496,7 +496,7 @@ sub _build_query {
     my $self = shift;
     my $q    = $self->query;
     my $f    = $self->filter;
-    return { match_all => {} } unless $q or $f;
+    return { match_all => {} } unless $q || $f;
 
     return
          !$q ? { constant_score => { filter => $f } }
@@ -521,7 +521,7 @@ sub _build_delete {
 
 __END__
 
-# ABSTRACT: Views to query your docs in ElasticSearch
+# ABSTRACT: Views to query your docs in Elasticsearch
 
 =head1 SYNOPSIS
 
@@ -572,7 +572,7 @@ Cached results:
 
 =head1 DESCRIPTION
 
-L<Elastic::Model::View> is used to query your docs in ElasticSearch.
+L<Elastic::Model::View> is used to query your docs in Elasticsearch.
 
 Views are "chainable". In other words, you get a clone of the
 current view every time you set an attribute. For instance, you could do:
@@ -655,9 +655,9 @@ the cached version to be updated, along with a new expiry time:
     $scrolled_results = $view->scroll( $scroll_timeout );
 
 Executes a search and returns an L<Elastic::Model::Results::Scrolled>
-object which will pull L</size> results from ElasticSearch as required until
+object which will pull L</size> results from Elasticsearch as required until
 either (1) no more results are available or (2) more than C<$scroll_timeout>
-(default 1 minute) elapses between requests to ElasticSearch.
+(default 1 minute) elapses between requests to Elasticsearch.
 
 Scrolling allows you to return an unbound result set.  Useful if you're not
 sure whether to expect 2 results or 2000.
@@ -742,12 +742,12 @@ one or more types.
     \%query   = $view->query
 
 Specify the query to run in the native
-L<ElasticSearch query DSL|http://www.elasticsearch.org/guide/reference/query-dsl/>
+L<Elasticsearch query DSL|http://www.Elasticsearch.org/guide/reference/query-dsl/>
 or use C<queryb()> to specify your query  with the more Perlish
 L<Elastic::Model::SearchBuilder> query syntax.
 
 By default, the query will
-L<match all docs|http://www.elasticsearch.org/guide/reference/query-dsl/match-all-query.html>.
+L<match all docs|http://www.Elasticsearch.org/guide/reference/query-dsl/match-all-query.html>.
 
 =head2 filter
 
@@ -762,12 +762,12 @@ L<match all docs|http://www.elasticsearch.org/guide/reference/query-dsl/match-al
     \%filter  = $view->filter;
 
 You can specify a filter to apply to the query results using either
-the native ElasticSearch query DSL or, use C<filterb()> to specify your
+the native Elasticsearch query DSL or, use C<filterb()> to specify your
 filter with the more Perlish L<Elastic::Model::SearchBuilder> DSL.
 If a filter is specified, it will be combined with the L</query>
-as a L<filtered query|http://www.elasticsearch.org/guide/reference/query-dsl/filtered-query.html>,
+as a L<filtered query|http://www.Elasticsearch.org/guide/reference/query-dsl/filtered-query.html>,
 or (if no query is specified) as a
-L<constant score|http://www.elasticsearch.org/guide/reference/query-dsl/constant-score-query.html>
+L<constant score|http://www.Elasticsearch.org/guide/reference/query-dsl/constant-score-query.html>
 query.
 
 =head2 post_filter
@@ -782,12 +782,12 @@ query.
 
     \%filter  = $view->post_filter;
 
-L<Post-filters|http://www.elasticsearch.org/guide/reference/api/search/filter.html>
+L<Post-filters|http://www.Elasticsearch.org/guide/reference/api/search/filter.html>
 filter the results AFTER any L</facets> have been calculated.  In the above
 example, the facets would be calculated on all values of C<tag>, but the
 results would then be limited to just those docs where C<tag == perl>.
 
-You can specify a post_filter using either the native ElasticSearch query DSL or,
+You can specify a post_filter using either the native Elasticsearch query DSL or,
 use C<post_filterb()> to specify it with the more Perlish
 L<Elastic::Model::SearchBuilder> DSL.
 
@@ -808,7 +808,7 @@ L<Elastic::Model::SearchBuilder> DSL.
 By default, results are sorted by "relevance" (C<< _score => 'desc' >>).
 You can specify multiple sort arguments, which are applied in order, and
 can include scripts or geo-distance.
-See L<http://www.elasticsearch.org/guide/reference/api/search/sort.html> for
+See L<http://www.Elasticsearch.org/guide/reference/api/search/sort.html> for
 more information.
 
 B<Note:> Sorting cannot be combined with L</scan()>.
@@ -860,7 +860,7 @@ from the query generated from L</query> and L</filter>.  If you want to filter
 your query results down further after calculating your facets, you can
 use L</post_filter>.
 
-See L<http://www.elasticsearch.org/guide/reference/api/search/facets/> for
+See L<http://www.Elasticsearch.org/guide/reference/api/search/facets/> for
 an explanation of what facets are available.
 
 =head2 highlight
@@ -872,7 +872,7 @@ an explanation of what facets are available.
     );
 
 Specify which fields should be used for
-L<highlighted snippets|http://www.elasticsearch.org/guide/reference/api/search/highlighting.html>.
+L<highlighted snippets|http://www.Elasticsearch.org/guide/reference/api/search/highlighting.html>.
 to your search results. You can pass just a list of fields, or fields with
 their field-specific settings. These values are used to set the C<fields>
 parameter in L</highlighting>.
@@ -891,7 +891,7 @@ which should be applied to all of the fields set in L</highlight> (although
 you can override these settings for individual fields by passing field settings
 to L</highlight>).
 
-See L<http://www.elasticsearch.org/guide/reference/api/search/highlighting.html>.
+See L<http://www.Elasticsearch.org/guide/reference/api/search/highlighting.html>.
 for more about how highlighting works, and L<Elastic::Model::Result/highlight>
 for how to retrieve the highlighted snippets.
 
@@ -901,15 +901,15 @@ for how to retrieve the highlighted snippets.
 
     $new_view = $view->fields('title','content');
 
-By default, searches will return the L<_source|http://www.elasticsearch.org/guide/reference/mapping/source-field.html>
+By default, searches will return the L<_source|http://www.Elasticsearch.org/guide/reference/mapping/source-field.html>
 field which contains the whole document, allowing Elastic::Model to inflate
 the original object without having to retrieve the document separately. If you
 would like to just retrieve a subset of fields, you can specify them in
-L</fields>. See L<http://www.elasticsearch.org/guide/reference/api/search/fields.html>.
+L</fields>. See L<http://www.Elasticsearch.org/guide/reference/api/search/fields.html>.
 
 B<Note:> If you do specify any fields, and you DON'T include C<'_source'> then the
 C<_source> field won't be returned, and you won't be able to retrieve the original
-object without requesting it from ElasticSearch in a separate (but automatic) step.
+object without requesting it from Elasticsearch in a separate (but automatic) step.
 
 =head2 script_fields
 
@@ -928,9 +928,9 @@ object without requesting it from ElasticSearch in a separate (but automatic) st
     \%fields  = $view->script_fields;
     \%defn    = $view->get_script_field($name);
 
-L<Script fields|http://www.elasticsearch.org/guide/reference/api/search/script-fields.html>
+L<Script fields|http://www.Elasticsearch.org/guide/reference/api/search/script-fields.html>
 can be generated using the L<mvel|http://mvel.codehaus.org/Language+Guide+for+2.0>
-scripting language. (You can also use L<Javascript, Python and Java|http://www.elasticsearch.org/guide/reference/modules/scripting>.)
+scripting language. (You can also use L<Javascript, Python and Java|http://www.Elasticsearch.org/guide/reference/modules/scripting>.)
 
 =head2 include_paths / exclude_paths
 
@@ -951,7 +951,7 @@ The partial objects returned when L<Elastic::Model::Results/as_partials()>
 is in effect function exactly as real objects, except that they cannot
 be saved.
 
-See C<Partial fields> on L<http://www.elasticsearch.org/guide/reference/api/search/fields.html>.
+See C<Partial fields> on L<http://www.Elasticsearch.org/guide/reference/api/search/fields.html>.
 
 =head2 routing
 
@@ -993,7 +993,7 @@ Exclude results whose score (relevance) is less than the specified number.
     $new_view = $view->preference( '_local' );
 
 Control which node should return search results. See
-L<http://www.elasticsearch.org/guide/reference/api/search/preference.html> for more.
+L<http://www.Elasticsearch.org/guide/reference/api/search/preference.html> for more.
 
 =head2 timeout
 
@@ -1010,7 +1010,7 @@ with whatever results it has managed to receive up until that point.
     $new_view = $view->track_scores( 1 );
     $track    = $view->track_scores;
 
-By default, If you sort on a field other than C<_score>, ElasticSearch
+By default, If you sort on a field other than C<_score>, Elasticsearch
 does not return the calculated relevance score for each doc.  If
 L</track_scores> is true, these scores will be returned regardless.
 
@@ -1052,7 +1052,7 @@ L<Elastic::Model::Result/explain> to view the output.
     \@groups  = $view->stats;
 
 The statistics for each search can be aggregated by C<group>. These stats
-can later be retrieved using L<ElasticSearch/index_stats()>.
+can later be retrieved using L<Elasticsearch/index_stats()>.
 
 =head2 search_builder
 

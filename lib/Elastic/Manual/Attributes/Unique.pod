@@ -6,7 +6,7 @@ package Elastic::Manual::Attributes::Unique;
 
 =head1 INTRODUCTION
 
-The only unique constraint available in ElasticSearch is the document ID.
+The only unique constraint available in Elasticsearch is the document ID.
 Typically, if you want a document to be unique, you use the unique value as
 the ID.
 
@@ -121,7 +121,7 @@ and so cannot be overwritten. For instance:
 =head2 $doc->overwrite()
 
 You can't L<overwrite|Elastic::Model::Role::Doc/overwrite()> a doc
-with unique keys that hasn't already been loaded from ElasticSearch. For
+with unique keys that hasn't already been loaded from Elasticsearch. For
 instance, you can do:
 
     $user = $domain->get( user => 1 );

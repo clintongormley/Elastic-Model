@@ -26,7 +26,7 @@ has 'namespace' => (
 has 'es' => (
 #===================================
     is      => 'ro',
-    isa     => 'ElasticSearch',
+    isa     => 'Elasticsearch::Client::Compat',
     lazy    => 1,
     builder => '_build_es'
 );
@@ -198,7 +198,7 @@ L<Elastic::Model::Index> or L<Elastic::Model::Alias> object.
 
 =head2 es
 
-The same L<ElasticSearch> connection as L<Elastic::Model::Role::Model/es>.
+The same L<Elasticsearch> connection as L<Elastic::Model::Role::Model/es>.
 
 =head1 METHODS
 
@@ -208,7 +208,7 @@ The same L<ElasticSearch> connection as L<Elastic::Model::Role::Model/es>.
     $admin = $admin->delete( %args );
 
 Deletes the index (or indices pointed to by alias ) L</name>. Any
-C<%args> are passed directly to L<ElasticSearch/delete_index()>.
+C<%args> are passed directly to L<Elasticsearch/delete_index()>.
 For example:
 
     $admin->delete( ignore_missing => 1 );
@@ -250,7 +250,7 @@ L<Elastic::Model::Index/create_index()>.
 
     $admin = $admin->update_settings( %settings );
 
-Updates the L<index settings|http://www.elasticsearch.org/guide/reference/api/admin-indices-update-settings.html>
+Updates the L<index settings|http://www.Elasticsearch.org/guide/reference/api/admin-indices-update-settings.html>
 for the the index (or indices pointed to by alias ) L</name>.
 
 For example, if you want to rebuild an index, you could disable refresh
@@ -290,7 +290,7 @@ update all types known to the L</namespace>.
 
 Any optional args passed
 as a hashref as the final parameter will be passed to
-L<ElasticSearch/put_mapping()>
+L<Elasticsearch/put_mapping()>
 
 =head2 delete_mapping();
 
@@ -300,7 +300,7 @@ L<ElasticSearch/put_mapping()>
 Deletes the type mapping B<AND THE DOCUMENTS> for the listed types in the index
 (or the indices pointed to by alias) L</name>. Any optional args passed
 as a hashref as the final parameter will be passed to
-L<ElasticSearch/delete_mapping()>.
+L<Elasticsearch/delete_mapping()>.
 
 =head2 exists()
 

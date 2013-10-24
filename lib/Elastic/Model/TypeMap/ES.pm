@@ -87,7 +87,7 @@ has_type 'Elastic::Model::Types::Timestamp',
 =head1 DESCRIPTION
 
 L<Elastic::Model::TypeMap::ES> provides mapping, inflation and deflation
-for ElasticSearch specific types.
+for Elasticsearch specific types.
 
 =head1 TYPES
 

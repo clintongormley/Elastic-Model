@@ -132,7 +132,7 @@ __END__
 
 L<Elastic::Model::Namespace> maps your doc classes to
 L<types|Elastic::Manual::Terminology/Type> (like a database table) in
-ElasticSearch. For instance, you could map your class
+Elasticsearch. For instance, you could map your class
 C<MyApp::User> to type C<user>.
 
 This class <=> type mapping is applied to all
@@ -168,7 +168,7 @@ in a couple of places:
 
 A L<domain|Elastic::Model::Domain> is like a database handle - you need
 a domain to create, retrieve, update and deleted individual docs from
-ElasticSearch.  The L<domain name|Elastic::Model::Domain/name> can be an
+Elasticsearch.  The L<domain name|Elastic::Model::Domain/name> can be an
 L<index|Elastic::Manual::Terminology/Index> or an
 L<alias|Elastic::Manual::Terminology/Alias>.
 Several domains (indices/aliases) can be associated with a namespace.
@@ -196,7 +196,7 @@ so the ID must be unique across all indices in a namespace.
     @type_names = $namespace->all_types
     $class      = $namespace->class_for_type($type_name)
 
-A hashref whose keys are the type names in ElasticSearch, and whose
+A hashref whose keys are the type names in Elasticsearch, and whose
 values are wrapped doc classes, eg the class C<MyApp::User>
 wrapped by L<Elastic::Model::Role::Model/wrap_doc_class()>.
 
@@ -224,7 +224,7 @@ L</name> and L</all_domains()> for more.
     $index = $namespace->index('index_name');
 
 Creates an L<Elastic::Model::Index> object for creating and administering indices
-in the ElasticSearch cluster. The C<$index> L<name|Elastic::Model::Index/name>
+in the Elasticsearch cluster. The C<$index> L<name|Elastic::Model::Index/name>
 is either the L</name> of the C<$namespace> or the value passed in to L</index()>.
 
 =head2 alias()
@@ -233,7 +233,7 @@ is either the L</name> of the C<$namespace> or the value passed in to L</index()
     $alias = $namespace->alias('alias_name');
 
 Creates an L<Elastic::Model::Alias> object for creating and administering index
-aliases in the ElasticSearch cluster. The C<$alias> L<name|Elastic::Model::Alias/name>
+aliases in the Elasticsearch cluster. The C<$alias> L<name|Elastic::Model::Alias/name>
 is either the L</name> of the C<$namespace> or the value passed in to L</alias()>.
 
 =head2 all_domains()
@@ -248,7 +248,7 @@ L</fixed_domains> (if any).
 
     @indices = $namespace->all_live_indices();
 
-Queries ElasticSearch to find all existing indices related to the namespace
+Queries Elasticsearch to find all existing indices related to the namespace
 
 =head2 mappings()
 

@@ -237,7 +237,7 @@ __END__
 =head1 DESCRIPTION
 
 L<Elastic::Model::Role::Doc> is applied to your "doc" classes (ie those classes
-that you want to be stored in ElasticSearch), when you include this line:
+that you want to be stored in Elasticsearch), when you include this line:
 
     use Elastic::Doc;
 
@@ -251,10 +251,10 @@ The following attributes are added to your class:
 =head2 uid
 
 The L<uid|Elastic::Model::UID> is the unique identifier for your doc in
-ElasticSearch. It contains an L<index|Elastic::Model::UID/"index">,
+Elasticsearch. It contains an L<index|Elastic::Model::UID/"index">,
 a L<type|Elastic::Model::UID/"type">, an L<id|Elastic::Model::UID/"id"> and
 possibly a L<routing|Elastic::Model::UID/"routing">. This is what is required
-to identify your document uniquely in ElasticSearch.
+to identify your document uniquely in Elasticsearch.
 
 The UID is created when you create your document, eg:
 
@@ -281,15 +281,15 @@ L<new_doc()|Elastic::Model::Domain/"new_doc()"> (C<user> in this case).
 =item *
 
 C<id> : is optional - if you don't provide it, then it will be
-auto-generated when you save it to ElasticSearch.
+auto-generated when you save it to Elasticsearch.
 
 =back
 
 B<Note:> the C<namespace_name/type/ID> of a document must be unique.
-ElasticSearch can enforce uniqueness for a single index, but when your
+Elasticsearch can enforce uniqueness for a single index, but when your
 L<namespace|Elastic::Model::Namespace> contains multiple indices, it is up
 to you to ensure uniqueness.  Either leave the ID blank, in which case
-ElasticSearch will generate a unique ID, or ensure that the way you
+Elasticsearch will generate a unique ID, or ensure that the way you
 generate IDs will not cause a collision.
 
 =head2 type / id
@@ -333,7 +333,7 @@ inflated already or not.
 
 =head3 _source
 
-The raw uninflated source value as loaded from ElasticSearch.
+The raw uninflated source value as loaded from Elasticsearch.
 
 =head1 METHODS
 
@@ -341,14 +341,14 @@ The raw uninflated source value as loaded from ElasticSearch.
 
     $doc->save( %args );
 
-Saves the C<$doc> to ElasticSearch. If this is a new doc, and a doc with the
-same type and ID already exists in the same index, then ElasticSearch
+Saves the C<$doc> to Elasticsearch. If this is a new doc, and a doc with the
+same type and ID already exists in the same index, then Elasticsearch
 will throw an exception.
 
 Also see L<Elastic::Model::Bulk> for bulk indexing of multiple docs.
 
-If the doc was previously loaded from ElasticSearch, then that doc will be
-updated. However, because ElasticSearch uses
+If the doc was previously loaded from Elasticsearch, then that doc will be
+updated. However, because Elasticsearch uses
 L<optimistic locking|http://en.wikipedia.org/wiki/Optimistic_locking>
 (ie the doc version number is incremented on every change), it is possible that
 another process has already updated the C<$doc> while the current process has
@@ -367,7 +367,7 @@ For instance:
 
 =head3 on_conflict
 
-If you don't care, and you just want to overwrite what is stored in ElasticSearch
+If you don't care, and you just want to overwrite what is stored in Elasticsearch
 with the current values, then use L</overwrite()> instead of L</save()>. If you
 DO care, then you can handle this situation gracefully, using the
 C<on_conflict> parameter:
@@ -436,7 +436,7 @@ your application, otherwise you have to wrap all of your code in C<eval>s
 to ensure that you're not accessing a stale doc.
 
 However, if you do need to delete current docs, then L</has_been_deleted()>
-checks if the doc exists in ElasticSearch.  For instance, you
+checks if the doc exists in Elasticsearch.  For instance, you
 might have an L</on_conflict> handler which looks like this:
 
     $doc->save(
@@ -505,4 +505,4 @@ Inflates the attribute values from the hashref stored in L</"_source">.
 
 =head3 _get_source / _set_source
 
-The raw doc source from ElasticSearch.
+The raw doc source from Elasticsearch.

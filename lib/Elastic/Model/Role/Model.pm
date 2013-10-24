@@ -3,7 +3,7 @@ package Elastic::Model::Role::Model;
 use Moose::Role;
 use Carp;
 use Elastic::Model::Types qw(ES ES_UniqueKey);
-use ElasticSearch 0.65             ();
+use Elasticsearch::Compat 0.02     ();
 use ElasticSearchX::UniqueKey 0.03 ();
 use Class::Load qw(load_class);
 use Moose::Util qw(does_role);
@@ -140,7 +140,7 @@ has 'current_scope' => (
 #===================================
 sub BUILD        { shift->doc_class_wrappers }
 sub _build_store { $_[0]->store_class->new( es => $_[0]->es ) }
-sub _build_es    { ElasticSearch->new }
+sub _build_es    { Elasticsearch::Compat->new }
 #===================================
 
 #===================================
@@ -480,7 +480,7 @@ sub _handle_error {
 
     die $error
         unless $on_conflict
-        and $error =~ /ElasticSearch::Error::Conflict/;
+        and $error =~ /\[Conflict\]/;
 
     my $new;
     if ( my $current_version = $error->{-vars}{current_version} ) {
@@ -636,7 +636,7 @@ __END__
 
     use MyApp;
 
-    my $es         = ElasticSearch->new( servers => 'es.domain.com:9200' );
+    my $es         = Elasticsearch::Compat->new( servers => 'es.domain.com:9200' );
     my $model      = MyApp->new( es => $es );
 
     my $namespace  = $model->namespace('myapp');
@@ -648,7 +648,7 @@ __END__
 =head1 DESCRIPTION
 
 A "Model" is the Boss Object, which ties an instance of your application to
-a particular ElasticSearch cluster. You can have multiple instances of your
+a particular Elasticsearch cluster. You can have multiple instances of your
 Model class which connect to different clusters.
 
 C<Elastic::Model::Role::Model> is applied to your Model class when you
@@ -663,12 +663,12 @@ See L<Elastic::Model> for more about how to setup your Model class.
 =head2 new()
 
 Usually, the only parameter that you need to pass to C<new()> is C<es>,
-which contains your L<ElasticSearch> connection.
+which contains your L<Elasticsearch> connection.
 
-    $es    = ElasticSearch->new( servers => 'es1.domain.com:9200' );
+    $es    = Elasticsearch::Compat->new( servers => 'es1.domain.com:9200' );
     $model = MyApp->new( es => $es );
 
-If the C<es> parameter is omitted, then it will default to an L<ElasticSearch>
+If the C<es> parameter is omitted, then it will default to an L<Elasticsearch>
 connection to C<localhost:9200>.
 
     $model = MyApp->new();   # localhost:9200
@@ -757,7 +757,7 @@ Any other args are passed on to L<Elastic::Model::Store/get_doc()>.
     $doc = $model->get_doc_source(uid => $uid, ignore_missing => 1, ...);
 
 Calls L<Elastic::Model::Store/"get_doc()"> and returns the raw source hashref
-as stored in ElasticSearch for the doc with the corresponding
+as stored in Elasticsearch for the doc with the corresponding
 L<$uid|Elastic::Model::UID>. Throws an error if it doesn't exist.
 
 Any other args are passed on to L<Elastic::Model::Store/get_doc()>.
@@ -776,9 +776,9 @@ method.
 
     $doc = $model->save_doc(doc => $doc, %args);
 
-Saves C<$doc> to ElasticSearch by calling
+Saves C<$doc> to Elasticsearch by calling
 L<Elastic::Model::Store/"index_doc()"> (if the C<$doc> was originally loaded
-from ElasticSearch), or L<Elastic::Model::Store/"create_doc()">, which
+from Elasticsearch), or L<Elastic::Model::Store/"create_doc()">, which
 will throw an error if a doc with the same C<index|type|id> already
 exists.
 
@@ -856,14 +856,14 @@ C<$model>, it will update the known domain list from the namespace objects.
 
     @indices = $model->all_live_indices();
 
-Queries ElasticSearch to find all existing indices related to all namespaces
+Queries Elasticsearch to find all existing indices related to all namespaces
 known to the model.
 
 =head3 es
 
     $es = $model->es
 
-Returns the L<ElasticSearch> instance that was passed to L</"new()">.
+Returns the L<Elasticsearch> instance that was passed to L</"new()">.
 
 =head3 es_unique
 
@@ -887,7 +887,7 @@ Returns the L<Elastic::Model::Store> instance.
 Elastic::Model uses L<Elastic::Model::TypeMap::Default> (after
 L<wrapping|/wrap_class()> it) to figure out how
 to deflate and inflate your objects, and how to configure (map) them in
-ElasticSearch.
+Elasticsearch.
 
 You can specify your own type-map class in your model configuration with
 L<has_typemap|Elastic::Model/Custom TypeMap>. See
@@ -943,7 +943,7 @@ L</"inflator_for_class()">.
     $mapping = $model->map_class($class);
 
 Returns the type mapping / schema for a class which does
-L<Elastic::Model::Role::Doc>, suitable for passing to ElasticSearch.
+L<Elastic::Model::Role::Doc>, suitable for passing to Elasticsearch.
 
 =head2 Scoping
 
@@ -986,7 +986,7 @@ Clears the L</"current_scope()">
 
 =head2 Core classes
 
-The following core classes are used internally by ElasticSearch, after
+The following core classes are used internally by Elasticsearch, after
 being wrapped by L</wrap_class()>, which pins the new anonymous class
 to the current C<$model> instance. An instance of the wrapped class
 can be created with, eg:

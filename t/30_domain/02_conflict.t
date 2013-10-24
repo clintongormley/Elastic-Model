@@ -36,7 +36,9 @@ is $u1->uid->version, 2, 'U1 has version 2';
 is $u2->uid->version, 1, 'U2 has version 1';
 
 is $u2->email('john@foo'), 'john@foo', 'Set U2.email to john@foo';
-throws_ok sub { $u2->save }, qr/ElasticSearch::Error::Conflict/,
+eval { $u2->save };
+
+throws_ok sub { $u2->save }, qr/\[Conflict\]/,
     'Save U2 throws conflict error';
 ok $u2->save( on_conflict => \&on_conflict ), 'On conflict with diff version';
 

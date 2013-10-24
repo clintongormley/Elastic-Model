@@ -9,24 +9,24 @@ __END__
 =head1 WHAT IS ELASTIC::MODEL?
 
 Elastic::Model is a framework to store your Moose objects, which uses
-ElasticSearch as a NoSQL document store and flexible search engine.
+Elasticsearch as a NoSQL document store and flexible search engine.
 
-It is designed to make it easy to start using ElasticSearch with minimal extra
+It is designed to make it easy to start using Elasticsearch with minimal extra
 code, but allows you full access to the rich feature set available in
-ElasticSearch as soon as you are ready to use it.
+Elasticsearch as soon as you are ready to use it.
 
 For a brief example of how Elastic::Model works, you should start by reading
 L<Elastic::Manual::Intro>.
 
-=head1 WHAT IS ELASTICSEARCH?
+=head1 WHAT IS Elasticsearch?
 
-L<ElasticSearch|http://www.elasticsearch.org> is an open-source
+L<Elasticsearch|http://www.Elasticsearch.org> is an open-source
 L<Lucene|http://lucene.apache.org/core/>-based full-text search engine,
 and a NoSQL document store / database.
 
 =head2 Schema-free and document oriented
 
-ElasticSearch stores your objects as JSON documents. Most Perl objects
+Elasticsearch stores your objects as JSON documents. Most Perl objects
 can be mapped easily to their JSON equivalent.
 
 It is schema free, in that you don't need to define your
@@ -38,13 +38,13 @@ exist to give you complete control over how your data is indexed.
 
 =head2 Real-time
 
-ElasticSearch is a real-time data store (as soon as your document is indexed, it
+Elasticsearch is a real-time data store (as soon as your document is indexed, it
 can be retrieved from any node in the cluster) and has near-real-time search.
 By default, docs become visible to search within 1 second of being indexed.
 
 =head2 Distributed
 
-ElasticSearch is built to scale out of the box.  It is easy to start with a
+Elasticsearch is built to scale out of the box.  It is easy to start with a
 single node, and to add new nodes as required, giving you high availability
 and huge scale. A cluster can scale to hundreds of nodes and terrabytes of
 data. If a node goes down, the cluster will automatically redistribute and
@@ -59,12 +59,12 @@ L<Elastic::Model>.
 
 =head2 L<Elastic::Manual::Terminology>
 
-A brief definition of some of the terms used by ElasticSearch and Elastic::Model.
+A brief definition of some of the terms used by Elasticsearch and Elastic::Model.
 
 =head2 L<Elastic::Manual::NoSQL>
 
 Some things you need to think about when moving from a relational DB to a
-NoSQL document store like ElasticSearch.
+NoSQL document store like Elasticsearch.
 
 =head2 L<Elastic::Manual::Attributes>
 
@@ -80,7 +80,7 @@ How to reindex your data when you make changes to your attributes.
 
 =head2 L<Elastic::Manual::QueryDSL>
 
-Using the ElasticSearch Query DSL (and the L<ElasticSearch::SearchBuilder>
+Using the Elasticsearch Query DSL (and the L<ElasticSearch::SearchBuilder>
 syntax) to query your documents efficiently.
 
 =head3 L<Elastic::Manual::QueryDSL::Queries>
@@ -126,17 +126,17 @@ your bug as I make changes.
 
 =head1 TEST SUITE
 
-The full test suite requires a live ElasticSearch cluster to run.  CPAN
+The full test suite requires a live Elasticsearch cluster to run.  CPAN
 testers doesn't support this.  You can see full test results here:
 L<http://travis-ci.org/#!/clintongormley/Elastic-Model/builds>.
 
 To run the full test suite locally, run it as:
 
     perl Makefile.PL
-    ES_HOME=/path/to/elasticsearch make test
+    ES_HOME=/path/to/Elasticsearch make test
 
 Or, if you are happy for any index starting with C<"myapp"> to be deleted,
-you can start your ElasticSearch server and run it as:
+you can start your Elasticsearch server and run it as:
 
     perl Makefile.PL
     ES='localhost:9200' make test
@@ -156,20 +156,20 @@ You can also look for information at:
 
 =item * IRC
 
-The L<#elasticsearch|irc://irc.perl.org/elasticsearch> channel on
+The L<#Elasticsearch|irc://irc.perl.org/Elasticsearch> channel on
 C<irc.perl.org> is a Perl-specific channel for L<Elastic::Model> and
-L<ElasticSearch>.
+L<Elasticsearch>.
 
-The main ElasticSearch channel:
-L<#elasticsearch|irc://irc.freenode.net/elasticsearch> on C<irc.freenode.net>.
+The main Elasticsearch channel:
+L<#Elasticsearch|irc://irc.freenode.net/Elasticsearch> on C<irc.freenode.net>.
 
 =item * Mailing list
 
 The Elastic::Model mailing list is available on:
 L<https://groups.google.com/forum/#!forum/elastic-model>.
 
-The main ElasticSearch mailing list can be found on
-L<http://www.elasticsearch.org/community/forum/>.
+The main Elasticsearch mailing list can be found on
+L<http://www.Elasticsearch.org/community/forum/>.
 
 =item * GitHub
 
@@ -187,7 +187,7 @@ L<https://metacpan.org/module/Elastic::Model>
 
 =head1 ACKNOWLEDGEMENTS
 
-Thanks to Shay Banon, the ElasticSearch author, for producing an amazingly
+Thanks to Shay Banon, the Elasticsearch author, for producing an amazingly
 easy to use search engine, to L<PERLER|https://metacpan.org/author/PERLER>
 for writing L<ElasticSearchX::Model>, which was the original inspiration,
 to L<FLORA|https://metacpan.org/author/FLORA> and

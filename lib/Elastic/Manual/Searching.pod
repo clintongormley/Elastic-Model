@@ -61,7 +61,7 @@ There are three options:
 
 =item *
 
-B<Result:> The raw result returned from ElasticSearch is wrapped in an
+B<Result:> The raw result returned from Elasticsearch is wrapped in an
 L<Elastic::Model::Result> object, which provides methods for
 accessing the L<object|Elastic::Model::Result/object>
 itself, and metadata like L<highlights|Elastic::Model::Result/highlight>,
@@ -75,7 +75,7 @@ returned. The other search metadata is not accessible.
 
 =item *
 
-B<Element:> The raw result returned by ElasticSearch.
+B<Element:> The raw result returned by Elasticsearch.
 
 =back
 
@@ -163,7 +163,7 @@ is very efficient, but the B<results cannot be not sorted>.
 
 =head2 Why do I need to choose a method?
 
-When you create an index in ElasticSearch, it is created (by default) with
+When you create an index in Elasticsearch, it is created (by default) with
 5 primary shards. Each of your docs is stored in one of those shards. It is
 these primary shards that allow you to scale your index size. But with the
 flexible scaling comes complexity.
@@ -177,7 +177,7 @@ relevant docs that match C<"foo bar">">.
 
 =item *
 
-Your query is sent to one of your ElasticSearch nodes.
+Your query is sent to one of your Elasticsearch nodes.
 
 =item *
 
@@ -211,7 +211,7 @@ a doc might have been added or deleted.  So you could end up missing results or
 seeing duplicates.
 
 Scrolling gives you consistent results.  It is like paging, where it returns
-L<size|Elastic::Model::View/size> docs on each request, but ElasticSearch keeps
+L<size|Elastic::Model::View/size> docs on each request, but Elasticsearch keeps
 the original data around until your scroll times out.
 
 Of course, this comes at a cost: extra disk space.  That means that you
@@ -246,7 +246,7 @@ is 10, but in practice you can probably make it a lot bigger):
 
 =item *
 
-Your query is sent to one of your ElasticSearch nodes.
+Your query is sent to one of your Elasticsearch nodes.
 
 =item *
 
@@ -307,7 +307,7 @@ all in an L<Elastic::Model::Results> object.
 
 The L<Elastic::Model::Results/size> attribute contains the number of results
 that are stored in the iterator. The L<Elastic::Model::Results/total>
-attribute contains the total number of matching docs in ElasticSearch.
+attribute contains the total number of matching docs in Elasticsearch.
 
 =head2 scroll()
 
@@ -319,12 +319,12 @@ results and wraps them in an L<Elastic::Model::Results::Scrolled> object.
 
 As you iterate through the results, you will eventually request a C<next()> doc
 which isn't available in the buffer. The iterator will request the next tranche
-of results from ElasticSearch.  It is important to make sure that the
+of results from Elasticsearch.  It is important to make sure that the
 C<timeout> is longer than the time between requests, otherwise it will throw an
 error and you will need to start scrolling again.
 
 The L<Elastic::Model::Results::Scrolled/size> attribute contains the number of
-docs in ElasticSearch that match the query and are available to pull (ie
+docs in Elasticsearch that match the query and are available to pull (ie
 initially, it is the same as the L<Elastic::Model::Results::Scrolled/total>
 attribute).
 

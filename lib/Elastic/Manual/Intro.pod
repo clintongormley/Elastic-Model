@@ -7,16 +7,16 @@ __END__
 
 =head1 INSTALLING REQUIREMENTS
 
-=head2 Install ElasticSearch
+=head2 Install Elasticsearch
 
 You need a recent version of Java installed, then download the current
-stable release of ElasticSearch from L<http://www.elasticsearch.org/download/>.
+stable release of Elasticsearch from L<http://www.Elasticsearch.org/download/>.
 For instance:
 
-    curl -L -O https://github.com/downloads/elasticsearch/elasticsearch/elasticsearch-0.20.5.tar.gz
+    curl -L -O https://github.com/downloads/Elasticsearch/Elasticsearch/elasticsearch-0.20.5.tar.gz
     tar -xzf elasticsearch-0.20.5.tar.gz
 
-B<Note: The minimum required version of ElasticSearch is 0.19.11.>
+B<Note: The minimum required version of Elasticsearch is 0.19.11.>
 
 =head2 Install Elastic::Model
 
@@ -25,28 +25,28 @@ Use your favourite CPAN installer:
     cpanm Elastic::Model
 
 See L<Elastic::Manual/TEST SUITE> for how to run the full test suite
-against a local ElasticSearch cluster.
+against a local Elasticsearch cluster.
 
-=head2 Start ElasticSearch
+=head2 Start Elasticsearch
 
     cd elasticsearch-0.20.5/
-    ./bin/elasticsearch -f      # -f starts the server in the foreground
+    ./bin/Elasticsearch -f      # -f starts the server in the foreground
 
-You now have a running ElasticSearch cluster with one node. You can test that
+You now have a running Elasticsearch cluster with one node. You can test that
 it is running with:
 
     curl http://localhost:9200/?pretty=true
 
-See L<http://www.elasticsearch.org/tutorials/> and
-L<http://www.elasticsearch.org/guide/reference/setup/> for more information
-about installing and configuring ElasticSearch.
+See L<http://www.Elasticsearch.org/tutorials/> and
+L<http://www.Elasticsearch.org/guide/reference/setup/> for more information
+about installing and configuring Elasticsearch.
 
 =head1 SETUP YOUR APPLICATION
 
 =head2 Create a Model
 
 First set up a simple L<model|Elastic::Manual::Terminology/Model>.  The model
-handles the relationship between your classes and ElasticSearch.
+handles the relationship between your classes and Elasticsearch.
 
     package MyApp;
 
@@ -67,7 +67,7 @@ handled by which of your classes.  So the above declaration says:
 
 I<"For all L<indices|Elastic::Model::Terminology/Index> which belong to namespace
 C<myapp>, objects of class C<MyApp::User> will be stored under the
-L<type|Elastic::Model::Terminology/Type> C<user> in ElasticSearch.">
+L<type|Elastic::Model::Terminology/Type> C<user> in Elasticsearch.">
 
 =head2 Create your User class
 
@@ -103,7 +103,7 @@ introspection, we have enough information to setup everything we need.
 
 =head1 PREPARING TO USE YOUR APPLICATION
 
-=head2 Connect your Model to an ElasticSearch cluster
+=head2 Connect your Model to an Elasticsearch cluster
 
     #!/bin/env perl
 
@@ -114,17 +114,17 @@ introspection, we have enough information to setup everything we need.
     my $model  = MyApp->new();
 
 This creates an instance of your model, with a connection to a local
-ElasticSearch cluster.  The last line is the equivalent of:
+Elasticsearch cluster.  The last line is the equivalent of:
 
-    use ElasticSearch();
-    my $es     = ElasticSearch->new( servers => 'localhost:9200' );
+    use Elasticsearch::Compat();
+    my $es     = Elasticsearch::Compat->new( servers => 'localhost:9200' );
     my $model  = MyApp->new( es => $es );
 
 =head2 Create an index
 
 Before we get started, we need to create an
 L<index|Elastic::Manual::Terminology/Index> (like a database in a relational DB)
-in ElasticSearch.
+in Elasticsearch.
 
     $model->namespace('myapp')->index->create();
 
@@ -140,7 +140,7 @@ Our index is now ready to use.
 
 =head2 Preparation for object access
 
-Before we can save or retrieve objects/documents from ElasticSearch, we need
+Before we can save or retrieve objects/documents from Elasticsearch, we need
 a C<domain>:
 
 =head3 Get a domain
@@ -171,11 +171,11 @@ via the C<$domain> object:
         }
     );
 
-    $user->save;                            # save to ElasticSearch
+    $user->save;                            # save to Elasticsearch
 
 =head2 Retrieve an object by ID
 
-Now, we can retrieve the user object from ElasticSearch, using the
+Now, we can retrieve the user object from Elasticsearch, using the
 C<type> and C<id>:
 
     $user = $domain->get( user => 1 );
@@ -200,7 +200,7 @@ original value:
     # { email => 'clint@domain.com' };
 
 The L<UID|Elastic::Model::UID> (unique ID) of the object tracks (amongst other
-things) the current version number. ElasticSearch uses this version
+things) the current version number. Elasticsearch uses this version
 number to avoid overwriting changes that have been made by another process
 (see L<Optimistic Currency Control|http://en.wikipedia.org/wiki/Optimistic_concurrency_control>).
 
@@ -217,12 +217,12 @@ The version number is incremented each time a changed object is saved.
     say $user->has_changed;
     # 0
 
-=head1 QUERYING ELASTICSEARCH
+=head1 QUERYING Elasticsearch
 
-By default, everything in ElasticSearch is indexed and searchable. You can
+By default, everything in Elasticsearch is indexed and searchable. You can
 search across one index or many indices, one type or many types.
 
-In order to query the objects stored in ElasticSearch, you need a
+In order to query the objects stored in Elasticsearch, you need a
 L<view|Elastic::Model::View>. Views are reusable, so you might create views
 like C<$recent_users>, C<$approved_comments> etc.
 
@@ -253,7 +253,7 @@ returned, meaning that you can use one view to derive another:
 =head2 Query syntax
 
 Queries can be specified using the standard
-L<ElasticSearch query DSL|http://www.elasticsearch.org/guide/reference/query-dsl/>
+L<Elasticsearch query DSL|http://www.Elasticsearch.org/guide/reference/query-dsl/>
 or with the more Perlish more compact L<ElasticSearch::SearchBuilder> syntax.
 
 Standard query DSL:
@@ -280,7 +280,7 @@ the search and returns a L<Results|Elastic::Model::Results> object.
     }
 
 Views can also be used to return highlighted results, and
-L<facets|http://www.elasticsearch.org/guide/reference/api/search/facets/>,
+L<facets|http://www.Elasticsearch.org/guide/reference/api/search/facets/>,
 which provide aggregated results, much like GROUP-BY functions in SQL, for
 instance, the most popular terms, or the number of posting per day.
 

@@ -142,15 +142,15 @@ The number of L</elements> in the C<$results> object;
 
     $total_matching = $results->total
 
-The total number of matching docs found by ElasticSearch.  This is
+The total number of matching docs found by Elasticsearch.  This is
 distinct from the L</size> which contains the number of results RETURNED
-by ElasticSearch.
+by Elasticsearch.
 
 =head2 max_score
 
     $max_score = $results->max_score
 
-The highest score (relevance) found by ElasticSearch. B<Note:> if you
+The highest score (relevance) found by Elasticsearch. B<Note:> if you
 are sorting by a field other than C<_score> then you will need
 to set L<Elastic::Model::View/track_scores> to true to retrieve the
 L</max_score>.
@@ -273,7 +273,7 @@ eg C<MyApp::User>
     $results->as_elements()
 
 Sets the "short" accessors (eg L</next>, L</prev>) to return the raw result
-returned by ElasticSearch.
+returned by Elasticsearch.
 
 =head2 as_partials()
 
@@ -300,7 +300,7 @@ an instance of C<MyApp::User>
 
 =item *
 
-Element, eg C<next_element> which returns the raw hashref from ElasticSearch
+Element, eg C<next_element> which returns the raw hashref from Elasticsearch
 
 =item *
 

@@ -207,18 +207,18 @@ be accessible via L<Elastic::Model> or L<Elastic::Model::Role::Model>.
     $bool = $meta->is_default($type => $name);
 
 Returns C<true> if C<$name> is a C<$type> (analyzer, tokenizer,
-filter, char_filter) available in ElasticSearch by default.
+filter, char_filter) available in Elasticsearch by default.
 
 =head3 Default analyzers
 
-L<standard|http://www.elasticsearch.org/guide/reference/index-modules/analysis/standard-analyzer.html>,
-L<simple|http://www.elasticsearch.org/guide/reference/index-modules/analysis/simple-analyzer.html>,
-L<whitespace|http://www.elasticsearch.org/guide/reference/index-modules/analysis/whitespace-analyzer.html>,
-L<stop|http://www.elasticsearch.org/guide/reference/index-modules/analysis/stop-analyzer.html>,
-L<keyword|http://www.elasticsearch.org/guide/reference/index-modules/analysis/keyword-analyzer.html>,
-L<pattern|http://www.elasticsearch.org/guide/reference/index-modules/analysis/pattern-analyzer.html>,
-L<snowball|http://www.elasticsearch.org/guide/reference/index-modules/analysis/snowball-analyzer.html>,
-and the L<language|http://www.elasticsearch.org/guide/reference/index-modules/analysis/lang-analyzer.html>
+L<standard|http://www.Elasticsearch.org/guide/reference/index-modules/analysis/standard-analyzer.html>,
+L<simple|http://www.Elasticsearch.org/guide/reference/index-modules/analysis/simple-analyzer.html>,
+L<whitespace|http://www.Elasticsearch.org/guide/reference/index-modules/analysis/whitespace-analyzer.html>,
+L<stop|http://www.Elasticsearch.org/guide/reference/index-modules/analysis/stop-analyzer.html>,
+L<keyword|http://www.Elasticsearch.org/guide/reference/index-modules/analysis/keyword-analyzer.html>,
+L<pattern|http://www.Elasticsearch.org/guide/reference/index-modules/analysis/pattern-analyzer.html>,
+L<snowball|http://www.Elasticsearch.org/guide/reference/index-modules/analysis/snowball-analyzer.html>,
+and the L<language|http://www.Elasticsearch.org/guide/reference/index-modules/analysis/lang-analyzer.html>
 analyzers:  C<arabic>, C<armenian>, C<basque>, C<brazilian>, C<bulgarian>,
 C<catalan>, C<chinese>, C<cjk>, C<czech>, C<danish>, C<dutch>, C<english>,
 C<finnish>, C<french>, C<galician>, C<german>, C<greek>, C<hindi>, C<hungarian>,
@@ -228,50 +228,50 @@ C<thai>, C<turkish>
 
 =head3 Default tokenizers
 
-L<edge_ngram|http://www.elasticsearch.org/guide/reference/index-modules/analysis/edgengram-tokenizer.html>,
-L<keyword|http://www.elasticsearch.org/guide/reference/index-modules/analysis/keyword-tokenizer.html>,
-L<letter|http://www.elasticsearch.org/guide/reference/index-modules/analysis/letter-tokenizer.html>,
-L<lowercase|http://www.elasticsearch.org/guide/reference/index-modules/analysis/lowercase-tokenizer.html>,
-L<ngram|http://www.elasticsearch.org/guide/reference/index-modules/analysis/ngram-tokenizer.html>,
-L<path_hierarchy|http://www.elasticsearch.org/guide/reference/index-modules/analysis/pathhierarchy-tokenizer.html>,
-L<pattern|http://www.elasticsearch.org/guide/reference/index-modules/analysis/pattern-tokenizer.html>,
-L<standard|http://www.elasticsearch.org/guide/reference/index-modules/analysis/standard-tokenizer.html>,
-L<uax_url_email|http://www.elasticsearch.org/guide/reference/index-modules/analysis/uaxurlemail-tokenizer.html>,
-L<whitespace|http://www.elasticsearch.org/guide/reference/index-modules/analysis/whitespace-tokenizer.html>
+L<edge_ngram|http://www.Elasticsearch.org/guide/reference/index-modules/analysis/edgengram-tokenizer.html>,
+L<keyword|http://www.Elasticsearch.org/guide/reference/index-modules/analysis/keyword-tokenizer.html>,
+L<letter|http://www.Elasticsearch.org/guide/reference/index-modules/analysis/letter-tokenizer.html>,
+L<lowercase|http://www.Elasticsearch.org/guide/reference/index-modules/analysis/lowercase-tokenizer.html>,
+L<ngram|http://www.Elasticsearch.org/guide/reference/index-modules/analysis/ngram-tokenizer.html>,
+L<path_hierarchy|http://www.Elasticsearch.org/guide/reference/index-modules/analysis/pathhierarchy-tokenizer.html>,
+L<pattern|http://www.Elasticsearch.org/guide/reference/index-modules/analysis/pattern-tokenizer.html>,
+L<standard|http://www.Elasticsearch.org/guide/reference/index-modules/analysis/standard-tokenizer.html>,
+L<uax_url_email|http://www.Elasticsearch.org/guide/reference/index-modules/analysis/uaxurlemail-tokenizer.html>,
+L<whitespace|http://www.Elasticsearch.org/guide/reference/index-modules/analysis/whitespace-tokenizer.html>
 
 =head3 Default token filters
 
-L<asciifolding|http://www.elasticsearch.org/guide/reference/index-modules/analysis/asciifolding-tokenfilter.html>,
-L<dictionary_decompounder|http://www.elasticsearch.org/guide/reference/index-modules/analysis/compound-word-tokenfilter.html>,
-L<edge_ngram|http://www.elasticsearch.org/guide/reference/index-modules/analysis/edgengram-tokenfilter.html>,
-L<elision|http://www.elasticsearch.org/guide/reference/index-modules/analysis/elision-tokenfilter.html>,
-L<hyphenation_decompounder|http://www.elasticsearch.org/guide/reference/index-modules/analysis/compound-word-tokenfilter.html>,
-L<icu_collation|http://www.elasticsearch.org/guide/reference/index-modules/analysis/icu-plugin.html>,
-L<icu_folding|http://www.elasticsearch.org/guide/reference/index-modules/analysis/icu-plugin.html>,
-L<icu_normalizer|http://www.elasticsearch.org/guide/reference/index-modules/analysis/icu-plugin.html>,
-L<kstem|http://www.elasticsearch.org/guide/reference/index-modules/analysis/kstem-tokenfilter.html>,
-L<length|http://www.elasticsearch.org/guide/reference/index-modules/analysis/length-tokenfilter.html>,
-L<lowercase|http://www.elasticsearch.org/guide/reference/index-modules/analysis/lowercase-tokenfilter.html>,
-L<ngram|http://www.elasticsearch.org/guide/reference/index-modules/analysis/ngram-tokenfilter.html>,
-L<pattern_replace|http://www.elasticsearch.org/guide/reference/index-modules/analysis/pattern_replace-tokenfilter.html>,
-L<phonetic|http://www.elasticsearch.org/guide/reference/index-modules/analysis/phonetic-tokenfilter.html>,
-L<porterStem|http://www.elasticsearch.org/guide/reference/index-modules/analysis/porterstem-tokenfilter.html>,
-L<reverse|http://www.elasticsearch.org/guide/reference/index-modules/analysis/reverse-tokenfilter.html>,
-L<shingle|http://www.elasticsearch.org/guide/reference/index-modules/analysis/shingle-tokenfilter.html>,
-L<snowball|http://www.elasticsearch.org/guide/reference/index-modules/analysis/snowball-tokenfilter.html>,
-L<standard|http://www.elasticsearch.org/guide/reference/index-modules/analysis/standard-tokenfilter.html>,
-L<stop|http://www.elasticsearch.org/guide/reference/index-modules/analysis/stop-tokenfilter.html>,
-L<synonym|http://www.elasticsearch.org/guide/reference/index-modules/analysis/synonym-tokenfilter.html>,
-L<trim|http://www.elasticsearch.org/guide/reference/index-modules/analysis/trim-tokenfilter.html>,
-L<truncate|http://www.elasticsearch.org/guide/reference/index-modules/analysis/truncate-tokenfilter.html>,
-L<unique|http://www.elasticsearch.org/guide/reference/index-modules/analysis/word-delimiter-tokenfilter.html>,
-L<word_delimiter|http://www.elasticsearch.org/guide/reference/index-modules/analysis/word-delimiter-tokenfilter.html>
+L<asciifolding|http://www.Elasticsearch.org/guide/reference/index-modules/analysis/asciifolding-tokenfilter.html>,
+L<dictionary_decompounder|http://www.Elasticsearch.org/guide/reference/index-modules/analysis/compound-word-tokenfilter.html>,
+L<edge_ngram|http://www.Elasticsearch.org/guide/reference/index-modules/analysis/edgengram-tokenfilter.html>,
+L<elision|http://www.Elasticsearch.org/guide/reference/index-modules/analysis/elision-tokenfilter.html>,
+L<hyphenation_decompounder|http://www.Elasticsearch.org/guide/reference/index-modules/analysis/compound-word-tokenfilter.html>,
+L<icu_collation|http://www.Elasticsearch.org/guide/reference/index-modules/analysis/icu-plugin.html>,
+L<icu_folding|http://www.Elasticsearch.org/guide/reference/index-modules/analysis/icu-plugin.html>,
+L<icu_normalizer|http://www.Elasticsearch.org/guide/reference/index-modules/analysis/icu-plugin.html>,
+L<kstem|http://www.Elasticsearch.org/guide/reference/index-modules/analysis/kstem-tokenfilter.html>,
+L<length|http://www.Elasticsearch.org/guide/reference/index-modules/analysis/length-tokenfilter.html>,
+L<lowercase|http://www.Elasticsearch.org/guide/reference/index-modules/analysis/lowercase-tokenfilter.html>,
+L<ngram|http://www.Elasticsearch.org/guide/reference/index-modules/analysis/ngram-tokenfilter.html>,
+L<pattern_replace|http://www.Elasticsearch.org/guide/reference/index-modules/analysis/pattern_replace-tokenfilter.html>,
+L<phonetic|http://www.Elasticsearch.org/guide/reference/index-modules/analysis/phonetic-tokenfilter.html>,
+L<porterStem|http://www.Elasticsearch.org/guide/reference/index-modules/analysis/porterstem-tokenfilter.html>,
+L<reverse|http://www.Elasticsearch.org/guide/reference/index-modules/analysis/reverse-tokenfilter.html>,
+L<shingle|http://www.Elasticsearch.org/guide/reference/index-modules/analysis/shingle-tokenfilter.html>,
+L<snowball|http://www.Elasticsearch.org/guide/reference/index-modules/analysis/snowball-tokenfilter.html>,
+L<standard|http://www.Elasticsearch.org/guide/reference/index-modules/analysis/standard-tokenfilter.html>,
+L<stop|http://www.Elasticsearch.org/guide/reference/index-modules/analysis/stop-tokenfilter.html>,
+L<synonym|http://www.Elasticsearch.org/guide/reference/index-modules/analysis/synonym-tokenfilter.html>,
+L<trim|http://www.Elasticsearch.org/guide/reference/index-modules/analysis/trim-tokenfilter.html>,
+L<truncate|http://www.Elasticsearch.org/guide/reference/index-modules/analysis/truncate-tokenfilter.html>,
+L<unique|http://www.Elasticsearch.org/guide/reference/index-modules/analysis/word-delimiter-tokenfilter.html>,
+L<word_delimiter|http://www.Elasticsearch.org/guide/reference/index-modules/analysis/word-delimiter-tokenfilter.html>
 
 
 =head3 Default character filters
 
-L<html_strip|http://www.elasticsearch.org/guide/reference/index-modules/analysis/htmlstrip-charfilter.html>,
-L<mapping|http://www.elasticsearch.org/guide/reference/index-modules/analysis/mapping-charfilter.html>
+L<html_strip|http://www.Elasticsearch.org/guide/reference/index-modules/analysis/htmlstrip-charfilter.html>,
+L<mapping|http://www.Elasticsearch.org/guide/reference/index-modules/analysis/mapping-charfilter.html>
 
 =head2 analysis_for_mappings()
 

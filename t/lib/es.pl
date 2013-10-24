@@ -2,26 +2,26 @@
 
 use strict;
 use warnings;
-use ElasticSearch::TestServer;
 use Test::More;
+use Elasticsearch::Compat;
 
 our $es;
 
-eval {
-    if ( $ENV{ES} )
-    {
-        $es = ElasticSearch->new( servers => $ENV{ES} );
-        $es->current_server_version;
-    }
-    elsif ( $ENV{ES_HOME} ) {
-        $es = ElasticSearch::TestServer->new(
-            instances => 1,
-            home      => $ENV{ES_HOME},
-            transport => 'http'
-        );
-    }
-    1;
-} or do { diag $_ for split /\n/, $@; undef $es };
+my $trace
+    = !$ENV{TRACE}       ? undef
+    : $ENV{TRACE} eq '1' ? 'Stderr'
+    :                      [ 'File', $ENV{TRACE} ];
+
+if ( $ENV{ES} ) {
+    $es = Elasticsearch::Compat->new(
+        servers => $ENV{ES},
+        trace   => $ENV{TRACE},
+    );
+    eval { $es->current_server_version; } or do {
+        diag $@;
+        undef $es;
+    };
+}
 
 if ($es) {
     $es->delete_index( index => $_, ignore_missing => 1 )

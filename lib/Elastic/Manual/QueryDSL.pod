@@ -1,11 +1,11 @@
 package Elastic::Manual::QueryDSL;
 
-# ABSTRACT: How to use the ElasticSearch Query DSL
+# ABSTRACT: How to use the Elasticsearch Query DSL
 
 =head1 INTRODUCTION
 
-ElasticSearch provides a rich query language, known as the
-L<Query DSL|http://www.elasticsearch.org/guide/reference/query-dsl/> which
+Elasticsearch provides a rich query language, known as the
+L<Query DSL|http://www.Elasticsearch.org/guide/reference/query-dsl/> which
 exposes much of the power of Lucene through a simple JSON interface.
 It is tuned for full text search, but is in no way limited just
 to that. It also provides very fast and flexible filters, ranges, geo-location
@@ -76,7 +76,7 @@ The most relevant auto-complete terms which match the partial phrase
 
 =back
 
-You can only find what is actually stored in ElasticSearch.  For this reason,
+You can only find what is actually stored in Elasticsearch.  For this reason,
 exact matching is easy.  Full text matching is B<made> easy by the analysis
 process, which you can read more about in L<Elastic::Manual::Analysis>.
 
@@ -166,7 +166,7 @@ Or, with the SearchBuilder syntax:
     $view->queryb(  title => 'object models'    )
          ->filterb( tags  => ['perl','python' ] )->search
 
-B<Note:> ElasticSearch only accepts a C<query> parameter, so the
+B<Note:> Elasticsearch only accepts a C<query> parameter, so the
 L<query|Elastic::Model::View/query> and L<filter|Elastic::Model::View/filter>
 attributes are combined at search time.  This means that you can quite happily
 specify queries with nested filters using just the

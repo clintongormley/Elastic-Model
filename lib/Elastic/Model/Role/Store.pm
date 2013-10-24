@@ -71,11 +71,11 @@ sub bulk {
 
 __END__
 
-# ABSTRACT: ElasticSearch backend for document read/write requests
+# ABSTRACT: Elasticsearch backend for document read/write requests
 
 =head1 DESCRIPTION
 
-All document-related requests to the ElasticSearch backend are handled
+All document-related requests to the Elasticsearch backend are handled
 via L<Elastic::Model::Role::Store>.
 
 =head1 ATTRIBUTES
@@ -84,7 +84,7 @@ via L<Elastic::Model::Role::Store>.
 
     $es = $store->es
 
-Returns the connection to ElasticSearch.
+Returns the connection to Elasticsearch.
 
 =head1 METHODS
 
@@ -93,7 +93,7 @@ Returns the connection to ElasticSearch.
     $result = $store->get_doc($uid, %args);
 
 Retrieves the doc specified by the L<$uid|Elastic::Model::UID> from
-ElasticSearch, by calling L<ElasticSearch/"get()">. Throws an exception
+Elasticsearch, by calling L<Elasticsearch/"get()">. Throws an exception
 if the document does not exist.
 
 =head2 doc_exists()
@@ -101,24 +101,24 @@ if the document does not exist.
     $bool = $store->doc_exists($uid, %args);
 
 Checks whether the doc exists in ElastciSearch. Any C<%args> are passed through
-to L<ElasticSearch/exists()>.
+to L<Elasticsearch/exists()>.
 
 =head2 create_doc()
 
     $result = $store->create_doc($uid => \%data, %args);
 
-Creates a doc in the ElasticSearch backend and returns the raw result.
+Creates a doc in the Elasticsearch backend and returns the raw result.
 Throws an exception if a doc with the same L<$uid|Elastic::Model::UID>
-already exists.  Any C<%args> are passed to L<ElasticSearch/"create()">
+already exists.  Any C<%args> are passed to L<Elasticsearch/"create()">
 
 =head2 index_doc()
 
     $result = $store->index_doc($uid => \%data, %args);
 
-Updates (or creates) a doc in the ElasticSearch backend and returns the raw
+Updates (or creates) a doc in the Elasticsearch backend and returns the raw
 result. Any failure throws an exception.  If the L<version|Elastic::Model::UID/"version">
-number does not match what is stored in ElasticSearch, then a conflict exception
-will be thrown.  Any C<%args> will be passed to L<ElasticSearch/"index()">.
+number does not match what is stored in Elasticsearch, then a conflict exception
+will be thrown.  Any C<%args> will be passed to L<Elasticsearch/"index()">.
 For instance, to overwrite a document regardless of version number, you could
 do:
 
@@ -128,10 +128,10 @@ do:
 
     $result = $store->delete_doc($uid, %args);
 
-Deletes a doc in the ElasticSearch backend and returns the raw
+Deletes a doc in the Elasticsearch backend and returns the raw
 result. Any failure throws an exception.  If the L<version|Elastic::Model::UID/"version">
-number does not match what is stored in ElasticSearch, then a conflict exception
-will be thrown.  Any C<%args> will be passed to L<ElasticSearch/"delete()">.
+number does not match what is stored in Elasticsearch, then a conflict exception
+will be thrown.  Any C<%args> will be passed to L<Elasticsearch/"delete()">.
 
 =head2 bulk()
 
@@ -143,17 +143,17 @@ will be thrown.  Any C<%args> will be passed to L<ElasticSearch/"delete()">.
     );
 
 Performs several actions in a single request. Any %agrs will be passed to
-L<ElasticSearch/bulk()>.
+L<Elasticsearch/bulk()>.
 
 =head2 search()
 
     $results = $store->search(@args);
 
-Performs a search, passing C<@args> to L<ElasticSearch/"search()">.
+Performs a search, passing C<@args> to L<Elasticsearch/"search()">.
 
 =head2 scrolled_search()
 
     $results = $store->scrolled_search(@args);
 
-Performs a scrolled search, passing C<@args> to L<ElasticSearch/"scrolled_search()">.
+Performs a scrolled search, passing C<@args> to L<Elasticsearch/"scrolled_search()">.
 

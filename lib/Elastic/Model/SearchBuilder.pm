@@ -148,7 +148,7 @@ We can create a comment as follows:
         }
     );
 
-The C<comment> object would be stored in ElasticSearch as something like this:
+The C<comment> object would be stored in Elasticsearch as something like this:
 
     {
         text    => "I like Elastic::Model",

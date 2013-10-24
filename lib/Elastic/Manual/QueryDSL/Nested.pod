@@ -7,8 +7,8 @@ package Elastic::Manual::QueryDSL::Nested;
 Need to explain how nested fields work, when to use them and how to query them
 
 For the moment, see L<ElasticSearch::SearchBuilder/NESTED QUERIESE<sol>FILTERS>,
-L<http://www.elasticsearch.org/guide/reference/query-dsl/nested-query.html>
-and L<http://www.elasticsearch.org/guide/reference/query-dsl/nested-filter.html>
+L<http://www.Elasticsearch.org/guide/reference/query-dsl/nested-query.html>
+and L<http://www.Elasticsearch.org/guide/reference/query-dsl/nested-filter.html>
 
 =over
 

@@ -22,5 +22,5 @@ __END__
 =head1 DESCRIPTION
 
 This trait is used by Elastic::Model doc attributes which shouldn't be
-stored in ElasticSearch. It implements just the
+stored in Elasticsearch. It implements just the
 L<Elastic::Model::Trait::Field/"exclude"> keyword.

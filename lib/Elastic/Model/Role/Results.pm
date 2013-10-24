@@ -275,7 +275,7 @@ __END__
 
 L<Elastic::Model::Role::Results> adds a number of methods and attributes
 to those provided by L<Elastic::Model::Role::Iterator> to better handle
-result sets from ElasticSearch.  It is used by L<Elastic::Model::Results>,
+result sets from Elasticsearch.  It is used by L<Elastic::Model::Results>,
 L<Elastic::Model::Results::Cached> and by L<Elastic::Model::Results::Scrolled>.
 
 See those modules for more complete documentation. This module just
@@ -293,15 +293,15 @@ The number of L</elements> in the C<$results> object;
 
     $total_matching = $results->total
 
-The total number of matching docs found by ElasticSearch.  This is
+The total number of matching docs found by Elasticsearch.  This is
 distinct from the L</size> which contains the number of results RETURNED
-by ElasticSearch.
+by Elasticsearch.
 
 =head2 max_score
 
     $max_score = $results->max_score
 
-The highest score (relevance) found by ElasticSearch. B<Note:> if you
+The highest score (relevance) found by Elasticsearch. B<Note:> if you
 are sorting by a field other than C<_score> then you will need
 to set L<Elastic::Model::View/track_scores> to true to retrieve the
 L</max_score>.

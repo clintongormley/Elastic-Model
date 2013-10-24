@@ -154,7 +154,7 @@ The logic used in scopes is best explained by the examples below:
     $obj = $scope->get_object($domain_name, $uid);
 
 When calling L<Elastic::Model::Domain/"get()"> or L<Elastic::Model::Role::Model/"get_doc()">
-to retrieve an object from ElasticSearch, we first check to see if we can
+to retrieve an object from Elasticsearch, we first check to see if we can
 return the object from our in-memory cache by calling L</get_object()>:
 
 =head3 Getting an object that exists in the current scope
@@ -183,7 +183,7 @@ we return the SAME object.
 If an object with the same C<domain_name/type/id> exists in the PARENT scope
 (and its version is as least as high as the requested version, if any) then
 we return a CLONE of the object. (Note: we clone the original object as it was
-when loaded from ElasticSearch. Any unsaved changes are ignored.)
+when loaded from Elasticsearch. Any unsaved changes are ignored.)
 
     $scope_1 = $model->new_scope;
     $one     = $domain->get( user => 123 );
@@ -202,7 +202,7 @@ when loaded from ElasticSearch. Any unsaved changes are ignored.)
     print refaddr($one) == refaddr($two) ? 'TRUE' : 'FALSE';
     # FALSE
 
-Otherwise the calling method will fetch the object from ElasticSearch itself,
+Otherwise the calling method will fetch the object from Elasticsearch itself,
 and store it in the current scope.
 
 =head3 Getting an object that has been deleted

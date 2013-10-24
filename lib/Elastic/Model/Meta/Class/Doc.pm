@@ -146,5 +146,5 @@ are no unique keys, returns C<undef>.
 Creates a stub instance of the class, which auto-inflates when any accessor
 is called.  If the C<$source> param is defined, then it is used to inflate
 the attributes of the instance, otherwise the attributes are fetched from
-ElasticSearch when an attribute is accessed.
+Elasticsearch when an attribute is accessed.
 

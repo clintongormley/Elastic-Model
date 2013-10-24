@@ -268,7 +268,7 @@ __PACKAGE__->meta->make_immutable;
 
 __END__
 
-# ABSTRACT: Create and administer indices in ElasticSearch
+# ABSTRACT: Create and administer indices in Elasticsearch
 
 =head1 SYNOPSIS
 
@@ -284,7 +284,7 @@ See also L<Elastic::Model::Role::Index/SYNOPSIS>.
 =head1 DESCRIPTION
 
 L<Elastic::Model::Index> objects are used to create and administer indices
-in an ElasticSearch cluster.
+in an Elasticsearch cluster.
 
 See L<Elastic::Model::Role::Index> for more about usage.
 See L<Elastic::Manual::Scaling> for more about how indices can be used in your
@@ -305,7 +305,7 @@ generated from the attributes of your doc classes listed in the
 L<namespace|Elastic::Model::Namespace>.  Similarly, any
 L<custom analyzers|Elastic::Model/"Custom analyzers"> required
 by your classes are added to the index
-L<\%settings|http://www.elasticsearch.org/guide/reference/api/admin-indices-update-settings.html>
+L<\%settings|http://www.Elasticsearch.org/guide/reference/api/admin-indices-update-settings.html>
 that you pass in:
 
     $index->create( settings => {number_of_shards => 1} );
@@ -370,7 +370,7 @@ are indexed into the new domain in a single bulk-indexing request.
 =item scan
 
 C<scan> is the same as L<Elastic::Model::View/scan> - it controls how long
-ElasticSearch should keep the "scroll" live between requests.  Defaults to
+Elasticsearch should keep the "scroll" live between requests.  Defaults to
 '2m'.  Increase this if the reindexing process is slow and you get
 scroll timeouts.
 
@@ -407,7 +407,7 @@ callback, or ignore them by by setting C<on_conflict> to C<'IGNORE'>:
 Similarly, you can pass an C<on_error> handler which will handle other errors,
 or all errors if no C<on_conflict> handler is defined.
 
-See L<ElasticSearch/Error handlers> for more.
+See L<Elasticsearch/Error handlers> for more.
 
 =item uid_on_conflict / uid_on_error
 

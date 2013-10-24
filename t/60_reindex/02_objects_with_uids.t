@@ -5,7 +5,6 @@ use warnings;
 use Test::More 0.96;
 use Test::Exception;
 use Test::Deep;
-use ElasticSearch;
 
 use lib 't/lib';
 

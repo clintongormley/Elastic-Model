@@ -30,7 +30,7 @@ For instance, if you have attribute C<title> which C<< isa => 'Str' >>, then
 L<Elastic::Model::TypeMap::Moose> will
 L<map|Elastic::Manual::Terminology/Mapping> the attribute as a C<string>,
 whose value will be L<analyzed|Elastic::Manual::Terminology/Analysis> by the
-L<standard analyzer|http://www.elasticsearch.org/guide/reference/index-modules/analysis/standard-analyzer.html>.
+L<standard analyzer|http://www.Elasticsearch.org/guide/reference/index-modules/analysis/standard-analyzer.html>.
 
 But perhaps you want the words in your C<title> to be stemmed
 (eg "fox" will match "fox", "foxes" or "foxy"), or perhaps your title is in
@@ -129,7 +129,7 @@ a L</type>, then the field is mapped as:
         enabled => 0
     }
 
-This means that the value in the field will be stored in ElasticSearch, but
+This means that the value in the field will be stored in Elasticsearch, but
 will not be queryable.  Also, no attempt is made to inflate or deflate the
 value - it is just passed through unchanged.  If it is a value that
 L<JSON::XS> cannot handle natively, (eg a blessed ref), then Elastic::Model
@@ -152,7 +152,7 @@ listed below:
         lazy    => 1,
     );
 
-If C<exclude> is true then the attribute will not be stored in ElasticSearch.
+If C<exclude> is true then the attribute will not be stored in Elasticsearch.
 This is only useful for generated or temporary attributes. If you want
 to store the attribute but make it not searchable, then you should use
 the L</"index"> keyword instead.
@@ -165,7 +165,7 @@ the L</"index"> keyword instead.
         index   => 'not_analyzed'
     );
 
-The C<index> keyword controls how ElasticSearch will index your attribute.  It
+The C<index> keyword controls how Elasticsearch will index your attribute.  It
 accepts 3 values:
 
 =over
@@ -287,7 +287,7 @@ A single field definition is insufficient in this case:  The standard analyzer
 won't allow partial matching, and because it generates multiple terms/tokens,
 it can't be used for sorting. (You can only sort on a single value).
 
-This is where L<multi_fields|http://www.elasticsearch.org/guide/reference/mapping/multi-field-type.html>
+This is where L<multi_fields|http://www.Elasticsearch.org/guide/reference/mapping/multi-field-type.html>
 are useful.  The same value can be indexed and queried in multiple ways. When
 you specify a C<multi> mapping, each "sub-field" inherits the C<type> of the
 main field, but you can override this.
@@ -305,7 +305,7 @@ all of your data.
         index_name  => 'bar'
     );
 
-ElasticSearch uses dot-notation to refer to nested hashes. For instance, with
+Elasticsearch uses dot-notation to refer to nested hashes. For instance, with
 this data structure:
 
     {
@@ -375,8 +375,8 @@ every stored field! It is much more efficient.
 If the attribute's value is C<undef> then the C<null_value> will be indexed
 instead. This option is included for completeness, but isn't very useful.
 Rather just leave the value as C<undef> and use the
-L<exists|http://www.elasticsearch.org/guide/reference/query-dsl/exists-filter.html>
-and L<missing|http://www.elasticsearch.org/guide/reference/query-dsl/missing-filter.html>
+L<exists|http://www.Elasticsearch.org/guide/reference/query-dsl/exists-filter.html>
+and L<missing|http://www.Elasticsearch.org/guide/reference/query-dsl/missing-filter.html>
 filters when you need to consider C<undef> values.
 
 =cut
@@ -453,8 +453,8 @@ Sets the L</"analyzer"> to use at search time only.
     );
 
 Sets the L</"analyzer"> to use in a
-L<Query-String query|http://www.elasticsearch.org/guide/reference/query-dsl/query-string-query.html>
-or  L<Field query|http://www.elasticsearch.org/guide/reference/query-dsl/field-query.html>
+L<Query-String query|http://www.Elasticsearch.org/guide/reference/query-dsl/query-string-query.html>
+or  L<Field query|http://www.Elasticsearch.org/guide/reference/query-dsl/field-query.html>
 when the search phrase includes quotes (C<"">). If not set, then it falls back
 to the L</search_analyzer> or the L</analyzer>.
 
@@ -488,7 +488,7 @@ for more about C<omit_norms>.
         omit_term_freq_and_positions    => 1
     )
 
-ElasticSearch normally stores the frequency and position of each term in
+Elasticsearch normally stores the frequency and position of each term in
 analyzed text. If you don't need this information, then you can turn it off,
 and save space.
 
@@ -504,7 +504,7 @@ for more about C<omit_term_freq_and_positions>.
         term_vector => 'with_positions_offsets',
     );
 
-The full functionality of term vectors is not exposed via ElasticSearch, so
+The full functionality of term vectors is not exposed via Elasticsearch, so
 the only real value for now is for
 L<highlighting snippets|/Fast snippet highlighting>. Allowed values are:
 C<no> (the default), C<yes>, C<with_offsets>,
@@ -514,7 +514,7 @@ C<with_positions> and C<with_positions_offsets>.
 =head3 Fast snippet highlighting
 
 There are two highlighters available for
-L<highlighting matching snippets|http://www.elasticsearch.org/guide/reference/api/search/highlighting.html>
+L<highlighting matching snippets|http://www.Elasticsearch.org/guide/reference/api/search/highlighting.html>
 in text fields: the C<highlighter>, which can be used on any analyzed text
 field without any preparation,  and the C<fast-vector-highlighter> which is
 faster (better for large text fields which require frequent highlighting),
@@ -579,7 +579,7 @@ memory used.
 
 =head1 DATE FIELDS
 
-Dates in ElasticSearch are stored internally as C<long> values containing
+Dates in Elasticsearch are stored internally as C<long> values containing
 B<milli>seconds since the epoch. The maximum date range is 292269055 BC to
 292278994 AD.
 
@@ -599,7 +599,7 @@ Date fields by default can parse (1) milliseconds since epoch
 (2) yyyy/MM/dd HH:mm:ss Z or (3) yyyy/MM/dd Z.
 
 If you would like to specify a different format, you can use one of the
-L<built-in formats|http://www.elasticsearch.org/guide/reference/mapping/date-format.html>
+L<built-in formats|http://www.Elasticsearch.org/guide/reference/mapping/date-format.html>
 or a L<custom format|http://joda-time.sourceforge.net/api-release/org/joda/time/format/DateTimeFormat.html>.
 
 =head2 precision_step (date)
@@ -656,7 +656,7 @@ the object.
 
 =head1 BINARY FIELDS
 
-Binary data can be stored in ElasticSearch in Base64 encoding. The easiest
+Binary data can be stored in Elasticsearch in Base64 encoding. The easiest
 way to do this is to use L<Elastic::Model::Types/Binary>, which will handle
 the Base64 conversion for you:
 
@@ -705,7 +705,7 @@ way to use them is to use L<Elastic::Model::Types/GeoPoint>:
         coerce  => 1
     );
 
-See L<http://www.elasticsearch.org/guide/reference/mapping/geo-point-type.html>
+See L<http://www.Elasticsearch.org/guide/reference/mapping/geo-point-type.html>
 for more information about geo_point fields.
 
 The following keywords apply only to fields of L</"type"> C<geo_point>.
@@ -721,8 +721,8 @@ You can also use L</multi>, L</index_name> and L</store>.
 
 By default, a geo-point is indexed as a lat-lon combination.  To index the
 C<lat> and C<lon> fields as numeric fields as well, which is considered
-good practice, as both the L<geo distance|http://www.elasticsearch.org/guide/reference/query-dsl/geo-distance-filter.html>
-and L<bounding box|http://www.elasticsearch.org/guide/reference/query-dsl/geo-bounding-box-filter.html>
+good practice, as both the L<geo distance|http://www.Elasticsearch.org/guide/reference/query-dsl/geo-distance-filter.html>
+and L<bounding box|http://www.Elasticsearch.org/guide/reference/query-dsl/geo-bounding-box-filter.html>
 filters can either be executed using in memory checks, or using the indexed
 lat lon values.  B<Note:> indexed lat lon only makes sense when there is a
 single geo point value for the field, and not multiple values.
@@ -756,7 +756,7 @@ defaults to 12.
 
 Hashrefs (and objects which have been serialised to hashrefs) are considered
 to be "objects", as in JSON objects. Your doc class is serialized to a
-JSON object/hash, which is known as the L<root_object|http://www.elasticsearch.org/guide/reference/mapping/root-object-type.html>.
+JSON object/hash, which is known as the L<root_object|http://www.Elasticsearch.org/guide/reference/mapping/root-object-type.html>.
 The mapping for the root object can be configured with L<Elastic::Doc/"has_mapping">.
 
 Your doc class may have attributes which are hash-refs, or objects, which
@@ -789,7 +789,7 @@ Defaults to C<false>.
         dynamic => 1
     );
 
-ElasticSearch defaults to trying to detect field types dynamically, but
+Elasticsearch defaults to trying to detect field types dynamically, but
 this can lead to mistakes, eg is C<"123"> a C<string> or a C<long>?
 Elastic::Model turns off this dynamic detection, and instead uses Moose's
 type constraints to determine what type each field should have.
@@ -914,10 +914,10 @@ for docs that have a C<person> who has C<(first == John and last == Jones)>
 would incorrectly match this document.
 
 Nested objects are the solution to this problem.  When an attribute is
-marked as L</"type"> C<nested>, then ElasticSearch creates each object
+marked as L</"type"> C<nested>, then Elasticsearch creates each object
 as a separate-but-related hidden document. These nested objects can be queried with the
-L<nested query|http://www.elasticsearch.org/guide/reference/query-dsl/nested-query.html>
-and the L<nested filter|http://www.elasticsearch.org/guide/reference/query-dsl/nested-filter.html>.
+L<nested query|http://www.Elasticsearch.org/guide/reference/query-dsl/nested-query.html>
+and the L<nested filter|http://www.Elasticsearch.org/guide/reference/query-dsl/nested-filter.html>.
 
 The following keywords apply only to fields of L</"type"> C<nested>.
 You can also use L</include_in_all>, L</path> L</dynamic>, L</include_attrs>
@@ -1037,5 +1037,5 @@ to JSON.
 
 You can specify a custom C<inflator> directly in the attribute. It should
 be able to reinflate the original value from the plain data structure that
-is stored in ElasticSearch.
+is stored in Elasticsearch.
 

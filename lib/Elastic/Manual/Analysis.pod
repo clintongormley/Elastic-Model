@@ -66,7 +66,7 @@ It is easy to see the Doc_3 is the most relevant document, because it has
 more of the search terms than either of the other two.
 
 This is an example of a simple inverted index.  Lucene (the full text search
-engine used by ElasticSearch) has a much more sophisticated scoring system which
+engine used by Elasticsearch) has a much more sophisticated scoring system which
 can consider, amongst other things:
 
 =over
@@ -140,29 +140,29 @@ this sentence, for example:
 
     To order part #ABC-123 email "joe@foo.org"
 
-The L<whitespace tokenizer|http://www.elasticsearch.org/guide/reference/index-modules/analysis/whitespace-tokenizer.html>
+The L<whitespace tokenizer|http://www.Elasticsearch.org/guide/reference/index-modules/analysis/whitespace-tokenizer.html>
 would produce:
 
     'To', 'order', 'part', '#ABC-123', 'email', '"joe@foo.org"'
 
-The L<letter tokenizer|http://www.elasticsearch.org/guide/reference/index-modules/analysis/letter-tokenizer.html>
+The L<letter tokenizer|http://www.Elasticsearch.org/guide/reference/index-modules/analysis/letter-tokenizer.html>
 would produce:
 
     'To', 'order', 'part', 'ABC', 'email', 'joe', 'foo', 'org'
 
-The L<keyword tokenizer|http://www.elasticsearch.org/guide/reference/index-modules/analysis/keyword-tokenizer.html>
+The L<keyword tokenizer|http://www.Elasticsearch.org/guide/reference/index-modules/analysis/keyword-tokenizer.html>
 does NO tokenization - it just passes the input straight through, which isn't
 terribly useful in this example, but is useful for (eg) a tag cloud, where you
 don't want 'modern perl' to be broken up into two separate tokens: 'modern' and 'perl':
 
     'To order part #ABC-123 email "joe@foo.org"'
 
-The L<standard tokenizer|http://www.elasticsearch.org/guide/reference/index-modules/analysis/standard-tokenizer.html>
+The L<standard tokenizer|http://www.Elasticsearch.org/guide/reference/index-modules/analysis/standard-tokenizer.html>
 which uses Unicodes word boundary rules would produce:
 
     'To', 'order', 'part', 'ABC', '123', 'email', 'joe', 'foo.org'
 
-And the L<UAX URL Email tokenizer|http://www.elasticsearch.org/guide/reference/index-modules/analysis/uaxurlemail-tokenizer.html>,
+And the L<UAX URL Email tokenizer|http://www.Elasticsearch.org/guide/reference/index-modules/analysis/uaxurlemail-tokenizer.html>,
 which is like the standard tokenizer, but which recognises emails, URLs etc as
 single entities would produce:
 
@@ -173,12 +173,12 @@ single entities would produce:
 Optionally, the token stream produced above can be passed through one or more
 token filters, which can remove, change or add tokens.  For instance:
 
-The L<lowercase filter|http://www.elasticsearch.org/guide/reference/index-modules/analysis/lowercase-tokenfilter.html>
+The L<lowercase filter|http://www.Elasticsearch.org/guide/reference/index-modules/analysis/lowercase-tokenfilter.html>
 would convert all uppercase letters to lowercase:
 
     'to', 'order', 'part', 'abc', '123', 'email', 'joe@foo.org'
 
-Then the L<stopword filter|http://www.elasticsearch.org/guide/reference/index-modules/analysis/stop-tokenfilter.html>
+Then the L<stopword filter|http://www.Elasticsearch.org/guide/reference/index-modules/analysis/stop-tokenfilter.html>
 could remove common (and thus generally irrelevant stopwords):
 
     'order', 'part', 'abc', '123', 'email', 'joe@foo.org'
@@ -187,9 +187,9 @@ could remove common (and thus generally irrelevant stopwords):
 
 =head1 USING BUILT IN ANALYZERS
 
-There are a number of analyzers that are built in to ElasticSearch, which can
+There are a number of analyzers that are built in to Elasticsearch, which can
 be used directly, (see
-L<http://www.elasticsearch.org/guide/reference/index-modules/analysis/> for a
+L<http://www.Elasticsearch.org/guide/reference/index-modules/analysis/> for a
 current list) which can be used directly.
 
 For instance the C<english> analyzer "stems" English words into their root,

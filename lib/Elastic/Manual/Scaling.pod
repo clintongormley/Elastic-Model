@@ -7,11 +7,11 @@ __END__
 
 =head1 DESCRIPTION
 
-ElasticSearch can run on a laptop, but it can also scale up to terrabytes of
+Elasticsearch can run on a laptop, but it can also scale up to terrabytes of
 data on hundreds of nodes. L<Elastic::Model> is designed to make it easy to
 grow from humble beginnings to taking over the world.
 
-The basic unit in ElasticSearch is the L<shard|Elastic::Manual::Terminology/Shard>,
+The basic unit in Elasticsearch is the L<shard|Elastic::Manual::Terminology/Shard>,
 which is a single Lucene instance (a search engine in its own right).
 An L<index|Elastic::Manual::Terminology/Index> is a "virtual namespace" which
 contains a collection of shards. By default, a new index is created with 5
@@ -21,12 +21,12 @@ A single shard can hold a lot of data. The exact amount depends on your hardware
 your data and your search requirements. You can easily run 5 primary shards on
 a single node (server). However, if that node dies, you may lose your data.
 
-If you start a second node, ElasticSearch will bring up the 5 replica shards. Now,
+If you start a second node, Elasticsearch will bring up the 5 replica shards. Now,
 if one node dies, your other node will be able to continue functioning and
 your data will be safe.
 
 If your data grows to be more than two nodes to handle, then you can just add
-more nodes. ElasticSearch will move the shards around to balance them across
+more nodes. Elasticsearch will move the shards around to balance them across
 all of your nodes. This strategy functions up to a maximum of 10 nodes, with
 1 shard on each node (5 primaries and 5 replicas).
 
@@ -294,16 +294,16 @@ C<myapp>:
 
 =head3 Routing - optimizing shard usage
 
-ElasticSearch decides which shard to store a new doc on by using a C<routing>
+Elasticsearch decides which shard to store a new doc on by using a C<routing>
 string, which defaults to the doc's ID.  This routing string is hashed and
 a modulus of the number of primary shards is used to select the destination
 shard.  This is why you cannot change the number of primary shards in an index
 after it is created.
 
-To retrieve a doc by ID, the same process is repeated, and ElasticSearch
+To retrieve a doc by ID, the same process is repeated, and Elasticsearch
 can efficiently decide on which shard the doc is stored.
 
-However, for searching, things are not quite as efficient.  ElasticSearch has to
+However, for searching, things are not quite as efficient.  Elasticsearch has to
 run the search on ALL shards in order to get the results back.  Seeing that most
 of your searches will be related to a single user,
 it would be much more efficient to just store all docs belonging to that user

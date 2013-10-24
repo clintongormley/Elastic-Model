@@ -182,9 +182,7 @@ throws_ok sub { $user->overwrite },
     qr/Cannot overwrite a new doc/,
     "Can't overwrite unsaved docs with uniques";
 
-throws_ok sub { $user->save },
-    qr/ElasticSearch::Error::Conflict/,
-    'Conflict error';
+throws_ok sub { $user->save }, qr/\[Conflict\]/, 'Conflict error';
 
 cmp_deeply + {
     $uniq->multi_exists(

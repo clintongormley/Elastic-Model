@@ -210,7 +210,7 @@ and the value would be passed through unaltered when deflating/inflating.
 
 =head2 Tuple
 
-Because array refs are interpreted by ElasticSearch as multiple values
+Because array refs are interpreted by Elasticsearch as multiple values
 of the same type, tuples are converted to hash refs whose keys are
 the index number.  For instance, a field C<foo> with C<Tuple[Int,Str]>
 and value C<[5,'foo']> will be deflated to C<< { 0 => 5, 1 => 'foo' } >>.

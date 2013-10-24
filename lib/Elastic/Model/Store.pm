@@ -8,12 +8,12 @@ use namespace::autoclean;
 
 __END__
 
-# ABSTRACT: A default implementation of the ElasticSearch backend
+# ABSTRACT: A default implementation of the Elasticsearch backend
 
 =head1 DESCRIPTION
 
 This is an empty class which provides the default implementation of
-the ElasticSearch backend as implemented in L<Elastic::Model::Role::Store>.
+the Elasticsearch backend as implemented in L<Elastic::Model::Role::Store>.
 
 =head1 IMPORTED ATTRIBUTES
 

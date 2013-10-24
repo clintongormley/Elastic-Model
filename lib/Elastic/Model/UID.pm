@@ -158,7 +158,7 @@ __PACKAGE__->meta->make_immutable;
 
 __END__
 
-# ABSTRACT: The Unique ID of a document in an ElasticSearch cluster
+# ABSTRACT: The Unique ID of a document in an Elasticsearch cluster
 
 =head1 SYNOPSIS
 
@@ -183,7 +183,7 @@ __END__
 
 =head1 DESCRIPTION
 
-To truly identify a document as unique in ElasticSearch, you need to know
+To truly identify a document as unique in Elasticsearch, you need to know
 the L<index|Elastic::Model::Terminology/Index> where it is stored, the
 L<type|Elastic::Model::Terminology/Type> of the document, its
 L<id|Elastic::Model::Terminology/ID>, and
@@ -216,7 +216,7 @@ document is saved.
 =head2 routing
 
 The L<routing|Elastic::Model::Terminology/Routing> string is used to determine
-in which shard the document lives. If not specified, then ElasticSearch
+in which shard the document lives. If not specified, then Elasticsearch
 generates a routing value using a hash of the ID.  If you use a custom
 routing value, then you can't change that value as the new routing B<may>
 point to a new shard.  Instead, you should delete the old doc, and create a
@@ -230,7 +230,7 @@ an older version of the document will throw an exception.
 
 =head2 from_store
 
-A boolean value indicating whether the C<UID> was loaded from ElasticSearch
+A boolean value indicating whether the C<UID> was loaded from Elasticsearch
 (C<true>) or created via L</"new()">.
 
 =head2 is_partial
@@ -266,7 +266,7 @@ Creates a new UID with L</"from_store"> set to false.
     );
 
 This is called when creating a new UID for a doc that has been loaded
-from ElasticSearch. You shouldn't need to use this method directly.
+from Elasticsearch. You shouldn't need to use this method directly.
 
 =head2 new_partial()
 
@@ -279,7 +279,7 @@ from ElasticSearch. You shouldn't need to use this method directly.
     );
 
 This is called when creating a new UID for a partial doc that has been loaded
-from ElasticSearch. You shouldn't need to use this method directly.
+from Elasticsearch. You shouldn't need to use this method directly.
 
 =head2 clone()
 

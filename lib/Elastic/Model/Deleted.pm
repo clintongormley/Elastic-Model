@@ -68,7 +68,7 @@ The original UID of the deleted doc.
 
     1 == $deleted->has_been_deleted()
 
-Returns true without checking ElasticSearch. This method is provided
+Returns true without checking Elasticsearch. This method is provided
 so that it can be called in an L<Elastic::Model::Role::Doc/on_conflict>
 handler.
 

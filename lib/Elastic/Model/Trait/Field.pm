@@ -259,14 +259,14 @@ has 'exclude_attrs' => (
 
 __END__
 
-# ABSTRACT: Add ElasticSearch specific keywords to your attribute definitions.
+# ABSTRACT: Add Elasticsearch specific keywords to your attribute definitions.
 
 =head1 DESCRIPTION
 
 L<Elastic::Model::Trait::Field> is automatically applied to all of your
 attributes when you include C<use Elastic::Doc;> at the top of your doc
 classes. This trait adds keywords to allow you to configure how each attribute
-is indexed in ElasticSearch.
+is indexed in Elasticsearch.
 
 It also wraps all attribute accessors to ensure that Elastic::Doc objects
 are properly inflated before any attribute is accessed.

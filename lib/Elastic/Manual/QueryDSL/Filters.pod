@@ -1,13 +1,13 @@
 package Elastic::Manual::QueryDSL::Filters;
 
-# ABSTRACT: Overview of the filters available in ElasticSearch
+# ABSTRACT: Overview of the filters available in Elasticsearch
 
 =head1 INTRODUCTION
 
 Filters are pretty self explanatory. We present some of the most common filters
 below.  To understand more about what filters are available, and how they work,
 you should read the about the Query DSL on
-L<http://www.elasticsearch.org/guide/reference/query-dsl/> and, optionally,
+L<http://www.Elasticsearch.org/guide/reference/query-dsl/> and, optionally,
 the L<ElasticSearch::SearchBuilder> syntax. All examples will be given
 first in the SearchBuilder syntax (with C<filterb()>), then in the native Query DSL.
 
@@ -55,8 +55,8 @@ See L<ElasticSearch::SearchBuilder/EQUALITY (FILTERS)>.
     # WHERE tags IN ('perl','python')
     $view->filter(  terms => { tag => ['perl', 'python' ]})
 
-See L<http://www.elasticsearch.org/guide/reference/query-dsl/term-filter.html>
-and L<http://www.elasticsearch.org/guide/reference/query-dsl/terms-filter.html>.
+See L<http://www.Elasticsearch.org/guide/reference/query-dsl/term-filter.html>
+and L<http://www.Elasticsearch.org/guide/reference/query-dsl/terms-filter.html>.
 
 =back
 
@@ -97,7 +97,7 @@ See L<ElasticSearch::SearchBuilder/RANGES>
         }
     );
 
-See L<http://www.elasticsearch.org/guide/reference/query-dsl/range-filter.html>
+See L<http://www.Elasticsearch.org/guide/reference/query-dsl/range-filter.html>
 
 For ranges on fields that have B<many> values:
 
@@ -110,7 +110,7 @@ For ranges on fields that have B<many> values:
         }
     );
 
-See L<http://www.elasticsearch.org/guide/reference/query-dsl/numeric-range-filter.html>
+See L<http://www.Elasticsearch.org/guide/reference/query-dsl/numeric-range-filter.html>
 
 =back
 
@@ -164,7 +164,7 @@ See L<ElasticSearch::SearchBuilder/ANDE<verbar>OR LOGIC>
         ]
     );
 
-See L<http://www.elasticsearch.org/guide/reference/query-dsl/and-filter.html>
+See L<http://www.Elasticsearch.org/guide/reference/query-dsl/and-filter.html>
 
 =item Or
 
@@ -176,7 +176,7 @@ See L<http://www.elasticsearch.org/guide/reference/query-dsl/and-filter.html>
         ]
     );
 
-See L<http://www.elasticsearch.org/guide/reference/query-dsl/or-filter.html>
+See L<http://www.Elasticsearch.org/guide/reference/query-dsl/or-filter.html>
 
 =item Not
 
@@ -206,7 +206,7 @@ See L<http://www.elasticsearch.org/guide/reference/query-dsl/or-filter.html>
         }
     );
 
-See L<http://www.elasticsearch.org/guide/reference/query-dsl/not-filter.html>
+See L<http://www.Elasticsearch.org/guide/reference/query-dsl/not-filter.html>
 
 =back
 
@@ -235,8 +235,8 @@ See L<ElasticSearch::SearchBuilder/MISSING OR NULL VALUES>.
     # WHERE status IS NOT NULL
     $view->filter(  exists  => { field => 'status' });
 
-See L<http://www.elasticsearch.org/guide/reference/query-dsl/missing-filter.html>
-and L<http://www.elasticsearch.org/guide/reference/query-dsl/exists-filter.html>.
+See L<http://www.Elasticsearch.org/guide/reference/query-dsl/missing-filter.html>
+and L<http://www.Elasticsearch.org/guide/reference/query-dsl/exists-filter.html>.
 
 =back
 
@@ -247,7 +247,7 @@ terms into memory to find those that begin with the prefix. Then it searches on 
 of those terms.
 
 If you find yourself wanting to use a prefix filter, then you should rather
-use the L<edge_ngram token filter|http://www.elasticsearch.org/guide/reference/index-modules/analysis/edgengram-tokenfilter.html>
+use the L<edge_ngram token filter|http://www.Elasticsearch.org/guide/reference/index-modules/analysis/edgengram-tokenfilter.html>
 to prepare your field correctly for partial matching (eg C<"ABC"> becomes
 C<"A">, C<"AB">, C<"ABC">), and use simple L</Equality> instead.
 
@@ -266,7 +266,7 @@ See L<ElasticSearch::SearchBuilder/PREFIX (FILTERS)>.
     # WHERE code LIKE 'XYZ_%'
     $view->filter( prefix => { code => 'XYZ_' });
 
-See L<http://www.elasticsearch.org/guide/reference/query-dsl/prefix-filter.html>.
+See L<http://www.Elasticsearch.org/guide/reference/query-dsl/prefix-filter.html>.
 
 =back
 
@@ -329,22 +329,22 @@ See:
 =item *
 
 Geo-distance:
-L<http://www.elasticsearch.org/guide/reference/query-dsl/geo-distance-filter.html>
+L<http://www.Elasticsearch.org/guide/reference/query-dsl/geo-distance-filter.html>
 
 =item *
 
 Geo-distance ranges:
-L<http://www.elasticsearch.org/guide/reference/query-dsl/geo-distance-range-filter.html>.
+L<http://www.Elasticsearch.org/guide/reference/query-dsl/geo-distance-range-filter.html>.
 
 =item *
 
 Geo-bounding boxes:
-L<http://www.elasticsearch.org/guide/reference/query-dsl/geo-bounding-box-filter.html>.
+L<http://www.Elasticsearch.org/guide/reference/query-dsl/geo-bounding-box-filter.html>.
 
 =item *
 
 Geo-polygons:
-L<http://www.elasticsearch.org/guide/reference/query-dsl/geo-polygon-filter.html>.
+L<http://www.Elasticsearch.org/guide/reference/query-dsl/geo-polygon-filter.html>.
 
 =back
 
@@ -402,7 +402,7 @@ Assuming that a document has an Elastic::Doc attribute C<user>:
 =head2 Scripts
 
 Script filters can be written in mvel, javascript, python or java.
-See L<http://www.elasticsearch.org/guide/reference/modules/scripting>.
+See L<http://www.Elasticsearch.org/guide/reference/modules/scripting>.
 Scripts can be useful, but they do have a performance impact, so consider
 whether you really need a script, or whether you could achieve your
 goals by indexing a field differently.
@@ -429,7 +429,7 @@ See L<ElasticSearch::SearchBuilder/-script>.
         }
     );
 
-See L<http://www.elasticsearch.org/guide/reference/query-dsl/script-filter.html>
+See L<http://www.Elasticsearch.org/guide/reference/query-dsl/script-filter.html>
 
 =back
 
@@ -464,7 +464,7 @@ See L<ElasticSearch::SearchBuilder/QUERY E<sol> FILTER CONTEXT>.
         ]
     );
 
-See L<http://www.elasticsearch.org/guide/reference/query-dsl/query-filter.html>.
+See L<http://www.Elasticsearch.org/guide/reference/query-dsl/query-filter.html>.
 
 =back
 
@@ -483,7 +483,7 @@ L<ElasticSearch::SearchBuilder/PARENTE<sol>CHILD>
 
 =item *
 
-L<http://www.elasticsearch.org/guide/reference/query-dsl/has-child-filter.html>
+L<http://www.Elasticsearch.org/guide/reference/query-dsl/has-child-filter.html>
 
 =back
 

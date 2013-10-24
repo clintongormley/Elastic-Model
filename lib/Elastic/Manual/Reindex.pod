@@ -40,7 +40,7 @@ When you need to change your mapping, you can just reindex to a new index:
 =head1 UPDATING UIDS
 
 Imagine you have a C<$post> object which has a C<user> attribute.  The
-L<UID|Elastic::Model::UID> of the user is stored in ElasticSearch, which
+L<UID|Elastic::Model::UID> of the user is stored in Elasticsearch, which
 includes the index name.
 
 When you reindex your data from C<myapp_v1> to C<myapp_v2>,

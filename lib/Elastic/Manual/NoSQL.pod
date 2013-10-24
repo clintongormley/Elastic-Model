@@ -4,13 +4,13 @@ package Elastic::Manual::NoSQL;
 
 =head1 THINK DIFFERENT
 
-ElasticSearch (and any NoSQL document store) is quite different from a
+Elasticsearch (and any NoSQL document store) is quite different from a
 relational database, so you need to think about information storage and
 retrieval in a different way.  Some differences are:
 
 =head2 It is not relational
 
-ElasticSearch stores individual documents/objects.  All queries look at
+Elasticsearch stores individual documents/objects.  All queries look at
 each document in isolation to decide if that document matches the query, and
 is either included or excluded.  There is no way of doing real JOINs like:
 
@@ -22,7 +22,7 @@ Instead you could collect all the IDs of users whose name is "John", then
 search for posts who have a matching user_id.  This approach works for some
 things, but in this case, probably wouldn't scale.
 
-(There is a pseudo relationship available in ElasticSearch, called
+(There is a pseudo relationship available in Elasticsearch, called
 "parent-child", which allows you to return parent documents based on the
 content of child documents.  This can be useful in certain circumstances.)
 
@@ -41,7 +41,7 @@ all of their posts with the embedded information.
 
 =head2 No transactions or locking
 
-ElasticSearch is a distributed system, which makes it very scalable. But
+Elasticsearch is a distributed system, which makes it very scalable. But
 introducing pessimistic concurrency control (locking) into a distributed system
 adds a single point of failure and concurrency issues.
 
@@ -72,7 +72,7 @@ The user submits a new post
 
 =item 2
 
-We create the post in ElasticSearch, and return a list of all the user's
+We create the post in Elasticsearch, and return a list of all the user's
 posts, sorted by date.
 
 =item 3
@@ -108,7 +108,7 @@ These differences may sound a bit daunting, but really they are quite easy to
 manage.  It takes a little time to understand the practicalities, but once
 you do, it will all seem quite natural.
 
-The benefits that ElasticSearch brings (eg amazing full text search and
+The benefits that Elasticsearch brings (eg amazing full text search and
 easy scaling) makes this all worthwhile.
 
 =head1 SEE ALSO

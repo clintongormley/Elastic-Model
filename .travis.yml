@@ -1,5 +1,6 @@
 language: perl
 perl:
+  - "5.18"
   - "5.16"
   - "5.14"
   - "5.12"
@@ -7,8 +8,8 @@ env: PERL_CPANM_OPT="--mirror http://cpan.mirrors.travis-ci.org  --mirror http:/
 before_install:
   - export OLD_DIR=`pwd`
   - cd /tmp
-  - curl -L  http://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-0.90.0.tar.gz | tar -xz
-  - elasticsearch-0.20.2/bin/elasticsearch
+  - curl -L  http://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-0.90.5.tar.gz | tar -xz
+  - elasticsearch-0.90.5/bin/elasticsearch
   - cd $OLD_DIR
   - "cpanm Dist::Zilla"
   - "dzil authordeps | cpanm"

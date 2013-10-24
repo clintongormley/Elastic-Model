@@ -135,7 +135,7 @@ L<Elastic::Doc> module itself.
 =head1 DESCRIPTION
 
 Elastic::Doc prepares your object classes (eg C<MyApp::User>) for storage in
-ElasticSearch, by:
+Elasticsearch, by:
 
 =over
 
@@ -157,7 +157,7 @@ L<Elastic::Model::Meta::Instance>).
 =item *
 
 exporting the L</"has_mapping"> function to allow you to customize the
-special "meta-fields" in the type mapping in ElasticSearch
+special "meta-fields" in the type mapping in Elasticsearch
 
 =back
 
@@ -185,8 +185,8 @@ attr/field-specific) in the type mapping. For instance:
 B<Warning:> Use C<has_mapping> with caution. L<Elastic::Model> requires
 certain settings to be active to work correctly.
 
-See the "Fields" section in L<Mapping|http://www.elasticsearch.org/guide/reference/mapping/> and
-L<Root object type|http://www.elasticsearch.org/guide/reference/mapping/root-object-type.html>
+See the "Fields" section in L<Mapping|http://www.Elasticsearch.org/guide/reference/mapping/> and
+L<Root object type|http://www.Elasticsearch.org/guide/reference/mapping/root-object-type.html>
 for more information about what options can be configured.
 
 =head2 apply_field_settings
