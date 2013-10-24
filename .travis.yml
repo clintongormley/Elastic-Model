@@ -4,14 +4,13 @@ perl:
   - "5.16"
   - "5.14"
   - "5.12"
-env: ES="localhost:9200"
-before_install:
-  - export OLD_DIR=`pwd`
-  - cd /tmp
-  - curl -L  http://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-0.90.5.tar.gz | tar -xz
-  - elasticsearch-0.90.5/bin/elasticsearch
-  - cd $OLD_DIR
-  - "cpanm Dist::Zilla"
-  - "dzil authordeps | cpanm"
-install: "dzil listdeps | xargs cpanm"
-script: "dzil test --release"
+env:
+ - ES_VERSION=0.90.0
+ - ES_VERSION=0.90.1
+ - ES_VERSION=0.90.2
+ - ES_VERSION=0.90.3
+ - ES_VERSION=0.90.4
+ - ES_VERSION=0.90.5
+
+install: "cpanm --installdeps --notest --with-recommends ."
+script:  "./run_travis_tests.sh"
