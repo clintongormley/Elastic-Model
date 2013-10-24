@@ -33,7 +33,7 @@ my %classes = (
 );
 
 for my $m ( $model, $model_2 ) {
-    for ( keys %classes ) {
+    for ( sort keys %classes ) {
         ok my $class = $m->$_, "Has $_";
         isa_ok $class, $classes{$_}, $_;
         is $class->model, $m, "$_ has correct model";
