@@ -282,7 +282,7 @@ C<Str> with C<"$lat,$lon">.
         isa => Timestamp
     );
 
-A C<Timestamp> is a C<Num> which holds floating epoch seconds, with milliseconds
-as decimal places. It is automatically mapped as a C<date> field in
-Elasticsearch.
+A C<Timestamp> is a C<Num> which holds floating point epoch seconds, with milliseconds resolution. 
+It is automatically mapped as a C<date> field in Elasticsearch.
+
 
