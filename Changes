@@ -1,3 +1,9 @@
+0.28    2013-03-06
+        Elastic::Model now requires Search::Elasticsearch::Compat
+        See http://github.com/elasticsearch/elasticsearch-perl/issues/20
+
+        Updated links to the elasticsearch.org website.
+
 0.27    2013-10-24
         Elastic::Model now requires Elasticsearch::Compat instead of
         ElasticSearch.
