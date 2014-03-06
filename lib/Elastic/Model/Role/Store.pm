@@ -93,7 +93,7 @@ Returns the connection to Elasticsearch.
     $result = $store->get_doc($uid, %args);
 
 Retrieves the doc specified by the L<$uid|Elastic::Model::UID> from
-Elasticsearch, by calling L<Elasticsearch/"get()">. Throws an exception
+Elasticsearch, by calling L<Search::Elasticsearch::Compat/"get()">. Throws an exception
 if the document does not exist.
 
 =head2 doc_exists()
@@ -101,7 +101,7 @@ if the document does not exist.
     $bool = $store->doc_exists($uid, %args);
 
 Checks whether the doc exists in ElastciSearch. Any C<%args> are passed through
-to L<Elasticsearch/exists()>.
+to L<Search::Elasticsearch::Compat/exists()>.
 
 =head2 create_doc()
 
@@ -109,7 +109,7 @@ to L<Elasticsearch/exists()>.
 
 Creates a doc in the Elasticsearch backend and returns the raw result.
 Throws an exception if a doc with the same L<$uid|Elastic::Model::UID>
-already exists.  Any C<%args> are passed to L<Elasticsearch/"create()">
+already exists.  Any C<%args> are passed to L<Search::Elasticsearch::Compat/"create()">
 
 =head2 index_doc()
 
@@ -118,7 +118,7 @@ already exists.  Any C<%args> are passed to L<Elasticsearch/"create()">
 Updates (or creates) a doc in the Elasticsearch backend and returns the raw
 result. Any failure throws an exception.  If the L<version|Elastic::Model::UID/"version">
 number does not match what is stored in Elasticsearch, then a conflict exception
-will be thrown.  Any C<%args> will be passed to L<Elasticsearch/"index()">.
+will be thrown.  Any C<%args> will be passed to L<Search::Elasticsearch::Compat/"index()">.
 For instance, to overwrite a document regardless of version number, you could
 do:
 
@@ -131,7 +131,7 @@ do:
 Deletes a doc in the Elasticsearch backend and returns the raw
 result. Any failure throws an exception.  If the L<version|Elastic::Model::UID/"version">
 number does not match what is stored in Elasticsearch, then a conflict exception
-will be thrown.  Any C<%args> will be passed to L<Elasticsearch/"delete()">.
+will be thrown.  Any C<%args> will be passed to L<Search::Elasticsearch::Compat/"delete()">.
 
 =head2 bulk()
 
@@ -143,17 +143,17 @@ will be thrown.  Any C<%args> will be passed to L<Elasticsearch/"delete()">.
     );
 
 Performs several actions in a single request. Any %agrs will be passed to
-L<Elasticsearch/bulk()>.
+L<Search::Elasticsearch::Compat/bulk()>.
 
 =head2 search()
 
     $results = $store->search(@args);
 
-Performs a search, passing C<@args> to L<Elasticsearch/"search()">.
+Performs a search, passing C<@args> to L<Search::Elasticsearch::Compat/"search()">.
 
 =head2 scrolled_search()
 
     $results = $store->scrolled_search(@args);
 
-Performs a scrolled search, passing C<@args> to L<Elasticsearch/"scrolled_search()">.
+Performs a scrolled search, passing C<@args> to L<Search::Elasticsearch::Compat/"scrolled_search()">.
 

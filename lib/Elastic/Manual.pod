@@ -18,7 +18,7 @@ Elasticsearch as soon as you are ready to use it.
 For a brief example of how Elastic::Model works, you should start by reading
 L<Elastic::Manual::Intro>.
 
-=head1 WHAT IS Elasticsearch?
+=head1 WHAT IS ELASTICSEARCH?
 
 L<Elasticsearch|http://www.Elasticsearch.org> is an open-source
 L<Lucene|http://lucene.apache.org/core/>-based full-text search engine,

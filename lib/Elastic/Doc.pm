@@ -185,8 +185,8 @@ attr/field-specific) in the type mapping. For instance:
 B<Warning:> Use C<has_mapping> with caution. L<Elastic::Model> requires
 certain settings to be active to work correctly.
 
-See the "Fields" section in L<Mapping|http://www.Elasticsearch.org/guide/reference/mapping/> and
-L<Root object type|http://www.Elasticsearch.org/guide/reference/mapping/root-object-type.html>
+See the "Fields" section in L<Mapping|http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/mapping-fields.html> and
+L<Root object type|http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/mapping-root-object-type.html>
 for more information about what options can be configured.
 
 =head2 apply_field_settings

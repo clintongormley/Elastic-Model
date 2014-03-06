@@ -148,9 +148,9 @@ See L<< ElasticSearch::SearchBuilder/= E<verbar> -text E<verbar> != E<verbar> <>
     $view->query( text => { title => 'perl unicode' } );
 
     # where the _all field matches "perl unicode"
-    $view->query( _all => { text => 'perl unicode' });
+    $view->query( _all => { match => 'perl unicode' });
 
-See L<http://www.Elasticsearch.org/guide/reference/query-dsl/text-query.html>
+See L<http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/query-dsl-match-query.html>
 
 =back
 
@@ -185,14 +185,14 @@ and L<ElasticSearch::SearchBuilder/^ E<verbar> -phrase_prefix E<verbar> -not_phr
 
     # where title matches the phrase "perl unicode"
     $view->query(
-        text_phrase => {
+        match_phrase => {
             title   => 'perl unicode'
         }
     );
 
     # where 'unicode' precedes 'perl' within 5 words of each other
     $view->query(
-        text_phrase => {
+        match_phrase => {
             title   => {
                 query => 'perl unicode',
                 slop  => 5
@@ -202,12 +202,12 @@ and L<ElasticSearch::SearchBuilder/^ E<verbar> -phrase_prefix E<verbar> -not_phr
 
     # where title contains a phrase starting with "perl unic"
     $view->query(
-        text_phrase_prefix => {
+        match_phrase_prefix => {
             title => 'perl unic'
         }
     );
 
-See L<http://www.Elasticsearch.org/guide/reference/query-dsl/text-query.html>.
+See L<http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/query-dsl-match-query.html#_match_phrase_prefix>.
 
 =back
 
@@ -309,8 +309,7 @@ See L<ElasticSearch::SearchBuilder/-qs E<verbar> -query_string E<verbar> -not_qs
         }
     );
 
-See L<http://www.Elasticsearch.org/guide/reference/query-dsl/query-string-query.html>
-and L<http://www.Elasticsearch.org/guide/reference/query-dsl/field-query.html>.
+See L<http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html>.
 
 =back
 
@@ -320,16 +319,14 @@ The more-like-this query tries to find documents similar to the search keywords,
 across multiple fields. It is useful for clustering related documents.
 
 See L<ElasticSearch::SearchBuilder/-mlt E<verbar> -not_mlt>,
-L<http://www.Elasticsearch.org/guide/reference/query-dsl/mlt-query.html> and
-L<http://www.Elasticsearch.org/guide/reference/query-dsl/mlt-field-query.html>.
+L<http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/query-dsl-mlt-query.html>.
 
 The fuzzy-like-this query is similar to more-like-this, but additionally
 "fuzzifies" all the search terms (finds all terms within a certain
 Levenshtein edit distance).
 
 See L<ElasticSearch::SearchBuilder/-flt E<verbar> -not_flt>,
-L<http://www.Elasticsearch.org/guide/reference/query-dsl/flt-query.html> and
-L<http://www.Elasticsearch.org/guide/reference/query-dsl/flt-field-query.html>.
+L<http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/query-dsl-flt-query.html>.
 
 =head1 EXACT QUERIES
 
@@ -357,7 +354,7 @@ See L<ElasticSearch::SearchBuilder/MATCH ALL>
     $view->query();
     $view->query( match_all => {} )
 
-See L<http://www.Elasticsearch.org/guide/reference/query-dsl/match-all-query.html>
+See L<http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/query-dsl-match-all-query.html>
 
 =back
 
@@ -389,8 +386,8 @@ See L<ElasticSearch::SearchBuilder/EQUALITY (QUERIES)>.
     # WHERE tags IN ('perl','python')
     $view->query(  terms => { tag => ['perl', 'python' ]})
 
-See L<http://www.Elasticsearch.org/guide/reference/query-dsl/term-query.html>
-and L<http://www.Elasticsearch.org/guide/reference/query-dsl/terms-query.html>.
+See L<http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/query-dsl-term-query.html>
+and L<http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/query-dsl-terms-query.html>.
 
 =back
 
@@ -423,7 +420,7 @@ See L<ElasticSearch::SearchBuilder/RANGES>
         }
     );
 
-See L<http://www.Elasticsearch.org/guide/reference/query-dsl/range-query.html>
+See L<http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/query-dsl-range-query.html>
 
 =back
 
@@ -439,9 +436,9 @@ Then they query all matching terms.
 If you find yourself wanting to use any of these, then you should rather
 analyze your fields in a way that you can use a L<simple query|/Simple text queries>
 on them instead, for instance, using the
-L<edge_ngram token filter|http://www.Elasticsearch.org/guide/reference/index-modules/analysis/edgengram-tokenfilter.html>
+L<edge_ngram token filter|http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/analysis-edgengram-tokenfilter.html>
 or one of the
-L<phonetic token filters|http://www.Elasticsearch.org/guide/reference/index-modules/analysis/phonetic-tokenfilter.html>.
+L<phonetic token filters|http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/analysis-phonetic-tokenfilter.html>.
 
 
 =over
@@ -471,9 +468,9 @@ L<ElasticSearch::SearchBuilder/WILDCARD AND FUZZY QUERIES>.
     # where code contains terms similar to "purl unikode"
     $view->query( fuzzy => { code => 'purl unikode' })
 
-See L<http://www.Elasticsearch.org/guide/reference/query-dsl/prefix-query.html>,
-L<http://www.Elasticsearch.org/guide/reference/query-dsl/wildcard-query.html>
-and L<http://www.Elasticsearch.org/guide/reference/query-dsl/fuzzy-query.html>.
+See L<http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/query-dsl-prefix-query.html>,
+L<http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/query-dsl-wildcard-query.html>
+and L<http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/query-dsl-fuzzy-query.html>.
 
 =back
 
@@ -518,7 +515,7 @@ See L<ElasticSearch::SearchBuilder/QUERY E<sol> FILTER CONTEXT>
         }
     );
 
-See L<http://www.Elasticsearch.org/guide/reference/query-dsl/filtered-query.html>.
+See L<http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/query-dsl-filtered-query.html>.
 
 =back
 
@@ -590,7 +587,7 @@ L<ElasticSearch::SearchBuilder/-bool>
 
 =item QueryDSL:
 
-See L<http://www.Elasticsearch.org/guide/reference/query-dsl/bool-query.html>
+See L<http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/query-dsl-bool-query.html>
 
 =over
 
@@ -746,7 +743,7 @@ See L<ElasticSearch::SearchBuilder/-dis_max E<verbar> -dismax>.
         }
     );
 
-See L<http://www.Elasticsearch.org/guide/reference/query-dsl/dis-max-query.html>.
+See L<http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/query-dsl-dis-max-query.html>.
 
 =back
 
@@ -783,7 +780,7 @@ See L<ElasticSearch::SearchBuilder/-indices>.
         }
     );
 
-See L<http://www.Elasticsearch.org/guide/reference/query-dsl/indices-query.html>.
+See L<http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/query-dsl-indices-query.html>.
 
 =back
 
@@ -845,7 +842,7 @@ See L<ElasticSearch::SearchBuilder/-custom_filters_score>.
         }
     );
 
-See L<http://www.Elasticsearch.org/guide/reference/query-dsl/custom-filters-score-query.html>.
+See L<http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/query-dsl-custom-filters-score-query.html>.
 
 =back
 
@@ -857,7 +854,7 @@ Documents which match a query (eg C<"apple pear">)can be "demoted"
 (made less relevant) if they also match a second query (eg C<"computer">).
 
 See L<ElasticSearch::SearchBuilder/-boosting> or
-L<http://www.Elasticsearch.org/guide/reference/query-dsl/boosting-query.html>
+L<http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/query-dsl-boosting-query.html>
 
 =head3 Custom score
 
@@ -865,7 +862,7 @@ A C<custom_score> query uses a script to calculate the C<_score> for each
 matching doc.
 
 See L<ElasticSearch::SearchBuilder/-custom_score> or
-L<http://www.Elasticsearch.org/guide/reference/query-dsl/custom-score-query.html>
+L<http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/query-dsl-custom-score-query.html>
 
 =head3 Custom boost factor
 
@@ -874,16 +871,14 @@ query by the specified C<boost> factor. This is a bit different from a
 standard C<boost> parameter, which is normalized.
 
 See L<ElasticSearch::SearchBuilder/-custom_boost> or
-L<http://www.Elasticsearch.org/guide/reference/query-dsl/custom-boost-factor-query.html>
+L<http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/query-dsl-custom-boost-factor-query.html>
 
 =head3 Constant score
 
 The C<constant_score> query does no relevance calculation - all docs are
 returned with the same score.
 
-See L<http://www.Elasticsearch.org/guide/reference/query-dsl/constant-score-query.html>.
-
-    indices
+See L<http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/query-dsl-constant-score-query.html>.
 
 =head1 JOINING QUERIES
 
@@ -902,11 +897,11 @@ L<ElasticSearch::SearchBuilder/PARENTE<sol>CHILD>
 
 =item *
 
-L<http://www.Elasticsearch.org/guide/reference/query-dsl/top-children-query.html>
+L<http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/query-dsl-has-child-query.html>
 
 =item *
 
-L<http://www.Elasticsearch.org/guide/reference/query-dsl/has-child-query.html>
+L<http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/query-dsl-has-parent-query.html>
 
 =back
 

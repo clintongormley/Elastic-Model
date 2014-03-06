@@ -37,9 +37,8 @@ it is running with:
 
     curl http://localhost:9200/?pretty=true
 
-See L<http://www.Elasticsearch.org/tutorials/> and
-L<http://www.Elasticsearch.org/guide/reference/setup/> for more information
-about installing and configuring Elasticsearch.
+See L<http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/setup.html>
+for more information about installing and configuring Elasticsearch.
 
 =head1 SETUP YOUR APPLICATION
 
@@ -116,8 +115,8 @@ introspection, we have enough information to setup everything we need.
 This creates an instance of your model, with a connection to a local
 Elasticsearch cluster.  The last line is the equivalent of:
 
-    use Elasticsearch::Compat();
-    my $es     = Elasticsearch::Compat->new( servers => 'localhost:9200' );
+    use Search::Elasticsearch::Compat();
+    my $es     = Search::Elasticsearch::Compat->new( servers => 'localhost:9200' );
     my $model  = MyApp->new( es => $es );
 
 =head2 Create an index
@@ -253,7 +252,7 @@ returned, meaning that you can use one view to derive another:
 =head2 Query syntax
 
 Queries can be specified using the standard
-L<Elasticsearch query DSL|http://www.Elasticsearch.org/guide/reference/query-dsl/>
+L<Elasticsearch query DSL|http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/query-dsl.html>
 or with the more Perlish more compact L<ElasticSearch::SearchBuilder> syntax.
 
 Standard query DSL:
@@ -280,7 +279,7 @@ the search and returns a L<Results|Elastic::Model::Results> object.
     }
 
 Views can also be used to return highlighted results, and
-L<facets|http://www.Elasticsearch.org/guide/reference/api/search/facets/>,
+L<facets|http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/search-facets.html>,
 which provide aggregated results, much like GROUP-BY functions in SQL, for
 instance, the most popular terms, or the number of posting per day.
 

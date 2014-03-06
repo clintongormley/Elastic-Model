@@ -4,7 +4,7 @@ __END__
 
 # ABSTRACT: Explanation of terminology and concepts
 
-=head1 MAIN Elasticsearch TERMS
+=head1 MAIN ELASTICSEARCH TERMS
 
 =head2 Index
 
@@ -230,7 +230,7 @@ See also L</Term>, L</Analysis> and L</Query>.
 
 A "Query" is used to search for L<Documents|/Document> in Elasticsearch, using
 L<Views|/View>.  It can be expressed either in the native
-L<Elasticsearch Query DSL|http://www.Elasticsearch.org/guide/reference/query-dsl/>
+L<Elasticsearch Query DSL|http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/query-dsl.html>
 or using the more Perlish L<ElasticSearch::SearchBuilder> syntax.
 
 By default, a Query sorts the results by relevance (C<_score>).
@@ -271,19 +271,19 @@ BlogPosts that have been published this year.  This could be achieved
 by using a Range filter within a query.
 
 Filters can be expressed either in the native
-L<Elasticsearch Query DSL|http://www.Elasticsearch.org/guide/reference/query-dsl/>
+L<Elasticsearch Query DSL|http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/query-dsl.html>
 or using the more Perlish L<ElasticSearch::SearchBuilder> syntax.
 
 Also see L</Query> and L</View>.
 
 
-=head1 OTHER Elasticsearch TERMS
+=head1 OTHER ELASTICSEARCH TERMS
 
 =head2 Cluster
 
 A "Cluster" is a collection of L<Nodes|/Node> which function together - they
 all share the same
-L<cluster.name|http://www.Elasticsearch.org/guide/reference/setup/configuration.html>.
+L<cluster.name|http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/setup-configuration.html#system>.
 The cluster elects a single "master node" which controls the cluster.
 If the master node fails, another node is automatically elected.
 

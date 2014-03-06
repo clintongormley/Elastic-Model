@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 use Test::More;
-use Elasticsearch::Compat;
+use Search::Elasticsearch::Compat;
 
 our $es;
 
@@ -13,7 +13,7 @@ my $trace
     :                      [ 'File', $ENV{TRACE} ];
 
 if ( $ENV{ES} ) {
-    $es = Elasticsearch::Compat->new(
+    $es = Search::Elasticsearch::Compat->new(
         servers        => $ENV{ES},
         trace_requests => $ENV{TRACE},
     );

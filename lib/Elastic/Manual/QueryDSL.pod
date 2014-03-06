@@ -5,7 +5,7 @@ package Elastic::Manual::QueryDSL;
 =head1 INTRODUCTION
 
 Elasticsearch provides a rich query language, known as the
-L<Query DSL|http://www.Elasticsearch.org/guide/reference/query-dsl/> which
+L<Query DSL|http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/query-dsl.html> which
 exposes much of the power of Lucene through a simple JSON interface.
 It is tuned for full text search, but is in no way limited just
 to that. It also provides very fast and flexible filters, ranges, geo-location

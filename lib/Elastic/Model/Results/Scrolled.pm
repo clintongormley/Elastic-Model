@@ -10,7 +10,7 @@ use namespace::autoclean;
 #===================================
 has '_scroll' => (
 #===================================
-    isa    => 'Elasticsearch::Compat::ScrolledSearch',
+    isa    => 'Search::Elasticsearch::Compat::ScrolledSearch',
     is     => 'ro',
     writer => '_set_scroll',
 );

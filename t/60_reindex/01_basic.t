@@ -5,19 +5,19 @@ use warnings;
 use Test::More 0.96;
 use Test::Exception;
 use Test::Deep;
-use Elasticsearch;
+use Search::Elasticsearch;
 
 use lib 't/lib';
 
 our $es;
 do 'es.pl';
 
-my $orig = Elasticsearch::Client::Compat->can('reindex');
+my $orig = Search::Elasticsearch::Client::Compat->can('reindex');
 my $callback = sub {1};
 
 {
     no warnings( 'redefine', 'once' );
-    *Elasticsearch::Client::Compat::reindex = sub {
+    *Search::Elasticsearch::Client::Compat::reindex = sub {
         my $self = shift;
         $callback->(@_)
             and $self->$orig(@_);

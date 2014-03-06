@@ -2,7 +2,7 @@ package Elastic::Model::Types;
 
 use strict;
 use warnings;
-use Elasticsearch::Compat();
+use Search::Elasticsearch::Compat();
 use ElasticSearchX::UniqueKey();
 
 use MooseX::Types::Moose qw(HashRef ArrayRef Str Bool Num Int Defined Any);
@@ -77,17 +77,17 @@ while ( my $type = shift @enums ) {
 }
 
 #===================================
-class_type ES, { class => 'Elasticsearch::Client::Compat' };
+class_type ES, { class => 'Search::Elasticsearch::Client::Compat' };
 #===================================
-coerce ES, from HashRef, via { Elasticsearch::Compat->new($_) };
+coerce ES, from HashRef, via { Search::Elasticsearch::Compat->new($_) };
 coerce ES, from Str, via {
     s/^:/127.0.0.1:/;
-    Elasticsearch::Compat->new( servers => $_ );
+    Search::Elasticsearch::Compat->new( servers => $_ );
 };
 coerce ES, from ArrayRef, via {
     my @servers = @$_;
     s/^:/127.0.0.1:/ for @servers;
-    Elasticsearch::Compat->new( servers => \@servers );
+    Search::Elasticsearch::Compat->new( servers => \@servers );
 };
 
 #===================================
@@ -282,7 +282,7 @@ C<Str> with C<"$lat,$lon">.
         isa => Timestamp
     );
 
-A C<Timestamp> is a C<Num> which holds floating point epoch seconds, with milliseconds resolution. 
+A C<Timestamp> is a C<Num> which holds floating point epoch seconds, with milliseconds resolution.
 It is automatically mapped as a C<date> field in Elasticsearch.
 
 

@@ -5,6 +5,7 @@ use warnings;
 
 use Sub::Exporter qw(build_exporter);
 use Class::MOP();
+use Class::Load();
 use List::MoreUtils qw(uniq);
 use Moose::Util qw(does_role);
 use Scalar::Util qw(blessed);
@@ -27,8 +28,8 @@ sub import {
         unshift @{ $callee . '::ISA' }, __PACKAGE__;
     }
 
-    build_exporter( {
-            into    => $callee,
+    build_exporter(
+        {   into    => $callee,
             exports => [
                 qw(deflate_via inflate_via map_via),
                 has_type => sub {
@@ -40,7 +41,7 @@ sub import {
 
     for (@args) {
         next if /^[:-]/;
-        Class::MOP::load_class($_);
+        Class::Load::load_class($_);
         $callee->import_types( $_->typemap );
     }
 }

@@ -137,8 +137,8 @@ Elasticsearch as soon as you are ready to use it.
 =head1 IMPORTANT
 
 This version of Elastic::Model has been updated to work with
-L<Elasticsearch::Compat>, a compatibility layer over the new official
-Elasticsearch Perl client: L<Elasticsearch>.
+L<Search::Elasticsearch::Compat>, a compatibility layer over the new official
+Elasticsearch Perl client: L<Search::Elasticsearch>.
 
 In the near future, I will be releasing a version of Elastic::Model that
 works with L<Elasticsearch> directly, without need for the compatibility
@@ -150,8 +150,8 @@ as normal by simply changing:
 
 to:
 
-    use Elasticsearch::Compat;
-    my $es = Elasticsearch::Compat->new(...);
+    use Search::Elasticsearch::Compat;
+    my $es = Search::Elasticsearch::Compat->new(...);
 
 =head1 USING ELASTIC::MODEL
 
