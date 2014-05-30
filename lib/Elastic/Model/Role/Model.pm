@@ -2,10 +2,9 @@ package Elastic::Model::Role::Model;
 
 use Moose::Role;
 use Carp;
-use Elastic::Model::Types qw(ES ES_UniqueKey);
+use Elastic::Model::Types qw(ES);
 use Search::Elasticsearch 1.10         ();
 use Search::Elasticsearch::Compat 0.10 ();
-use ElasticSearchX::UniqueKey 0.05     ();
 use Class::Load qw(load_class);
 use Moose::Util qw(does_role);
 use MooseX::Types::Moose qw(:all);
@@ -69,12 +68,12 @@ has 'es' => (
 );
 
 #===================================
-has 'es_unique' => (
+has '_unique_index' => (
 #===================================
-    isa     => ES_UniqueKey,
+    isa     => Str,
     is      => 'ro',
     lazy    => 1,
-    builder => '_build_es_unique',
+    builder => '_build_unique_index',
 );
 
 #===================================
@@ -145,16 +144,12 @@ sub _build_es    { Search::Elasticsearch::Compat->new }
 #===================================
 
 #===================================
-sub _build_es_unique {
+sub _build_unique_index {
 #===================================
     my $self  = shift;
     my $index = Class::MOP::class_of($self)->unique_index;
-    my $uniq  = ElasticSearchX::UniqueKey->new(
-        es    => $self->es,
-        index => $index
-    );
-    $uniq->bootstrap;
-    return $uniq;
+    $self->store->bootstrap_uniques( index => $index );
+    return $index;
 }
 
 #===================================
@@ -456,9 +451,12 @@ sub _update_unique_keys {
         $new{$unique_key} = $new if length $new;
     }
 
-    my $uniq = $self->es_unique;
+    my $uniq  = $self->_unique_index;
+    my $store = $self->store;
 
-    if ( my %failed = $uniq->multi_create(%new) ) {
+    if ( my %failed
+        = $store->create_unique_keys( index => $uniq, keys => \%new ) )
+    {
         if ($on_unique) {
             $on_unique->( $doc, \%failed );
             return;
@@ -468,8 +466,12 @@ sub _update_unique_keys {
 
     }
     return {
-        commit   => sub { $uniq->multi_delete(%old); },
-        rollback => sub { $uniq->multi_delete(%new); }
+        commit => sub {
+            $store->delete_unique_keys( index => $uniq, keys => \%old );
+        },
+        rollback => sub {
+            $store->delete_unique_keys( index => $uniq, keys => \%new );
+        },
     };
 }
 
@@ -540,9 +542,12 @@ sub _delete_unique_keys {
         my $old = $doc->_source->{$key};
         $old{ $uniques->{$key} } = $old if length $old;
     }
-    my $uniq = $self->es_unique;
+    my $uniq  = $self->_unique_index;
+    my $store = $self->store;
     return {
-        commit => sub { $uniq->multi_delete(%old) }
+        commit => sub {
+            $store->delete_unique_keys( index => $uniq, keys => \%old );
+            }
     };
 }
 

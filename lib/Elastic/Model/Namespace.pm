@@ -43,10 +43,7 @@ sub all_domains {
 #===================================
     my $self    = shift;
     my @domains = ( $self->name, @{ $self->fixed_domains } );
-    my $aliases = $self->model->es->get_aliases(
-        index          => \@domains,
-        ignore_missing => 1
-    ) || {};
+    my $aliases = $self->model->store->get_aliases( index => \@domains );
     for ( keys %$aliases ) {
         push @domains, ( $_, keys %{ $aliases->{$_}{aliases} } );
     }
@@ -58,10 +55,7 @@ sub all_live_indices {
 #===================================
     my $self    = shift;
     my @domains = ( $self->name, @{ $self->fixed_domains } );
-    my $aliases = $self->model->es->get_aliases(
-        index          => \@domains,
-        ignore_missing => 1
-    ) || {};
+    my $aliases = $self->model->store->get_aliases( index => \@domains );
     return keys %$aliases;
 }
 

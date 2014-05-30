@@ -14,17 +14,15 @@ sub to {
     my $self = shift;
 
     my $name    = $self->name;
-    my $es      = $self->es;
+    my $store   = $self->model->store;
     my %indices = (
         (   map { $_ => { remove => { index => $_, alias => $name } } }
-                keys %{
-                $es->get_aliases( index => $name, ignore_missing => 1 ) || {}
-                }
+                keys %{ $store->get_aliases( index => $name ) }
         ),
         $self->_add_aliases(@_)
     );
 
-    $es->aliases( actions => [ values %indices ] );
+    $store->put_aliases( actions => [ values %indices ] );
     $self->model->domain($name)->clear_default_routing;
     $self->model->clear_domain_namespace;
     return $self;
@@ -35,7 +33,7 @@ sub add {
 #===================================
     my $self    = shift;
     my %indices = $self->_add_aliases(@_);
-    $self->es->aliases( actions => [ values %indices ] );
+    $self->model->store->put_aliases( actions => [ values %indices ] );
     $self->model->domain( $self->name )->clear_default_routing;
     return $self;
 }
@@ -46,7 +44,7 @@ sub remove {
     my $self    = shift;
     my $name    = $self->name;
     my @actions = map { { remove => { index => $_, alias => $name } } } @_;
-    $self->es->aliases( actions => \@actions );
+    $self->model->store->put_aliases( actions => \@actions );
     $self->model->clear_domain_namespace;
     return $self;
 }
@@ -57,10 +55,7 @@ sub aliased_to {
     my $self = shift;
     my $name = $self->name;
 
-    my $indices = $self->es->get_aliases(
-        index          => $name,
-        ignore_missing => 1
-    ) || {};
+    my $indices = $self->model->store->get_aliases( index => $name );
     croak "($name) is an index, not an alias"
         if $indices->{$name};
 
@@ -70,11 +65,12 @@ sub aliased_to {
 #===================================
 sub _add_aliases {
 #===================================
-    my $self = shift;
-    my $name = $self->name;
-    my $es   = $self->es;
+    my $self  = shift;
+    my $name  = $self->name;
+    my $store = $self->model->store;
     my %indices;
 
+    my $builder;
     while (@_) {
         my $index  = shift @_;
         my %params = (
@@ -83,7 +79,8 @@ sub _add_aliases {
             alias => $name
         );
         if ( my $filter = delete $params{filterb} ) {
-            $params{filter} = $es->builder->filter($filter)->{filter};
+            $builder ||= $self->model->view->search_builder;
+            $params{filter} = $builder->filter($filter)->{filter};
         }
         $indices{$index} = { add => \%params };
     }

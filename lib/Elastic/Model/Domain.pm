@@ -39,9 +39,7 @@ sub _get_default_routing {
 #===================================
     my $self = shift;
     my $name = $self->name;
-    my $aliases
-        = $self->model->es->get_aliases( index => $name, ignore_missing => 1 )
-        || {};
+    my $aliases        = $self->model->store->get_aliases( index => $name);
 
     croak "Domain ($name) doesn't exist either as an index or an alias"
         unless %$aliases;

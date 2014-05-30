@@ -67,6 +67,164 @@ sub bulk {
     return $self->es->bulk(%args);
 }
 
+#===================================
+sub index_exists {
+#===================================
+    my ( $self, %args ) = @_;
+    return $self->es->index_exists(%args);
+}
+
+#===================================
+sub create_index {
+#===================================
+    my ( $self, %args ) = @_;
+    return $self->es->create_index(%args);
+}
+
+#===================================
+sub delete_index {
+#===================================
+    my ( $self, %args ) = @_;
+    return $self->es->delete_index(%args);
+}
+
+#===================================
+sub refresh_index {
+#===================================
+    my ( $self, %args ) = @_;
+    return $self->es->refresh_index(%args);
+}
+
+#===================================
+sub open_index {
+#===================================
+    my ( $self, %args ) = @_;
+    return $self->es->open_index(%args);
+}
+
+#===================================
+sub close_index {
+#===================================
+    my ( $self, %args ) = @_;
+    return $self->es->close_index(%args);
+}
+
+#===================================
+sub update_index_settings {
+#===================================
+    my ( $self, %args ) = @_;
+    return $self->es->update_index_settings(%args);
+}
+
+#===================================
+sub get_aliases {
+#===================================
+    my ( $self, %args ) = @_;
+    return $self->es->get_aliases( ignore_missing => 1, %args ) || {};
+}
+
+#===================================
+sub put_aliases {
+#===================================
+    my ( $self, %args ) = @_;
+    return $self->es->aliases(%args);
+}
+
+#===================================
+sub get_mapping {
+#===================================
+    my ( $self, %args ) = @_;
+    return $self->es->mapping(%args);
+}
+
+#===================================
+sub put_mapping {
+#===================================
+    my ( $self, %args ) = @_;
+    return $self->es->put_mapping(%args);
+}
+
+#===================================
+sub delete_mapping {
+#===================================
+    my ( $self, %args ) = @_;
+    return $self->es->delete_mapping(%args);
+}
+
+#===================================
+sub reindex {
+#===================================
+    my ( $self, %args ) = @_;
+    return $self->es->reindex(%args);
+}
+
+#===================================
+sub bootstrap_uniques {
+#===================================
+    my ( $self, %args ) = @_;
+
+    my $es = $self->es;
+    return if $es->index_exists( index => $args{index} );
+
+    $es->create_index(
+        index    => $args{index},
+        settings => { number_of_shards => 1 },
+        mappings => {
+            _default_ => {
+                _all    => { enabled => 0 },
+                _source => { enabled => 0 },
+                _type   => { index   => 'no' },
+                enabled => 0,
+            }
+        }
+    );
+}
+
+#===================================
+sub create_unique_keys {
+#===================================
+    my ( $self, %args ) = @_;
+    my %keys = %{ $args{keys} };
+
+    my @docs = map { { type => $_, id => $keys{$_}, data => {} } } keys %keys;
+
+    my %failed;
+    $self->es->bulk_create(
+        index       => $args{index},
+        docs        => \@docs,
+        on_conflict => sub {
+            my ( $action, $doc ) = @_;
+            $failed{ $doc->{type} } = $doc->{id};
+        },
+        on_error => sub {
+            die "Error creating multi unique keys: $_[2]";
+        }
+    );
+    if (%failed) {
+        delete @keys{ keys %failed };
+        $self->delete_unique_keys( index => $args{index}, keys => \%keys );
+    }
+    return %failed;
+}
+
+#===================================
+sub delete_unique_keys {
+#===================================
+    my ( $self, %args ) = @_;
+    my %keys = %{ $args{keys} };
+
+    my @docs = map { { type => $_, id => $keys{$_} } } keys %keys;
+
+    $self->es->bulk_delete(
+        index    => $args{index},
+        docs     => \@docs,
+        on_error => sub {
+            die "Error deleting multi unique keys: $_[2]";
+        }
+    );
+    return 1;
+}
+
 1;
 
 __END__

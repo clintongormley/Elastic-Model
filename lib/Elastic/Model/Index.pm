@@ -13,8 +13,7 @@ sub create {
 #===================================
     my $self   = shift;
     my $params = $self->index_config(@_);
-
-    $self->es->create_index($params);
+    $self->model->store->create_index(%$params);
     return $self;
 }
 
@@ -70,7 +69,7 @@ sub reindex {
     my $updater = $self->doc_updater( $doc_updater, $uid_updater );
 
     my $source = $model->view->domain($domain)->size($size)->scan($scan);
-    $model->es->reindex(
+    $model->store->reindex(
         source       => $source,
         _method_name => 'shift_element',
         quiet        => !$verbose,
@@ -162,7 +161,7 @@ sub repoint_uids {
                     [ splice @ids, 0, $size ] );
 
                 my $source = $view->filter( or => $clauses )->scan($scan);
-                $model->es->reindex(
+                $model->store->reindex(
                     source       => $source,
                     _method_name => 'shift_element',
                     bulk_size    => $bulk_size,
@@ -185,7 +184,7 @@ sub _uid_attrs_for_indices {
 #===================================
     my $self    = shift;
     my @indices = @_;
-    my $mapping = $self->model->es->mapping( index => \@indices );
+    my $mapping = $self->model->store->get_mapping( index => \@indices );
     my %attrs   = map { $_ => 1 }
         map { _find_uid_attrs( $_->{properties} ) }
         map { values %$_ } values %$mapping;

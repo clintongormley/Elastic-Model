@@ -13,7 +13,7 @@ You need a recent version of Java installed, then download the current
 stable release of Elasticsearch from L<http://www.Elasticsearch.org/download/>.
 For instance:
 
-    curl -L -O https://github.com/downloads/Elasticsearch/Elasticsearch/elasticsearch-0.20.5.tar.gz
+    curl -L -O https://github.com/downloads/elasticsearch/elasticsearch/elasticsearch-0.20.5.tar.gz
     tar -xzf elasticsearch-0.20.5.tar.gz
 
 B<Note: The minimum required version of Elasticsearch is 0.19.11.>

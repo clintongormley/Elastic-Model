@@ -19,12 +19,12 @@ ok my $ns = $model->namespace('myapp'), 'Got ns';
 ok $ns->index->create, 'Create index myapp';
 ok my $domain = $model->domain('myapp'), 'Got domain';
 
-is $model->meta->unique_index, 'myapp1', 'Unique index set';
+is $model->meta->unique_index, 'myapp1', 'Unique index set on meta';
 
-isa_ok
-    my $uniq = $model->es_unique,
-    'ElasticSearchX::UniqueKey',
-    'model->es_unique';
+is
+    my $uniq = $model->_unique_index,
+    'myapp1',
+    'Unique index set on model';
 
 ok $es->index_exists( index => 'myapp1' ), 'Unique index created';
 
@@ -41,7 +41,7 @@ isa_ok my $user = $domain->new_doc(
 ok $user->save, 'Save user';
 
 cmp_deeply + {
-    $uniq->multi_exists(
+    unique_keys_exist(
         key_email        => 'john@foo.com',
         key_account_type => 'facebook',
         key_compound     => 'facebook:john@foo.com'
@@ -58,7 +58,7 @@ is $user->email('james@foo.com'), 'james@foo.com', 'Change email';
 ok $user->save, 'Unique changed user saved';
 
 cmp_deeply + {
-    $uniq->multi_exists(
+    unique_keys_exist(
         key_email        => 'john@foo.com',
         key_account_type => 'facebook',
         key_compound     => 'facebook:john@foo.com'
@@ -71,7 +71,7 @@ cmp_deeply + {
     'Old unique keys removed';
 
 cmp_deeply + {
-    $uniq->multi_exists(
+    unique_keys_exist(
         key_email        => 'james@foo.com',
         key_account_type => 'facebook',
         key_compound     => 'facebook:james@foo.com'
@@ -111,7 +111,7 @@ ok $user->save(
 ok $on_unique, 'on_unique called';
 
 cmp_deeply + {
-    $uniq->multi_exists(
+    unique_keys_exist(
         key_email        => 'mary@foo.com',
         key_compound     => 'facebook:mary@foo.com',
         key_account_type => 'facebook',
@@ -128,7 +128,7 @@ is $user->account_type('fb'), 'fb', 'Updated account_type';
 ok $user->save, 'Second user saved';
 
 cmp_deeply + {
-    $uniq->multi_exists(
+    unique_keys_exist(
         key_email        => 'mary@foo.com',
         key_account_type => 'fb',
         key_compound     => 'fb:mary@foo.com'
@@ -147,7 +147,7 @@ throws_ok sub { $user->save },
     'Update to conflicted';
 
 cmp_deeply + {
-    $uniq->multi_exists(
+    unique_keys_exist(
         key_email        => 'mary@foo.com',
         key_account_type => 'fb',
         key_compound     => 'fb:mary@foo.com'
@@ -156,7 +156,7 @@ cmp_deeply + {
     {}, 'Old keys still exist';
 
 cmp_deeply + {
-    $uniq->multi_exists(
+    unique_keys_exist(
         key_email    => 'alice@foo.com',
         key_compound => 'facebook:mary@foo.com'
     )
@@ -185,7 +185,7 @@ throws_ok sub { $user->overwrite },
 throws_ok sub { $user->save }, qr/\[Conflict\]/, 'Conflict error';
 
 cmp_deeply + {
-    $uniq->multi_exists(
+    unique_keys_exist(
         key_account_type => 'twitter',
         key_email        => 'alex@foo.com',
         key_compound     => 'twitter:alex@foo.com'
@@ -203,7 +203,7 @@ isa_ok $user= $domain->get( user => 1 ), 'MyApp::UniqUser', 'Retrieved user';
 is $user->optional('foo'), 'foo', 'Updated optional';
 ok $user->save, 'Saved with optional';
 cmp_deeply + {
-    $uniq->multi_exists(
+    unique_keys_exist(
         key_email        => 'mary@foo.com',
         key_account_type => 'fb',
         key_compound     => 'fb:mary@foo.com',
@@ -214,7 +214,7 @@ cmp_deeply + {
 ok $user->clear_optional, 'Optional cleared';
 ok $user->save,           'Saved without optional';
 cmp_deeply + {
-    $uniq->multi_exists(
+    unique_keys_exist(
         key_email        => 'mary@foo.com',
         key_account_type => 'fb',
         key_compound     => 'fb:mary@foo.com',
@@ -228,7 +228,7 @@ cmp_deeply + {
 ok $user->delete, 'User deleted';
 
 cmp_deeply + {
-    $uniq->multi_exists(
+    unique_keys_exist(
         key_email        => 'mary@foo.com',
         key_account_type => 'fb',
         key_compound     => 'fb:mary@foo.com'
@@ -247,5 +247,18 @@ ok !$domain->try_delete( user => 1 ), 'Non-existent user try_deleted';
 ## DONE ##
 
 done_testing;
+
+#===================================
+sub unique_keys_exist {
+#===================================
+    my (%keys) = @_;
+    my @docs = map { { _type => $_, _id => $keys{$_} } } keys %keys;
+    my $exists = $es->mget( index => $uniq, docs => \@docs );
+    for (@$exists) {
+        next unless $_->{exists};
+        delete $keys{ $_->{_type} };
+    }
+    return %keys;
+}
 
 __END__
