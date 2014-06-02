@@ -1,3 +1,13 @@
+0.29_1  2014-06-01
+        Migrated to Search::Elasticsearch and made it run
+        on Elasticsearch 1.x. No doc updates yet, no new features
+        exposed yet.
+
+        Breaking changes:
+         * omit_norms and omit_term_freq_positions no longer supported
+         * ignore_missing should be replaced by ignore => 404
+         * get mapping responses have changed
+
 0.28    2013-03-06
         Elastic::Model now requires Search::Elasticsearch::Compat
         See http://github.com/elasticsearch/elasticsearch-perl/issues/20

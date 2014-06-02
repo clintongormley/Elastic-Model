@@ -27,8 +27,8 @@ our @mapping = (
         },
     },
 
-    bad_opt   => qr/doesn't understand 'omit_norms'/,
-    bad_multi => qr/doesn't understand 'omit_norms'/
+    bad_opt   => qr/doesn't understand 'analyzer'/,
+    bad_multi => qr/doesn't understand 'analyzer'/
 
 );
 

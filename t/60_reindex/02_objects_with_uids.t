@@ -86,9 +86,11 @@ sub index_count {
 #===================================
     my $terms = $model->es->search(
         @_,
-        size   => 0,
-        facets => { index => { terms => { field => 'user.uid.index' } } }
-    )->{facets}{index}{terms};
-    return +{ map { $_->{term} => $_->{count} } @$terms };
+        size => 0,
+        body => {
+            aggs => { index => { terms => { field => 'user.uid.index' } } },
+        }
+    )->{aggregations}{index}{buckets};
+    return +{ map { $_->{key} => $_->{doc_count} } @$terms };
 
 }

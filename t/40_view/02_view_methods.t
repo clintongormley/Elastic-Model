@@ -38,8 +38,8 @@ isa_ok $results->first, 'Elastic::Model::Result', 'Search first';
 ## SCROLL ##
 isa_ok $results = $view->scroll, 'Elastic::Model::Results::Scrolled',
     'Scroll';
-is $results->_scroll->{_scroll}, '1m', 'Scroll default time';
-is $view->scroll('30s')->_scroll->{_scroll}, '30s', 'Scroll manual time';
+is $results->_scroll->scroll, '1m', 'Scroll default time';
+is $view->scroll('30s')->_scroll->scroll, '30s', 'Scroll manual time';
 is $results->total,      196,    'Scroll total ';
 is $results->size,       196,    'Scroll size';
 is $results->max_score,  1,      'Scroll max score';
@@ -50,8 +50,8 @@ isa_ok $results->first, 'Elastic::Model::Result', 'Scroll first';
 
 ## SCAN ##
 isa_ok $results = $view->scan, 'Elastic::Model::Results::Scrolled', 'Scan';
-is $results->_scroll->{_scroll}, '1m', 'Scan default time';
-is $view->scan('30s')->_scroll->{_scroll}, '30s', 'Scan manual time';
+is $results->_scroll->scroll, '1m', 'Scan default time';
+is $view->scan('30s')->_scroll->scroll, '30s', 'Scan manual time';
 is $results->total,      196,    'Scan total ';
 is $results->size,       196,    'Scan size';
 is $results->max_score,  0,      'Scan max score';
@@ -71,7 +71,6 @@ is $view->total, 196, 'View total';
 
 ## DELETE ##
 isa_ok $results = $view->delete, 'HASH', 'Delete';
-is !!$results->{ok}, 1, 'Delete OK';
 ok $results->{_indices}{myapp2}
     && $results->{_indices}{myapp3},
     'Delete from both indices';

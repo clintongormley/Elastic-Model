@@ -101,29 +101,12 @@ sub uid {
         dynamic    => "strict",
         path       => 'full',
         properties => {
-            id => {
-                index                        => "not_analyzed",
-                omit_norms                   => 1,
-                omit_term_freq_and_positions => 1,
-                type                         => "string",
-            },
-            index => {
-                index                        => "not_analyzed",
-                omit_norms                   => 1,
-                omit_term_freq_and_positions => 1,
-                type                         => "string",
-            },
-            routing => {
-                index                        => "no",
-                omit_norms                   => 1,
-                omit_term_freq_and_positions => 1,
-                type                         => "string",
-            },
-            type => {
-                index                        => "not_analyzed",
-                omit_norms                   => 1,
-                omit_term_freq_and_positions => 1,
-                type                         => "string",
+            id      => { index => "not_analyzed", type => "string" },
+            index   => { index => "not_analyzed", type => "string" },
+            routing => { index => "no",           type => "string" },
+            type    => {
+                index => "not_analyzed",
+                type  => "string",
             },
         },
     };

@@ -7,10 +7,8 @@ our $test_class = 'TypeTest::ES';
 
 our @mapping = (
     'keyword' => {
-        type                         => 'string',
-        index                        => 'not_analyzed',
-        omit_norms                   => 1,
-        omit_term_freq_and_positions => 1,
+        type  => 'string',
+        index => 'not_analyzed'
     },
     'binary'    => { type => 'binary' },
     'geopoint'  => { type => 'geo_point' },

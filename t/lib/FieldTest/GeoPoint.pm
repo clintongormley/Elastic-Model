@@ -33,9 +33,9 @@ has 'multi_attr' => (
 #===================================
 has 'bad_opt_attr' => (
 #===================================
-    is         => 'ro',
-    isa        => GeoPoint,
-    omit_norms => 1
+    is       => 'ro',
+    isa      => GeoPoint,
+    analyzer => 'standard',
 );
 
 #===================================
@@ -43,7 +43,7 @@ has 'bad_multi_attr' => (
 #===================================
     is    => 'ro',
     isa   => GeoPoint,
-    multi => { one => { omit_norms => 1 } }
+    multi => { one => { analyzer => 'standard' } }
 );
 
 1;

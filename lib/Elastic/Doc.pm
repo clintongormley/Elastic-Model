@@ -170,7 +170,6 @@ attr/field-specific) in the type mapping. For instance:
 
     has_mapping {
         _source => {
-            compress    => 1,
             includes    => ['path1.*','path2.*'],
             excludes    => ['path3.*']
         },

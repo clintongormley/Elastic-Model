@@ -2,7 +2,7 @@ package Elastic::Model::Types;
 
 use strict;
 use warnings;
-use Search::Elasticsearch::Compat();
+use Search::Elasticsearch();
 
 use MooseX::Types::Moose qw(HashRef ArrayRef Str Bool Num Int Defined Any);
 use MooseX::Types::Structured qw (Dict Optional Map);
@@ -75,17 +75,17 @@ while ( my $type = shift @enums ) {
 }
 
 #===================================
-class_type ES, { class => 'Search::Elasticsearch::Client::Compat' };
+class_type ES, { class => 'Search::Elasticsearch::Client::Direct' };
 #===================================
-coerce ES, from HashRef, via { Search::Elasticsearch::Compat->new($_) };
+coerce ES, from HashRef, via { Search::Elasticsearch->new($_) };
 coerce ES, from Str, via {
     s/^:/127.0.0.1:/;
-    Search::Elasticsearch::Compat->new( servers => $_ );
+    Search::Elasticsearch->new( nodes => $_ );
 };
 coerce ES, from ArrayRef, via {
-    my @servers = @$_;
-    s/^:/127.0.0.1:/ for @servers;
-    Search::Elasticsearch::Compat->new( servers => \@servers );
+    my @nodes = @$_;
+    s/^:/127.0.0.1:/ for @nodes;
+    Search::Elasticsearch->new( servers => \@nodes );
 };
 
 #===================================
@@ -96,23 +96,21 @@ coerce StoreMapping, from Any, via { $_ ? 'yes' : 'no' };
 #===================================
 subtype MultiField, as Dict [
 #===================================
-    type                         => Optional [CoreFieldType],
-    index                        => Optional [IndexMapping],
-    index_name                   => Optional [Str],
-    boost                        => Optional [Num],
-    null_value                   => Optional [Str],
-    analyzer                     => Optional [Str],
-    index_analyzer               => Optional [Str],
-    search_analyzer              => Optional [Str],
-    search_quote_analyzer        => Optional [Str],
-    omit_norms                   => Optional [Bool],
-    omit_term_freq_and_positions => Optional [Bool],
-    term_vector                  => Optional [TermVectorMapping],
-    geohash                      => Optional [Bool],
-    lat_lon                      => Optional [Bool],
-    geohash_precision            => Optional [Int],
-    precision_step               => Optional [Int],
-    format                       => Optional [Str],
+    type                  => Optional [CoreFieldType],
+    index                 => Optional [IndexMapping],
+    index_name            => Optional [Str],
+    boost                 => Optional [Num],
+    null_value            => Optional [Str],
+    analyzer              => Optional [Str],
+    index_analyzer        => Optional [Str],
+    search_analyzer       => Optional [Str],
+    search_quote_analyzer => Optional [Str],
+    term_vector           => Optional [TermVectorMapping],
+    geohash               => Optional [Bool],
+    lat_lon               => Optional [Bool],
+    geohash_precision     => Optional [Int],
+    precision_step        => Optional [Int],
+    format                => Optional [Str],
 
 ];
 

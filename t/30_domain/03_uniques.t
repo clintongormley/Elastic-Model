@@ -26,7 +26,7 @@ is
     'myapp1',
     'Unique index set on model';
 
-ok $es->index_exists( index => 'myapp1' ), 'Unique index created';
+ok $es->indices->exists( index => 'myapp1' ), 'Unique index created';
 
 # Create doc
 isa_ok my $user = $domain->new_doc(
@@ -253,9 +253,10 @@ sub unique_keys_exist {
 #===================================
     my (%keys) = @_;
     my @docs = map { { _type => $_, _id => $keys{$_} } } keys %keys;
-    my $exists = $es->mget( index => $uniq, docs => \@docs );
+    my $exists
+        = $es->mget( index => $uniq, body => { docs => \@docs } )->{docs};
     for (@$exists) {
-        next unless $_->{exists};
+        next unless $_->{found};
         delete $keys{ $_->{_type} };
     }
     return %keys;

@@ -4,7 +4,7 @@ use Moose;
 
 use Carp;
 use Elastic::Model::Types qw(UID);
-use MooseX::Types::Moose qw(HashRef Maybe Num);
+use MooseX::Types::Moose qw(HashRef Maybe Num Bool);
 
 use namespace::autoclean;
 
@@ -12,6 +12,14 @@ use namespace::autoclean;
 has 'result' => (
 #===================================
     isa      => HashRef,
+    is       => 'ro',
+    required => 1,
+);
+
+#===================================
+has 'is_partial' => (
+#===================================
+    isa      => Bool,
     is       => 'ro',
     required => 1,
 );
@@ -86,11 +94,18 @@ no Moose;
 
 #===================================
 sub _build_uid    { Elastic::Model::UID->new_from_store( shift()->result ) }
-sub _build_source { shift->result->{_source} }
 sub _build_score  { shift->result->{_score} }
 sub _build_fields { shift->result->{fields} || {} }
 sub _build_highlights { shift->result->{highlight} || {} }
 #===================================
+
+#===================================
+sub _build_source {
+#===================================
+    my $self = shift;
+    return undef if $self->is_partial;
+    return $self->result->{_source};
+}
 
 #===================================
 sub _build_object {
@@ -108,7 +123,7 @@ sub _build_partial {
     my $self = shift;
     $self->result->{_partial} ||= $self->model->new_partial_doc(
         uid            => Elastic::Model::UID->new_partial( $self->result ),
-        partial_source => $self->field('_partial_doc')
+        partial_source => $self->result->{_source}
     );
 }
 

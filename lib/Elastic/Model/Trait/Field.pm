@@ -124,20 +124,6 @@ has 'search_quote_analyzer' => (
 );
 
 #===================================
-has 'omit_norms' => (
-#===================================
-    isa => Bool,
-    is  => 'rw'
-);
-
-#===================================
-has 'omit_term_freq_and_positions' => (
-#===================================
-    isa => Bool,
-    is  => 'rw'
-);
-
-#===================================
 has 'term_vector' => (
 #===================================
     isa => TermVectorMapping,
@@ -303,10 +289,6 @@ keywords.
 =head2 L<search_analyzer|Elastic::Manual::Attributes/search_analyzer>
 
 =head2 L<search_quote_analyzer|Elastic::Manual::Attributes/search_quote_analyzer>
-
-=head2 L<omit_norms|Elastic::Manual::Attributes/omit_norms>
-
-=head2 L<omit_term_freq_and_positions|Elastic::Manual::Attributes/omit_term_freq_and_positions>
 
 =head2 L<term_vector|Elastic::Manual::Attributes/term_vector>
 

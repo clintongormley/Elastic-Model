@@ -131,8 +131,11 @@ test_view(
     { query => { match => { foo => 'baz' } } }
 );
 
-test_view( 'Set-queryb-str', $view->queryb('foo'),
-    { query => { match => { _all => 'foo' } } } );
+test_view(
+    'Set-queryb-str',
+    $view->queryb('foo'),
+    { query => { match => { _all => 'foo' } } }
+);
 
 test_view(
     'Set-queryb-array',
@@ -148,24 +151,20 @@ test_view(
     }
 );
 
-test_view(
-    'Set-queryb-empty-list',
-    $view->queryb(),
-    { query => { match_all => {} } }
-);
+test_view( 'Set-queryb-empty-list', $view->queryb(),
+    { query => { match_all => {} } } );
 
 test_view(
     'Set-queryb-empty-hashref',
-    $view->queryb({}),
+    $view->queryb( {} ),
     { query => { match_all => {} } }
 );
 
 test_view(
     'Set-queryb-empty-arrayref',
-    $view->queryb([]),
+    $view->queryb( [] ),
     { query => { match_all => {} } }
 );
-
 
 ## filter ##
 test_view(
@@ -269,19 +268,19 @@ test_view(
 test_view(
     'New-post_filterb-hash',
     $domain->view( post_filterb => { foo => 'bar' } ),
-    { filter => { term => { foo => 'bar' } } }
+    { post_filter => { term => { foo => 'bar' } } }
 );
 
 test_view(
     'New-post_filterb-str',
     $domain->view( post_filterb => 'foo' ),
-    { filter => { term => { _all => 'foo' } } }
+    { post_filter => { term => { _all => 'foo' } } }
 );
 
 test_view(
     'New-post_filterb-array',
     $domain->view( post_filterb => [ 'foo', 'bar', 'foo', 'baz' ] ),
-    {   filter => {
+    {   post_filter => {
             or => [
                 { term => { foo => "bar" } },
                 { term => { foo => "baz" } },
@@ -293,25 +292,25 @@ test_view(
 test_view(
     'Set-post_filterb-hash',
     $view->post_filterb( { foo => 'bar' } ),
-    { filter => { term => { foo => 'bar' } } }
+    { post_filter => { term => { foo => 'bar' } } }
 );
 
 test_view(
     'Set-post_filterb-list',
     $view->post_filterb( foo => 'bar', foo => 'baz' ),
-    { filter => { term => { foo => 'baz' } } }
+    { post_filter => { term => { foo => 'baz' } } }
 );
 
 test_view(
     'Set-post_filterb-str',
     $view->post_filterb('foo'),
-    { filter => { term => { _all => 'foo' } } }
+    { post_filter => { term => { _all => 'foo' } } }
 );
 
 test_view(
     'Set-post_filterb-array',
     $view->post_filterb( [ foo => 'bar', foo => 'baz' ] ),
-    {   filter => {
+    {   post_filter => {
             or => [
                 { term => { foo => "bar" } },
                 { term => { foo => "baz" } },
@@ -330,7 +329,7 @@ test_view(
                 filter => { term  => { bar => 1 } }
             }
         },
-        filter => { term => { baz => 1 } }
+        post_filter => { term => { baz => 1 } }
     }
 );
 
@@ -373,29 +372,32 @@ test_view(
 test_view(
     'New-fields-array',
     $domain->view( fields => [ 'foo', 'bar' ] ),
-    { fields => [ "_parent", "_routing", 'foo', 'bar' ] }
+    { fields => [ "_parent", "_routing", 'foo', 'bar' ], _source => 0 }
 );
 
 test_view(
     'New-fields-str',
     $domain->view( fields => 'foo' ),
-    { fields => [ "_parent", "_routing", 'foo' ] }
+    { fields => [ "_parent", "_routing", 'foo' ], _source => 0 }
 );
 
 test_view(
     'Set-fields-array',
     $view->fields( [ 'foo', 'bar' ] ),
-    { fields => [ "_parent", "_routing", 'foo', 'bar' ] }
+    { fields => [ "_parent", "_routing", 'foo', 'bar' ], _source => 0 }
 );
 
 test_view(
     'Set-fields-list',
     $view->fields( 'foo', 'baz' ),
-    { fields => [ "_parent", "_routing", 'foo', 'baz' ] }
+    { fields => [ "_parent", "_routing", 'foo', 'baz' ], _source => 0 }
 );
 
-test_view( 'Set-fields-str', $view->fields('foo'),
-    { fields => [ "_parent", "_routing", 'foo' ] } );
+test_view(
+    'Set-fields-str',
+    $view->fields('foo'),
+    { fields => [ "_parent", "_routing", 'foo' ], _source => 0 }
+);
 
 ## from ##
 test_view( 'New-from', $domain->view( from => 20 ), { from => 20 } );
@@ -630,7 +632,7 @@ test_view(
 test_view(
     'Include paths',
     $view->include_paths('foo.*'),
-    {   partial_fields => { _partial_doc => { include => ['foo.*'] } },
+    {   _source => { include => ['foo.*'] },
         fields => [ "_parent", "_routing" ],
     }
 );
@@ -638,7 +640,7 @@ test_view(
 test_view(
     'Exclude paths',
     $view->exclude_paths('foo.*'),
-    {   partial_fields => { _partial_doc => { exclude => ['foo.*'] } },
+    {   _source => { exclude => ['foo.*'] },
         fields => [ "_parent", "_routing" ],
     }
 );
@@ -647,11 +649,9 @@ test_view(
     'Include and exclude paths',
     $view->include_paths( 'foo.*', 'fuz.*' )
         ->exclude_paths( 'bar.*', 'baz.*' ),
-    {   partial_fields => {
-            _partial_doc => {
-                include => [ 'foo.*', 'fuz.*' ],
-                exclude => [ 'bar.*', 'baz.*' ]
-            }
+    {   _source => {
+            include => [ 'foo.*', 'fuz.*' ],
+            exclude => [ 'bar.*', 'baz.*' ]
         },
         fields => [ "_parent", "_routing" ],
     }
@@ -739,13 +739,14 @@ sub test_view {
 #===================================
     my ( $name, $view, $results ) = @_;
     $results = {
-        fields => [ "_parent", "_routing", "_source" ],
+        fields => [ "_parent", "_routing" ],
         from   => 0,
         index  => ["myapp"],
         query   => { match_all => {} },
         size    => 10,
         type    => [],
         version => 1,
+        _source => 1,
         %$results
     };
 

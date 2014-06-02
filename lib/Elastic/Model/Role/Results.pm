@@ -5,7 +5,7 @@ use Moose::Role;
 
 with 'Elastic::Model::Role::Iterator';
 
-use MooseX::Types::Moose qw(HashRef Int Num CodeRef);
+use MooseX::Types::Moose qw(HashRef Int Num CodeRef Bool);
 use namespace::autoclean;
 
 #===================================
@@ -40,6 +40,15 @@ has 'facets' => (
     is      => 'ro',
     writer  => '_set_facets',
     handles => { facet => 'get' }
+);
+
+#===================================
+has 'is_partial' => (
+#===================================
+    isa     => Bool,
+    is      => 'ro',
+    lazy    => 1,
+    builder => '_build_is_partial',
 );
 
 #===================================
@@ -99,11 +108,26 @@ has '_as_partials' => (
 no Moose;
 
 #===================================
+sub _build_is_partial {
+#===================================
+    my $self   = shift;
+    my $source = $self->search->{_source};
+    return !!( !$source || ref $source );
+}
+
+#===================================
 sub _as_result_builder {
 #===================================
     my $self         = shift;
     my $result_class = $self->model->result_class;
-    sub { $_[0] && $result_class->new( result => $_[0] ) }
+    my $is_partial   = $self->is_partial;
+    sub {
+        $_[0]
+            && $result_class->new(
+            result     => $_[0],
+            is_partial => $is_partial
+            );
+        }
 }
 
 #===================================
@@ -111,21 +135,25 @@ sub _as_results_builder {
 #===================================
     my $self         = shift;
     my $result_class = $self->model->result_class;
+    my $is_partial   = $self->is_partial;
     sub {
-        map { $result_class->new( result => $_ ) } @_;
+        map { $result_class->new( result => $_, is_partial => $is_partial ) }
+            @_;
     };
 }
 
 #===================================
 sub _as_object_builder {
 #===================================
-    my $self  = shift;
-    my $model = $self->model;
+    my $self       = shift;
+    my $model      = $self->model;
+    my $is_partial = $self->is_partial;
     sub {
         my $raw = shift or return;
         $raw->{_object} ||= do {
             my $uid = Elastic::Model::UID->new_from_store($raw);
-            $model->get_doc( uid => $uid, source => $raw->{_source} );
+            my $source = $is_partial ? undef : $raw->{_source};
+            $model->get_doc( uid => $uid, source => $source );
         };
     };
 }
@@ -133,13 +161,15 @@ sub _as_object_builder {
 #===================================
 sub _as_objects_builder {
 #===================================
-    my $self = shift;
-    my $m    = $self->model;
+    my $self       = shift;
+    my $m          = $self->model;
+    my $is_partial = $self->is_partial;
     sub {
         map {
             $_->{_object} ||= do {
                 my $uid = Elastic::Model::UID->new_from_store($_);
-                $m->get_doc( uid => $uid, source => $_->{_source} );
+                my $source = $is_partial ? undef : $_->{_source};
+                $m->get_doc( uid => $uid, source => $source );
             };
         } @_;
     };
@@ -156,7 +186,7 @@ sub _as_partial_builder {
             my $uid = Elastic::Model::UID->new_partial($raw);
             $model->new_partial_doc(
                 uid            => $uid,
-                partial_source => $raw->{fields}->{_partial_doc}
+                partial_source => $raw->{_source}
             );
             }
 
@@ -174,7 +204,7 @@ sub _as_partials_builder {
                 my $uid = Elastic::Model::UID->new_partial($_);
                 $m->new_partial_doc(
                     uid            => $uid,
-                    partial_source => $_->{fields}->{_partial_doc}
+                    partial_source => $_->{_source}
                 );
                 }
         } @_;

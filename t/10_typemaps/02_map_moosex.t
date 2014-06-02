@@ -30,10 +30,8 @@ our @mapping    = (
     'array_ref_coderef' => { type => 'object',  enabled    => 0 },
     'subtype_str'       => { type => 'string' },
     'enum'              => {
-        type                         => 'string',
-        index                        => 'not_analyzed',
-        omit_norms                   => 1,
-        omit_term_freq_and_positions => 1
+        type  => 'string',
+        index => 'not_analyzed'
     },
     'undef'      => { type => 'string', index => 'not_analyzed' },
     'regexp_ref' => { type => 'string', index => 'no' },

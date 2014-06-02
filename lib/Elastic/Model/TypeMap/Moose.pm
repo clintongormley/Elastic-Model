@@ -99,10 +99,8 @@ has_type 'Moose::Meta::TypeConstraint::Enum',
     deflate_via {'$val'},    #
     inflate_via {'$val'},
     map_via {
-    type                         => 'string',
-    index                        => 'not_analyzed',
-    omit_norms                   => 1,
-    omit_term_freq_and_positions => 1
+    type  => 'string',
+    index => 'not_analyzed',
     };
 
 #===================================
@@ -270,9 +268,7 @@ Values are passed through without inflation/deflation. Mapped as:
 
     {
         type                         => 'string',
-        index                        => 'not_analyzed',
-        omit_norms                   => 1,
-        omit_term_freq_and_positions => 1
+        index                        => 'not_analyzed'
     }
 
 =head2 Num

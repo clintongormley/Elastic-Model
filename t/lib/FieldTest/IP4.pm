@@ -37,10 +37,10 @@ has 'multi_attr' => (
 #===================================
 has 'bad_opt_attr' => (
 #===================================
-    is         => 'ro',
-    isa        => 'Str',
-    type       => 'ip',
-    omit_norms => 1
+    is       => 'ro',
+    isa      => 'Str',
+    type     => 'ip',
+    analyzer => 'standard',
 );
 
 #===================================
@@ -49,7 +49,7 @@ has 'bad_multi_attr' => (
     is    => 'ro',
     isa   => 'Str',
     type  => 'ip',
-    multi => { one => { omit_norms => 1 } }
+    multi => { one => { analyzer => 'standard' } }
 );
 
 1;

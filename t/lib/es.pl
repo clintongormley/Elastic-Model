@@ -3,7 +3,8 @@
 use strict;
 use warnings;
 use Test::More;
-use Search::Elasticsearch::Compat;
+use Search::Elasticsearch;
+use utf8;
 
 our $es;
 
@@ -13,19 +14,18 @@ my $trace
     :                      [ 'File', $ENV{TRACE} ];
 
 if ( $ENV{ES} ) {
-    $es = Search::Elasticsearch::Compat->new(
-        servers        => $ENV{ES},
-        trace_requests => $ENV{TRACE},
+    $es = Search::Elasticsearch->new(
+        nodes    => $ENV{ES},
+        trace_to => $trace,
     );
-    eval { $es->current_server_version; } or do {
+    eval { $es->ping } or do {
         diag $@;
         undef $es;
     };
 }
 
 if ($es) {
-    $es->delete_index( index => $_, ignore_missing => 1 )
-        for qw(myapp myapp1 myapp2 myapp3 myapp4 myapp5);
+    $es->indices->delete( index => 'myapp*', ignore => 404 );
     wait_for_es();
     return $es;
 }
@@ -36,8 +36,8 @@ exit;
 #===================================
 sub wait_for_es {
 #===================================
-    $es->cluster_health( wait_for_status => 'yellow' );
-    $es->refresh_index;
+    $es->cluster->health( wait_for_status => 'yellow' );
+    $es->indices->refresh;
     sleep $_[0] if $_[0];
 }
 

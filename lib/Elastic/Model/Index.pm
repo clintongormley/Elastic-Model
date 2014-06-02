@@ -70,20 +70,19 @@ sub reindex {
 
     my $source = $model->view->domain($domain)->size($size)->scan($scan);
     $model->store->reindex(
-        source       => $source,
-        _method_name => 'shift_element',
-        quiet        => !$verbose,
-        transform    => $updater,
-        bulk_size    => $bulk_size,
-        on_conflict  => $args{on_conflict},
-        on_error     => $args{on_error},
+        source      => sub { $source->shift_element },
+        verbose     => $verbose,
+        transform   => $updater,
+        bulk_size   => $bulk_size,
+        on_conflict => $args{on_conflict},
+        on_error    => $args{on_error},
     );
 
     return 1 unless $args{repoint_uids};
 
     $self->repoint_uids(
         uids        => \%uids,
-        quiet       => !$verbose,
+        verbose     => $verbose,
         exclude     => [ keys %map ],
         size        => $size,
         bulk_size   => $bulk_size,
@@ -98,7 +97,7 @@ sub repoint_uids {
 #===================================
     my ( $self, %args ) = @_;
 
-    my $verbose    = !$args{quiet};
+    my $verbose    = $args{verbose};
     my $scan       = $args{scan} || '2m';
     my $size       = $args{size} || 1000;
     my $bulk_size  = $args{bulk_size} || $size;
@@ -142,19 +141,16 @@ sub repoint_uids {
 
     my $updater = $self->doc_updater( $doc_updater, $uid_updater );
 
-    local $| = $verbose;
-
     for my $index ( keys %$uids ) {
         my $types = $uids->{$index};
         for my $type ( keys %$types ) {
             my @ids = keys %{ $types->{$type} };
 
-            printf( "Repointing %d UIDs from %s/%s ",
+            printf( "Repointing %d UIDs from %s/%s\n",
                 0 + @ids, $index, $type )
                 if $verbose;
 
             while (@ids) {
-                print "." if $verbose;
 
                 my $clauses
                     = $self->_build_uid_clauses( \@uid_attrs, $index, $type,
@@ -162,13 +158,14 @@ sub repoint_uids {
 
                 my $source = $view->filter( or => $clauses )->scan($scan);
                 $model->store->reindex(
-                    source       => $source,
-                    _method_name => 'shift_element',
-                    bulk_size    => $bulk_size,
-                    quiet        => 1,
-                    transform    => $updater,
-                    on_conflict  => $args{on_conflict},
-                    on_error     => $args{on_error},
+                    source => sub {
+                        $source->shift_element;
+                    },
+                    bulk_size   => $bulk_size,
+                    quiet       => 1,
+                    transform   => $updater,
+                    on_conflict => $args{on_conflict},
+                    on_error    => $args{on_error},
                 );
             }
             print "\n" if $verbose;
@@ -187,7 +184,7 @@ sub _uid_attrs_for_indices {
     my $mapping = $self->model->store->get_mapping( index => \@indices );
     my %attrs   = map { $_ => 1 }
         map { _find_uid_attrs( $_->{properties} ) }
-        map { values %$_ } values %$mapping;
+        map { values %{ $_->{mappings} } } values %$mapping;
     return keys %attrs;
 
 }

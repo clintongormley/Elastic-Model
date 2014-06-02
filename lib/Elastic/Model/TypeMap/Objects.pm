@@ -191,8 +191,7 @@ the L<Elastic::Model::Trait::Field> trait:
     has 'foo' => (
         is              => 'rw,
         isa             => 'Str',
-        trait           => ['Elastic::Model::Trait::Field'],
-        omit_norms      => 1
+        trait           => ['Elastic::Model::Trait::Field']
     );
 
 

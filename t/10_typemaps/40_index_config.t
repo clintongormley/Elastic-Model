@@ -27,9 +27,8 @@ cmp_deeply $good->index_config(
     index    => "good",
     mappings => {
         all_opts => {
-            _all       => { enabled  => 0 },
-            _source    => { compress => 1 },
-            _timestamp => { enabled  => 1, path => "timestamp" },
+            _all       => { enabled => 0 },
+            _timestamp => { enabled => 1, path => "timestamp" },
             dynamic           => "strict",
             numeric_detection => 1,
             properties        => {
@@ -41,7 +40,6 @@ cmp_deeply $good->index_config(
                 },
                 timestamp => { type => "date" },
             },
-            type => "object",
         },
     },
     settings => {
@@ -73,16 +71,14 @@ cmp_deeply $good->index_config( types => ['no_analyzer'] ),
     index    => "good",
     mappings => {
         no_analyzer => {
-            _all       => { enabled  => 0 },
-            _source    => { compress => 1 },
-            _timestamp => { enabled  => 1, path => "timestamp" },
+            _all       => { enabled => 0 },
+            _timestamp => { enabled => 1, path => "timestamp" },
             dynamic           => "strict",
             numeric_detection => 1,
             properties        => {
                 string    => { type => "string", },
                 timestamp => { type => "date" },
             },
-            type => "object",
         },
     },
     settings => {},
@@ -94,9 +90,8 @@ cmp_deeply $good->index_config(),
     index    => "good",
     mappings => {
         all_opts => {
-            _all       => { enabled  => 0 },
-            _source    => { compress => 1 },
-            _timestamp => { enabled  => 1, path => "timestamp" },
+            _all       => { enabled => 0 },
+            _timestamp => { enabled => 1, path => "timestamp" },
             dynamic           => "strict",
             numeric_detection => 1,
             properties        => {
@@ -107,20 +102,17 @@ cmp_deeply $good->index_config(),
                     type                  => "string",
                 },
                 timestamp => { type => "date" },
-            },
-            type => "object",
+            }
         },
         no_analyzer => {
-            _all       => { enabled  => 0 },
-            _source    => { compress => 1 },
-            _timestamp => { enabled  => 1, path => "timestamp" },
+            _all       => { enabled => 0 },
+            _timestamp => { enabled => 1, path => "timestamp" },
             dynamic           => "strict",
             numeric_detection => 1,
             properties        => {
                 string    => { type => "string" },
                 timestamp => { type => "date" }
-            },
-            type => "object",
+            }
         },
     },
     settings => {

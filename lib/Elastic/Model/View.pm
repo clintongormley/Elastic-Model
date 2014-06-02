@@ -69,8 +69,7 @@ has 'fields' => (
     isa     => ArrayRefOfStr,
     coerce  => 1,
     is      => 'rw',
-    lazy    => 1,
-    builder => '_build_fields',
+    default => sub { [] },
 );
 
 #===================================
@@ -360,14 +359,6 @@ sub _check_no_fields {
         if $val->{fields};
 }
 
-#===================================
-sub _build_fields {
-#===================================
-    my $self = shift;
-    return $self->_has_include_paths
-        || $self->_has_exclude_paths ? [] : ['_source'];
-}
-
 no Moose;
 
 #===================================
@@ -456,38 +447,38 @@ sub _build_search {
 #===================================
     my $self = shift;
 
-    my ( $highlight, $fields );
-    if ( $fields = $self->highlight and keys %$fields ) {
-        $highlight = { %{ $self->highlighting || {} }, fields => $fields };
+    my ( $highlight, $hfields );
+    if ( $hfields = $self->highlight and keys %$hfields ) {
+        $highlight = { %{ $self->highlighting || {} }, fields => $hfields };
     }
 
-    my %partial;
+    my $fields = $self->fields;
 
-    $partial{include} = $self->include_paths
+    my $source;
+    $source->{include} = $self->include_paths
         if $self->_has_include_paths;
-    $partial{exclude} = $self->exclude_paths
+    $source->{exclude} = $self->exclude_paths
         if $self->_has_exclude_paths;
+    $source ||= @$fields ? 0 : 1;
 
-    my %args = (
+    my %args = _strip_undef(
         (   map { $_ => $self->$_ }
                 qw(
                 type sort from size facets
-                min_score preference routing stats
+                min_score post_filter preference routing stats
                 script_fields timeout track_scores explain
                 )
         ),
         index         => $self->domain,
-        filter        => $self->post_filter,
         query         => $self->_build_query,
         highlight     => $highlight,
         indices_boost => $self->index_boosts,
         @_,
         version => 1,
-        fields  => [ '_parent', '_routing', @{ $self->fields } ],
-        ( partial_fields => { _partial_doc => \%partial } ) x !!%partial
+        fields  => [ '_parent', '_routing', @$fields ],
+        _source => $source,
     );
-
-    return { map { $_ => $args{$_} } grep { defined $args{$_} } keys %args };
+    return \%args;
 }
 
 #===================================
@@ -508,15 +499,21 @@ sub _build_query {
 sub _build_delete {
 #===================================
     my $self = shift;
-    my %args = (
+    my %args = _strip_undef(
         index => $self->domain,
         ( map { $_ => $self->$_ } qw(type routing consistency replication) ),
+        @_,
         query => $self->_build_query,
-        @_
     );
-    return { map { $_ => $args{$_} } grep { defined $args{$_} } keys %args };
+    return \%args;
 }
 
+#===================================
+sub _strip_undef {
+#===================================
+    my %args = @_;
+    return map { $_ => $args{$_} } grep { defined $args{$_} } keys %args;
+}
 1;
 
 __END__

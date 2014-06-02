@@ -12,21 +12,19 @@ has 'basic_attr' => (
 #===================================
 has 'options_attr' => (
 #===================================
-    is                           => 'ro',
-    type                         => 'string',
-    index                        => 'not_analyzed',
-    index_name                   => 'foo',
-    store                        => 1,
-    term_vector                  => 'with_positions_offsets',
-    boost                        => 2,
-    null_value                   => 'nothing',
-    omit_norms                   => 1,
-    omit_term_freq_and_positions => 1,
-    index_analyzer               => 'my_index_analyzer',
-    search_analyzer              => 'my_search_analyzer',
-    analyzer                     => 'my_analyzer',
-    search_quote_analyzer        => 'my_quoted_analyzer',
-    include_in_all               => 0
+    is                    => 'ro',
+    type                  => 'string',
+    index                 => 'not_analyzed',
+    index_name            => 'foo',
+    store                 => 1,
+    term_vector           => 'with_positions_offsets',
+    boost                 => 2,
+    null_value            => 'nothing',
+    index_analyzer        => 'my_index_analyzer',
+    search_analyzer       => 'my_search_analyzer',
+    analyzer              => 'my_analyzer',
+    search_quote_analyzer => 'my_quoted_analyzer',
+    include_in_all        => 0
 );
 
 #===================================

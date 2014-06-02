@@ -12,18 +12,6 @@ use lib 't/lib';
 our $es;
 do 'es.pl';
 
-my $orig = Search::Elasticsearch::Client::Compat->can('reindex');
-my $callback = sub {1};
-
-{
-    no warnings( 'redefine', 'once' );
-    *Search::Elasticsearch::Client::Compat::reindex = sub {
-        my $self = shift;
-        $callback->(@_)
-            and $self->$orig(@_);
-    };
-}
-
 use_ok 'MyApp' || print 'Bail out';
 
 my $model = new_ok( 'MyApp', [ es => $es ], 'Model' );
@@ -43,15 +31,7 @@ compare_results(
     { index => 'myapp4' }
 );
 
-# Params
-$callback = sub {
-    my %args = @_;
-    is $args{quiet}                  => 1,    ' - quiet set';
-    is $args{source}{search}{scroll} => '1m', ' - scan set';
-    is $args{source}{search}{size}   => 10,   ' - size set';
-    is $args{bulk_size}, 50, ' - bulk size set';
-    return 0;
-};
+ok $new->delete;
 
 ok $new->reindex(
     'myapp',
@@ -69,23 +49,27 @@ sub compare_results {
 #===================================
     my ( $desc, $q1, $q2 ) = @_;
 
-    $model->es->refresh_index();
+    $model->es->indices->refresh();
 
     my @r1 = map { delete $_->{_index}; $_ } @{
         $model->es->search(
-            size   => 300,
-            query  => { match_all => {} },
-            'sort' => ['timestamp'],
-            %$q1
+            %$q1,
+            body => {
+                size   => 300,
+                query  => { match_all => {} },
+                'sort' => ['timestamp'],
+            },
         )->{hits}{hits}
     };
 
     my @r2 = map { delete $_->{_index}; $_ } @{
         $model->es->search(
-            size   => 300,
-            query  => { match_all => {} },
-            'sort' => ['timestamp'],
-            %$q2
+            %$q2,
+            body => {
+                size   => 300,
+                query  => { match_all => {} },
+                'sort' => ['timestamp'],
+            },
         )->{hits}{hits}
     };
 

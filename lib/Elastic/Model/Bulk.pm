@@ -3,6 +3,10 @@ package Elastic::Model::Bulk;
 use Moose;
 use namespace::autoclean;
 use Data::Dumper;
+our $Conflict = qr/
+    DocumentAlreadyExistsException
+  | :.version.conflict,.current.\[(\d+)\]
+  /x;
 
 use Carp;
 
@@ -36,10 +40,7 @@ has '_actions' => (
     traits  => ['Array'],
     writer  => '_set_actions',
     default => sub { [] },
-    handles => {
-        _push_action => 'push',
-        count        => 'count',
-    }
+    handles => { _push_action => 'push' }
 );
 
 #===================================
@@ -50,7 +51,10 @@ has '_docs' => (
     traits  => ['Array'],
     writer  => '_set_docs',
     default => sub { [] },
-    handles => { _push_doc => 'push', }
+    handles => {
+        _push_doc => 'push',
+        count     => 'count',
+    },
 );
 
 no Moose;
@@ -87,11 +91,16 @@ sub save {
         = ( $uid->from_store or $uid->id and defined $version )
         ? 'index'
         : 'create';
+
     %args = ( %args, %{ $uid->write_params } );
     $args{version} = $version
         if defined $version;
 
-    $self->_push_action( { $action => { %args, data => $data } } );
+    for ( keys %args ) {
+        $args{"_$_"} = delete $args{$_};
+    }
+
+    $self->_push_action( { $action => {%args} }, $data );
     $self->_push_doc($doc);
     $self->commit if $self->count >= $self->size;
     return;
@@ -117,21 +126,39 @@ sub commit {
 
     $self->clear;
 
-    my %args = ( actions => $actions );
-    $args{on_conflict} = sub { $self->_on_conflict( $docs, @_ ) }
-        if $on_conflict;
-    $args{on_error} = sub { $self->_on_error( $docs, @_ ) }
-        if $on_error;
-
-    my $response = $self->model->store->bulk(%args);
-    my $results  = $response->{results};
+    my $response = $self->model->store->bulk( body => $actions );
+    my $results  = $response->{items};
     my $model    = $self->model;
     my $scope    = $model->current_scope;
 
-    for my $i ( 0 .. @$docs - 1 ) {
-        my ( undef, $result ) = %{ $results->[$i] };
-        next if $result->{error};
-        my $doc = $docs->[$i];
+    my @unhandled;
+
+    my $i = 0;
+
+    for my $item (@$results) {
+        my ( $action, $result ) = %$item;
+
+        my $doc = $docs->[ $i++ ];
+
+        if ( my $error = $result->{error} ) {
+            if ( $on_conflict and $error =~ /$Conflict/ ) {
+                my $uid
+                    = $1
+                    ? Elastic::Model::UID->new( %{ $doc->uid->read_params },
+                    version => $1 )
+                    : $doc->uid->clone;
+                my $new = $self->model->get_doc( uid => $uid );
+                $on_conflict->( $doc, $new );
+            }
+            elsif ($on_error) {
+                $on_error->( $doc, $error );
+            }
+            else {
+                push @unhandled, $result;
+            }
+            next;
+        }
+
         my $uid = $doc->uid;
         $uid->update_from_store($result);
         $doc->_set_source( $result->{data} );
@@ -141,50 +168,16 @@ sub commit {
         }
     }
 
-    if ( my $unhandled = $response->{errors} ) {
+    if (@unhandled) {
         local $Data::Dumper::Terse  = 1;
         local $Data::Dumper::Indent = 1;
 
-        my @errors = splice @$unhandled, 0, 2;
+        my @errors = splice @unhandled, 0, 2;
         die "Uncaught errors while commiting Bulk:"
             . Dumper( \@errors )
-            . ( @$unhandled ? "\nand " . ( 0 + @$unhandled ) . " more" : '' );
+            . ( @unhandled ? "\nand " . ( 0 + @unhandled ) . " more" : '' );
     }
     return 1;
-
-}
-
-#===================================
-sub _on_conflict {
-#===================================
-    my ( $self, $docs, $action, $data, $raw, $i ) = @_;
-    my $original = $docs->[$i];
-
-    my $uid;
-    if ( $raw =~ /: version conflict, current \[(\d+)\]/ ) {
-        $uid = Elastic::Model::UID->new(
-            %{ $original->uid->read_params },
-            version    => $1,
-            from_store => 1
-        );
-    }
-    else {
-        $uid = $original->uid->clone;
-    }
-
-    my $new = $self->model->get_doc( uid => $uid );
-    $self->on_conflict->( $original, $new );
-    return;
-
-}
-
-#===================================
-sub _on_error {
-#===================================
-    my ( $self, $docs, $action, $data, $error, $i ) = @_;
-    my $original = $docs->[$i];
-    $self->on_error->( $original, $error );
-    return;
 
 }
 

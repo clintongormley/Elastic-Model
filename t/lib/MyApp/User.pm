@@ -7,9 +7,10 @@ has 'name' => (
 #===================================
     is    => 'rw',
     isa   => 'Str',
+    store => 1,
     multi => {
         ngrams    => { analyzer => 'edge_ngrams' },
-        untouched => { index    => 'not_analyzed' }
+        untouched => { index    => 'not_analyzed' },
     }
 );
 

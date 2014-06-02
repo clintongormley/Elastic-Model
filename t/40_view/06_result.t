@@ -70,8 +70,7 @@ like $result->explain, qr/No explanation/, 'Result->explain';
 ## Advanced result ##
 isa_ok $result = $view->queryb( { name => 'Aardwolf' } )    #
     ->filterb( -ids => 1 )                                  #
-    ->fields('timestamp')                                   #
-    ->script_fields( test => { script => " return 'xx'" } ) #
+    ->fields('name')                                        #
     ->highlight('name')                                     #
     ->explain(1)                                            #
     ->first(), 'Elastic::Model::Result', 'AdvResults';
@@ -99,7 +98,7 @@ cmp_deeply $object->uid, $uid, 'AdvObject->uid';
 
 cmp_deeply
     [ keys %{ $result->fields } ],
-    bag( 'test', 'timestamp' ),
+    bag('name'),
     'AdvResult->fields';
 cmp_deeply
     [ keys %{ $result->highlights } ],
@@ -110,11 +109,7 @@ cmp_deeply
     [],
     'AdvResult->highlight(foo)';
 
-is $result->field('test'), 'xx', 'AdvResult->field(test)';
-is
-    sprintf( "%.3f", $result->field('timestamp') / 1000 ),
-    $object->timestamp,
-    'AdvResult->field(timestamp)';
+is $result->field('name')->[0], $object->name, 'AdvResult->field(name)';
 is
     join( '', $result->highlight('name') ),
     '<em>Aardwolf</em>',

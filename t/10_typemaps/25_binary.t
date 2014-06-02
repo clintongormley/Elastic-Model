@@ -14,7 +14,7 @@ our @mapping = (
         type       => "binary",
     },
     multi   => qr/doesn't understand 'multi'/,
-    bad_opt => qr/doesn't understand 'omit_norms'/,
+    bad_opt => qr/doesn't understand 'analyzer'/,
 
 );
 

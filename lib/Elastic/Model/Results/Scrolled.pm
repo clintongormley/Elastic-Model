@@ -10,7 +10,7 @@ use namespace::autoclean;
 #===================================
 has '_scroll' => (
 #===================================
-    isa    => 'Search::Elasticsearch::Compat::ScrolledSearch',
+    isa    => 'Search::Elasticsearch::Scroll',
     is     => 'ro',
     writer => '_set_scroll',
 );
@@ -69,7 +69,7 @@ sub _fetch_until {
     my $i        = shift || 0;
     my $scroll   = $self->_scroll;
     my $elements = $self->elements;
-    while ( $i >= @$elements and not $scroll->eof ) {
+    while ( $i >= @$elements and not $scroll->is_finished ) {
         push @$elements, $scroll->drain_buffer;
         $scroll->refill_buffer;
     }

@@ -35,9 +35,9 @@ has 'multi_attr' => (
 #===================================
 has 'bad_opt_attr' => (
 #===================================
-    is         => 'ro',
-    isa        => 'Int',
-    omit_norms => 1,
+    is       => 'ro',
+    isa      => 'Int',
+    analyzer => 'standard',
 );
 
 #===================================
@@ -45,7 +45,7 @@ has 'bad_multi_attr' => (
 #===================================
     is    => 'ro',
     isa   => 'Int',
-    multi => { one => { omit_term_freq_and_positions => 1 } }
+    multi => { one => { analyzer => 'standard' } }
 );
 
 1;

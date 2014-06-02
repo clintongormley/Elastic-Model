@@ -62,8 +62,8 @@ sub test_domain {
     }
 
     ## Mappings ##
-    isa_ok
-        my $mapping = $es->mapping( index => $name )->{'myapp3'},
+    isa_ok my $mapping
+        = $es->indices->get_mapping( index => $name )->{'myapp3'}{mappings},
         "HASH",
         "$desc mapping from ES";
 
@@ -75,16 +75,17 @@ sub test_domain {
     ok $index->delete_mapping("post"), "Delete $desc mapping";
     wait_for_es(1);
 
-    ok !$es->mapping( index => $name )->{$name}{post},
+    ok !$es->indices->get_mapping( index => $name )->{$name}{post},
         "$desc mapping deleted";
     ok $index->update_mapping("post"), "Update $desc mapping";
-    ok $es->mapping( index => $name, type => "post" )->{post},
+    ok $es->indices->get_mapping( index => $name, type => "post" )
+        ->{myapp3}{mappings}{post},
         "Mapping $desc recreated";
 
     throws_ok sub { $index->delete_mapping("foo") }, qr/Missing/,
         "Non-existent mapping throws error";
 
-    ok $index->delete_mapping( "foo", { ignore_missing => 1 } ),
+    ok $index->delete_mapping( "foo", { ignore => 404 } ),
         "Ignore missing mapping";
 
     ## Refresh ##
@@ -93,8 +94,8 @@ sub test_domain {
     ## Update settings ##
     sub get_interval {
         my $name = shift;
-        $es->index_settings( index => $name )
-            ->{myapp3}{settings}{"index.refresh_interval"};
+        $es->indices->get_settings( index => $name )
+            ->{myapp3}{settings}{index}{refresh_interval};
     }
 
     ok !get_interval($name), "$desc - no refresh interval set";
@@ -112,7 +113,10 @@ SKIP: {
         ## Open / close ##
         sub the_index {
             my $name = shift;
-            $es->index_status( index => $name )->{_shards}{total} == 10
+            $es->cluster->health(
+                index           => $name,
+                wait_for_status => 'yellow'
+                )->{active_primary_shards} == 5
                 ? "open"
                 : "closed";
         }
@@ -126,9 +130,9 @@ SKIP: {
         ## Update analyzers ##
         sub get_tokenizer {
             my $name = shift;
-            $es->index_settings( index => $name )
-                ->{myapp3}{settings}
-                {"index.analysis.analyzer.edge_ngrams.tokenizer"};
+            $es->indices->get_settings( index => $name )
+                ->{myapp3}{settings}{index}{analysis}{analyzer}{edge_ngrams}
+                {tokenizer};
         }
 
         is get_tokenizer($name), "standard", "$desc tokenizer is standard";

@@ -30,9 +30,9 @@ has 'multi_attr' => (
 #===================================
 has 'bad_opt_attr' => (
 #===================================
-    is         => 'ro',
-    isa        => Binary,
-    omit_norms => 1,
+    is       => 'ro',
+    isa      => Binary,
+    analyzer => 'standard',
 );
 
 1;

@@ -196,7 +196,7 @@ Deletes the index (or indices pointed to by alias ) L</name>. Any
 C<%args> are passed directly to L<Search::Elasticsearch::Compat/delete_index()>.
 For example:
 
-    $admin->delete( ignore_missing => 1 );
+    $admin->delete( ignore => 404 );
 
 =head2 refresh()
 
@@ -280,7 +280,7 @@ L<Search::Elasticsearch::Compat/put_mapping()>
 =head2 delete_mapping();
 
     $admin = $admin->delete_mapping( @types );
-    $admin = $admin->delete_mapping( @types, { ignore_missing => 1 });
+    $admin = $admin->delete_mapping( @types, { ignore => 404 });
 
 Deletes the type mapping B<AND THE DOCUMENTS> for the listed types in the index
 (or the indices pointed to by alias) L</name>. Any optional args passed
