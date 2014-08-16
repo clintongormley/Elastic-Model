@@ -110,9 +110,8 @@ no Moose;
 #===================================
 sub _build_is_partial {
 #===================================
-    my $self   = shift;
-    my $source = $self->search->{_source};
-    return !!( !$source || ref $source );
+    my $self = shift;
+    return exists $self->search->{_source};
 }
 
 #===================================

@@ -60,11 +60,8 @@ test_view(
     { type => [ 'foo', 'bar' ] }
 );
 
-test_view(
-    'New-type-str',
-    $domain->view( type => 'foo' ),
-    { type => ['foo'] }
-);
+test_view( 'New-type-str', $domain->view( type => 'foo' ),
+    { type => ['foo'] } );
 
 test_view(
     'Set-type-array',
@@ -281,10 +278,8 @@ test_view(
     'New-post_filterb-array',
     $domain->view( post_filterb => [ 'foo', 'bar', 'foo', 'baz' ] ),
     {   post_filter => {
-            or => [
-                { term => { foo => "bar" } },
-                { term => { foo => "baz" } },
-            ],
+            or =>
+                [ { term => { foo => "bar" } }, { term => { foo => "baz" } }, ],
         }
     }
 );
@@ -311,10 +306,8 @@ test_view(
     'Set-post_filterb-array',
     $view->post_filterb( [ foo => 'bar', foo => 'baz' ] ),
     {   post_filter => {
-            or => [
-                { term => { foo => "bar" } },
-                { term => { foo => "baz" } },
-            ],
+            or =>
+                [ { term => { foo => "bar" } }, { term => { foo => "baz" } }, ],
         }
     }
 );
@@ -372,31 +365,31 @@ test_view(
 test_view(
     'New-fields-array',
     $domain->view( fields => [ 'foo', 'bar' ] ),
-    { fields => [ "_parent", "_routing", 'foo', 'bar' ], _source => 0 }
+    { fields => [ "_parent", "_routing", 'foo', 'bar' ] }
 );
 
 test_view(
     'New-fields-str',
     $domain->view( fields => 'foo' ),
-    { fields => [ "_parent", "_routing", 'foo' ], _source => 0 }
+    { fields => [ "_parent", "_routing", 'foo' ] }
 );
 
 test_view(
     'Set-fields-array',
     $view->fields( [ 'foo', 'bar' ] ),
-    { fields => [ "_parent", "_routing", 'foo', 'bar' ], _source => 0 }
+    { fields => [ "_parent", "_routing", 'foo', 'bar' ] }
 );
 
 test_view(
     'Set-fields-list',
     $view->fields( 'foo', 'baz' ),
-    { fields => [ "_parent", "_routing", 'foo', 'baz' ], _source => 0 }
+    { fields => [ "_parent", "_routing", 'foo', 'baz' ] }
 );
 
 test_view(
     'Set-fields-str',
     $view->fields('foo'),
-    { fields => [ "_parent", "_routing", 'foo' ], _source => 0 }
+    { fields => [ "_parent", "_routing", 'foo' ] }
 );
 
 ## from ##
@@ -416,11 +409,8 @@ test_view(
     { sort => [ 'foo', { bar => 'asc' } ] }
 );
 
-test_view(
-    'New-sort-str',
-    $domain->view( sort => 'foo' ),
-    { sort => ['foo'] }
-);
+test_view( 'New-sort-str', $domain->view( sort => 'foo' ),
+    { sort => ['foo'] } );
 
 test_view(
     'New-sort-hash',
@@ -447,9 +437,7 @@ test_view(
         highlighting => { x     => 'y' },
         highlight    => { 'foo' => {}, 'bar' => { x => 'z' } }
     ),
-    {   highlight =>
-            { x => 'y', fields => { foo => {}, bar => { x => 'z' } } }
-    }
+    { highlight => { x => 'y', fields => { foo => {}, bar => { x => 'z' } } } }
 );
 
 test_view(
@@ -458,9 +446,7 @@ test_view(
         highlighting => { x => 'y' },
         highlight => [ 'foo', 'bar' => { x => 'z' } ]
     ),
-    {   highlight =>
-            { x => 'y', fields => { foo => {}, bar => { x => 'z' } } }
-    }
+    { highlight => { x => 'y', fields => { foo => {}, bar => { x => 'z' } } } }
 );
 
 test_view(
@@ -476,17 +462,13 @@ test_view(
     'Set-highlight-hash-hash',
     $view->highlighting( { x => 'y' } )
         ->highlight( { foo => {}, bar => { x => 'z' } } ),
-    {   highlight =>
-            { x => 'y', fields => { foo => {}, bar => { x => 'z' } } }
-    }
+    { highlight => { x => 'y', fields => { foo => {}, bar => { x => 'z' } } } }
 );
 
 test_view(
     'Set-highlight-list-list',
     $view->highlighting( p => 'q' )->highlight( 'foo', bar => { p => 'r' } ),
-    {   highlight =>
-            { p => 'q', fields => { foo => {}, bar => { p => 'r' } } }
-    }
+    { highlight => { p => 'q', fields => { foo => {}, bar => { p => 'r' } } } }
 );
 
 test_view(
@@ -563,11 +545,8 @@ test_view(
     { preference => 'foo' }
 );
 
-test_view(
-    'Set-preference',
-    $view->preference('bar'),
-    { preference => 'bar' }
-);
+test_view( 'Set-preference', $view->preference('bar'),
+    { preference => 'bar' } );
 
 ## routing ##
 test_view(
@@ -647,8 +626,7 @@ test_view(
 
 test_view(
     'Include and exclude paths',
-    $view->include_paths( 'foo.*', 'fuz.*' )
-        ->exclude_paths( 'bar.*', 'baz.*' ),
+    $view->include_paths( 'foo.*', 'fuz.*' )->exclude_paths( 'bar.*', 'baz.*' ),
     {   _source => {
             include => [ 'foo.*', 'fuz.*' ],
             exclude => [ 'bar.*', 'baz.*' ]
@@ -705,8 +683,7 @@ test_view(
     { track_scores => 1 }
 );
 
-test_view( 'Set-track_scores', $view->track_scores(1),
-    { track_scores => 1 } );
+test_view( 'Set-track_scores', $view->track_scores(1), { track_scores => 1 } );
 
 ## consistency ##
 test_view(
@@ -739,14 +716,13 @@ sub test_view {
 #===================================
     my ( $name, $view, $results ) = @_;
     $results = {
-        fields => [ "_parent", "_routing" ],
+        fields => [ "_parent", "_routing", "_source" ],
         from   => 0,
         index  => ["myapp"],
         query   => { match_all => {} },
         size    => 10,
         type    => [],
         version => 1,
-        _source => 1,
         %$results
     };
 

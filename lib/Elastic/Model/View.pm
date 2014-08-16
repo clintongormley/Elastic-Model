@@ -459,7 +459,8 @@ sub _build_search {
         if $self->_has_include_paths;
     $source->{exclude} = $self->exclude_paths
         if $self->_has_exclude_paths;
-    $source ||= @$fields ? 0 : 1;
+
+    $fields = ['_source'] unless $source || @$fields;
 
     my %args = _strip_undef(
         (   map { $_ => $self->$_ }
@@ -475,9 +476,10 @@ sub _build_search {
         indices_boost => $self->index_boosts,
         @_,
         version => 1,
-        fields  => [ '_parent', '_routing', @$fields ],
-        _source => $source,
+        fields  => [ '_parent', '_routing', @$fields ]
     );
+    $args{_source} = $source
+        if defined $source;
     return \%args;
 }
 
