@@ -361,6 +361,33 @@ test_view(
     { facets => { bar => { terms => { field => 'bar' } }, } }
 );
 
+test_view(
+    'Facet - facet_filterb',
+    $domain->view(
+        facets => {
+            filterb => {
+                filterb       => { foo => 'bar' },
+                facet_filterb => { foo => 'baz' }
+            },
+            queryb => {
+                queryb        => { foo => 'bar' },
+                facet_filterb => { foo => 'baz' }
+            },
+        },
+    ),
+    {   facets => {
+            filterb => {
+                filter       => { term => { foo => 'bar' } },
+                facet_filter => { term => { foo => 'baz' } }
+            },
+            queryb => {
+                query        => { match => { foo => 'bar' } },
+                facet_filter => { term  => { foo => 'baz' } }
+            },
+        }
+    }
+);
+
 ## fields ##
 test_view(
     'New-fields-array',
