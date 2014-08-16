@@ -256,7 +256,7 @@ sub unique_keys_exist {
     my $exists
         = $es->mget( index => $uniq, body => { docs => \@docs } )->{docs};
     for (@$exists) {
-        next unless $_->{found};
+        next unless $_->{found} || $_->{exists};
         delete $keys{ $_->{_type} };
     }
     return %keys;

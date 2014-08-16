@@ -46,6 +46,10 @@ sub _tidy_search {
             $args{$_} = $val;
         }
     }
+    my $source;
+    if ( $source = delete $body{_source} ) {
+        $body{partial_fields}{_partial_doc} = $source;
+    }
     $args{body} = \%body;
     return \%args;
 }
@@ -54,6 +58,11 @@ sub delete_by_query {
 #===================================
     my $self = shift;
     my $args = _tidy_search(@_);
+    $args->{body} = $args->{body}{query};
+    my $result = eval { $self->es->delete_by_query($args) };
+    return $result if $result;
+    die $@ unless $@ =~ /request does not support/;
+    $args->{body} = { query => $args->{body} };
     $self->es->delete_by_query($args);
 }
 
@@ -62,8 +71,7 @@ sub get_doc {
 #===================================
     my ( $self, $uid, %args ) = @_;
     return $self->es->get(
-        fields  => [qw(_routing _parent)],
-        _source => 1,
+        fields => [qw(_routing _parent _source)],
         %{ $uid->read_params },
         %args,
     );
@@ -185,16 +193,22 @@ sub put_aliases {
 #===================================
 sub get_mapping {
 #===================================
-    my $self = shift;
-    my %args = _cleanup(@_);
-    return $self->es->indices->get_mapping(%args);
+    my $self   = shift;
+    my %args   = _cleanup(@_);
+    my $result = $self->es->indices->get_mapping(%args);
+    for ( keys %$result ) {
+        next unless $result->{$_};
+        return $result if $result->{$_}{mappings};
+        $result->{$_} = { mappings => $result->{$_} };
+    }
+    return $result;
 }
 
 #===================================
 sub put_mapping {
 #===================================
     my ( $self, %args ) = @_;
-    $args{body} = delete $args{mapping};
+    $args{body} = { $args{type} => delete $args{mapping} };
     return $self->es->indices->put_mapping(%args);
 }
 

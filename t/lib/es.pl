@@ -17,6 +17,7 @@ if ( $ENV{ES} ) {
     $es = Search::Elasticsearch->new(
         nodes    => $ENV{ES},
         trace_to => $trace,
+        client   => '0_90::Direct'
     );
     eval { $es->ping } or do {
         diag $@;

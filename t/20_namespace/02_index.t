@@ -37,14 +37,16 @@ ok $index->create(
     ),
     'Create index with settings and types';
 
-is $es->indices->get_settings( index => 'myapp3' )
-    ->{myapp3}{settings}{index}{refresh_interval},
-    '10s', 'Settings OK';
+my $settings
+    = $es->indices->get_settings( index => 'myapp3' )->{myapp3}{settings};
 
-isa_ok my $mapping
-    = $es->indices->get_mapping( index => 'myapp3' )->{myapp3}{mappings},
-    'HASH',
-    'Mapping';
+is $settings->{"index.refresh_interval"}
+    || $settings->{index}{refresh_interval}, '10s', 'Settings OK';
+
+my $mapping = $es->indices->get_mapping( index => 'myapp3' )->{myapp3};
+$mapping = $mapping->{mappings} || $mapping;
+
+isa_ok $mapping, 'HASH', 'Mapping';
 
 ok $mapping->{user}, 'Has user mapping';
 ok !$mapping->{post}, 'No post mapping';

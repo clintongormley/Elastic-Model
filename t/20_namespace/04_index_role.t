@@ -62,10 +62,10 @@ sub test_domain {
     }
 
     ## Mappings ##
-    isa_ok my $mapping
-        = $es->indices->get_mapping( index => $name )->{'myapp3'}{mappings},
-        "HASH",
-        "$desc mapping from ES";
+    my $mapping = $es->indices->get_mapping( index => 'myapp3' )->{myapp3};
+    $mapping = $mapping->{mappings} || $mapping;
+
+    isa_ok $mapping, "HASH", "$desc mapping from ES";
 
     cmp_deeply
         [ sort keys %$mapping ],
@@ -78,8 +78,8 @@ sub test_domain {
     ok !$es->indices->get_mapping( index => $name )->{$name}{post},
         "$desc mapping deleted";
     ok $index->update_mapping("post"), "Update $desc mapping";
-    ok $es->indices->get_mapping( index => $name, type => "post" )
-        ->{myapp3}{mappings}{post},
+
+    ok $es->indices->get_mapping( index => $name, type => "post" ),
         "Mapping $desc recreated";
 
     throws_ok sub { $index->delete_mapping("foo") }, qr/Missing/,
@@ -94,8 +94,11 @@ sub test_domain {
     ## Update settings ##
     sub get_interval {
         my $name = shift;
-        $es->indices->get_settings( index => $name )
-            ->{myapp3}{settings}{index}{refresh_interval};
+        my $settings
+            = $es->indices->get_settings( index => $name )
+            ->{myapp3}{settings};
+        return $settings->{"index.refresh_interval"}
+            || $settings->{index}{refresh_interval};
     }
 
     ok !get_interval($name), "$desc - no refresh interval set";
@@ -130,8 +133,11 @@ SKIP: {
         ## Update analyzers ##
         sub get_tokenizer {
             my $name = shift;
-            $es->indices->get_settings( index => $name )
-                ->{myapp3}{settings}{index}{analysis}{analyzer}{edge_ngrams}
+            my $settings = $es->indices->get_settings( index => $name )
+                ->{myapp3}{settings};
+            return $settings->{
+                "index.analysis.analyzer.edge_ngrams.tokenizer"}
+                || $settings->{index}{analysis}{analyzer}{edge_ngrams}
                 {tokenizer};
         }
 
