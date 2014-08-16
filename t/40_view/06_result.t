@@ -125,7 +125,12 @@ isa_ok $result = $view->queryb( { name => 'Aardwolf' } )    #
 
 isa_ok my $doc = $result->partial, 'MyApp::User', 'Partial->partial';
 ok $doc->{name}, 'Partial has name';
-ok !$doc->{timestamp}, 'Partial has no timestamp';
+SKIP: {
+    skip "Partials not supported in 0.90", 1
+        if $es->isa('Search::Elasticsearch::Client::0_90::Direct');
+    ok !$doc->{timestamp}, 'Partial has no timestamp';
+}
+
 ok $doc->uid->is_partial, 'Partial UID is partial';
 
 isa_ok $doc = $result->object, 'MyApp::User', 'Partial->object';

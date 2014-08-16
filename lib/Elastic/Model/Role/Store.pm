@@ -23,7 +23,7 @@ my @Top_Level = qw(
 sub search {
 #===================================
     my $self = shift;
-    my $args = _tidy_search(@_);
+    my $args = _tidy_search( $self, @_ );
     $self->es->search($args);
 }
 
@@ -31,13 +31,14 @@ sub search {
 sub scrolled_search {
 #===================================
     my $self = shift;
-    my $args = _tidy_search(@_);
+    my $args = _tidy_search( $self, @_ );
     $self->es->scroll_helper($args);
 }
 
 #===================================
 sub _tidy_search {
 #===================================
+    my $self = shift;
     my %body = ref $_[0] eq 'HASH' ? %{ shift() } : @_;
     my %args;
     for (@Top_Level) {
@@ -46,9 +47,11 @@ sub _tidy_search {
             $args{$_} = $val;
         }
     }
-    my $source;
-    if ( $source = delete $body{_source} ) {
-        $body{partial_fields}{_partial_doc} = $source;
+    if ( $self->es->isa('Search::Elasticsearch::Client::0_90::Direct') ) {
+        if ( delete $body{_source} ) {
+            push @{ $body{fields} }, '_source'
+                unless grep { $_ eq '_source' } @{ $body{fields} };
+        }
     }
     $args{body} = \%body;
     return \%args;
@@ -57,7 +60,7 @@ sub _tidy_search {
 sub delete_by_query {
 #===================================
     my $self = shift;
-    my $args = _tidy_search(@_);
+    my $args = _tidy_search( $self, @_ );
     $args->{body} = $args->{body}{query};
     my $result = eval { $self->es->delete_by_query($args) };
     return $result if $result;

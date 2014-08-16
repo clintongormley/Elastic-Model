@@ -11,6 +11,8 @@ use lib 't/lib';
 our ( $es, $store );
 do 'es.pl';
 
+our $is_090 = $es->isa('Search::Elasticsearch::Client::0_90::Direct');
+
 use_ok 'MyApp' || print 'Bail out';
 
 my $model = new_ok( 'MyApp', [ es => $es ], 'Model' );
@@ -130,8 +132,7 @@ throws_ok sub { $it->index(-1000) }, qr/out of bounds/, 'Index out of bounds';
 $it->reset;
 is $it->_i, -1, 'Reset';
 
-throws_ok sub { $it->index(20) }, qr/Values can be 0..9/,
-    'Index out of bounds';
+throws_ok sub { $it->index(20) }, qr/Values can be 0..9/, 'Index out of bounds';
 $it->shift for 1 .. 10;
 throws_ok sub { $it->index(0) }, qr/ No values/, 'Empty index out of bounds';
 
@@ -249,8 +250,11 @@ sub test_single {
                 "$desc $name as partials - $id";
             is $r->uid->is_partial, 1, "$desc $name as partials is partial";
             ok $r->name, "$desc $name as partials has name";
-            ok !$r->{timestamp}, "$desc $name as partials has no timestamp";
 
+        SKIP: {
+                skip "Partials not supported in 0.90", 1 if $is_090;
+                ok !$r->{timestamp}, "$desc $name as partials has no timestamp";
+            }
         }
         else {
             is my $r = $it->$el_method, undef, "$desc $el_method - undef";

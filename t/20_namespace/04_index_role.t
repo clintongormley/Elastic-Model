@@ -95,8 +95,7 @@ sub test_domain {
     sub get_interval {
         my $name = shift;
         my $settings
-            = $es->indices->get_settings( index => $name )
-            ->{myapp3}{settings};
+            = $es->indices->get_settings( index => $name )->{myapp3}{settings};
         return $settings->{"index.refresh_interval"}
             || $settings->{index}{refresh_interval};
     }
@@ -135,8 +134,7 @@ SKIP: {
             my $name = shift;
             my $settings = $es->indices->get_settings( index => $name )
                 ->{myapp3}{settings};
-            return $settings->{
-                "index.analysis.analyzer.edge_ngrams.tokenizer"}
+            return $settings->{"index.analysis.analyzer.edge_ngrams.tokenizer"}
                 || $settings->{index}{analysis}{analyzer}{edge_ngrams}
                 {tokenizer};
         }

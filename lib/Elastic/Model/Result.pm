@@ -13,10 +13,6 @@ around BUILDARGS => sub {
     my $class  = shift;
     my $params = ref $_[0] eq 'HASH' ? shift : {@_};
     my $fields = $params->{result}{fields};
-    if ( my $partial = delete $fields->{_partial_doc} ) {
-        $params->{result}{_source}
-            = ref $partial eq 'ARRAY' ? $partial->[0] : $partial;
-    }
     for ( keys %$fields ) {
         next if substr( $_, 0, 1 ) eq '_';
         $fields->{$_} = [ $fields->{$_} ]
