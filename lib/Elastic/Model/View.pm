@@ -465,11 +465,12 @@ sub _build_search {
     my %args = _strip_undef(
         (   map { $_ => $self->$_ }
                 qw(
-                type sort from size facets
+                type sort from size
                 min_score post_filter preference routing stats
                 script_fields timeout track_scores explain
                 )
         ),
+        facets        => $self->_build_facets,
         index         => $self->domain,
         query         => $self->_build_query,
         highlight     => $highlight,
@@ -481,6 +482,48 @@ sub _build_search {
     $args{_source} = $source
         if defined $source;
     return \%args;
+}
+
+#===================================
+sub _build_facets {
+#===================================
+    my $self = shift;
+    return undef unless $self->facets;
+
+    my $facets = { %{ $self->facets } };
+
+    for ( values %$facets ) {
+        die "All (facets) must be HASH refs" unless ref $_ eq 'HASH';
+        $_ = my $facet = {%$_};
+        $self->_to_dsl(
+            {   queryb        => 'query',
+                filterb       => 'filter',
+                facet_filterb => 'facet_filter'
+            },
+            $facet
+        );
+    }
+
+    $facets;
+}
+
+#===================================
+sub _to_dsl {
+#===================================
+    my ( $self, $ops ) = ( shift, shift );
+
+    my $builder;
+    for my $clause (@_) {
+        while ( my ( $old, $new ) = each %$ops ) {
+            my $src = delete $clause->{$old} or next;
+            die "Cannot specify $old and $new parameters.\n" if $clause->{$new};
+
+            $builder ||= $self->search_builder;
+            my $method = $new eq 'query' ? 'query' : 'filter';
+            my $sub_clause = $builder->$method($src) or next;
+            $clause->{$new} = $sub_clause->{$method};
+        }
+    }
 }
 
 #===================================
