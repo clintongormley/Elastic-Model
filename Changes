@@ -1,3 +1,29 @@
+0.50    2014-08-17
+        ********************************
+        BREAKING BACKWARDS COMPATIBILITY
+        ********************************
+        This is the first version of Elastic::Model with support for
+        Elasticsearch 1.x and above.  It uses Search::Elasticsearch
+        instead of Search::Elasticsearch::Compat.
+
+        See Elastic::Manual::Delta for info about the compatibility
+        mode which allows connecting to 0.90.x and 1.x nodes using
+        the same code.
+
+        Added:
+          * support for aggregations  in 1.x
+          * on_success added to Bulk
+
+        Removed:
+          * omit_norms
+          * omit_term_freq_and_positions
+
+        Deprecated field attributes:
+          * field-level boost
+          * index_name
+          * path
+          * precision_step
+
 0.29_2  2014-07-01
         Also accept 0_90 clients
 
