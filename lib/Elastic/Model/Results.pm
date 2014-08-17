@@ -30,8 +30,9 @@ sub BUILD {
     $self->_set_elements( $hits->{hits} );
     $self->_set_max_score( $hits->{max_score} || 0 );
 
-    $self->_set_took( $result->{took} || 0 );
-    $self->_set_facets( $result->{facets} || {} );
+    $self->_set_took( $result->{took}         || 0 );
+    $self->_set_facets( $result->{facets}     || {} );
+    $self->_set_aggs( $result->{aggregations} || {} );
 
 }
 

@@ -35,7 +35,8 @@ sub BUILD {
 
     $self->_set_total( $scroll->total );
     $self->_set_virtual_size( $scroll->total );
-    $self->_set_facets( $scroll->facets || {} );
+    $self->_set_facets( $scroll->facets       || {} );
+    $self->_set_aggs( $scroll->aggregations   || {} );
     $self->_set_max_score( $scroll->max_score || 0 );
 }
 

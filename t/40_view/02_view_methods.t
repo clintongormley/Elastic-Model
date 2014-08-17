@@ -10,6 +10,8 @@ use lib 't/lib';
 our $es;
 do 'es.pl';
 
+our $is_090 = $es->isa('Search::Elasticsearch::Client::0_90::Direct');
+
 use_ok 'MyApp' || print 'Bail out';
 
 my $model = new_ok( 'MyApp', [ es => $es ], 'Model' );
@@ -23,6 +25,12 @@ isa_ok my $view
     'Elastic::Model::View',
     'View';
 
+SKIP: {
+    skip "aggs not supported in 0.90", 1 if $is_090;
+    isa_ok $view = $view->aggs( name => { terms => { field => 'name' } } ),
+        'Elastic::Model::View', 'View aggs';
+}
+
 isa_ok my $results = $view->search, 'Elastic::Model::Results', 'Search';
 
 ## SEARCH ##
@@ -35,9 +43,14 @@ isa_ok $results->facet('name'), 'HASH', 'Search named facet';
 is 0 + ( $results->all ), 10, 'Search is finite';
 isa_ok $results->first, 'Elastic::Model::Result', 'Search first';
 
+SKIP: {
+    skip "aggs not supported in 0.90", 2 if $is_090;
+    isa_ok $results->aggs, 'HASH', 'Search aggs';
+    isa_ok $results->agg('name'), 'HASH', 'Search named agg';
+}
+
 ## SCROLL ##
-isa_ok $results = $view->scroll, 'Elastic::Model::Results::Scrolled',
-    'Scroll';
+isa_ok $results = $view->scroll, 'Elastic::Model::Results::Scrolled', 'Scroll';
 is $results->_scroll->scroll, '1m', 'Scroll default time';
 is $view->scroll('30s')->_scroll->scroll, '30s', 'Scroll manual time';
 is $results->total,      196,    'Scroll total ';
@@ -47,6 +60,12 @@ isa_ok $results->facets, 'HASH', 'Scroll facets';
 isa_ok $results->facet('name'), 'HASH', 'Scroll named facet';
 is 0 + ( $results->all ), 196, 'Scroll - all results';
 isa_ok $results->first, 'Elastic::Model::Result', 'Scroll first';
+
+SKIP: {
+    skip "aggs not supported in 0.90", 2 if $is_090;
+    isa_ok $results->aggs, 'HASH', 'Search aggs';
+    isa_ok $results->agg('name'), 'HASH', 'Search named agg';
+}
 
 ## SCAN ##
 isa_ok $results = $view->scan, 'Elastic::Model::Results::Scrolled', 'Scan';
@@ -62,6 +81,12 @@ isa_ok $results->first, 'MyApp::User', 'Scan first';
 ok $view->sort( [] )->scan, 'Scan empty sort';
 throws_ok sub { $view->sort('_score')->scan }, qr/combined with sorting/,
     'Scan sort';
+
+SKIP: {
+    skip "aggs not supported in 0.90", 2 if $is_090;
+    isa_ok $results->aggs, 'HASH', 'Search aggs';
+    isa_ok $results->agg('name'), 'HASH', 'Search named agg';
+}
 
 ## FIRST ##
 isa_ok $view->first, 'Elastic::Model::Result', 'First';

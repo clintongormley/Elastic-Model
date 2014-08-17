@@ -76,6 +76,7 @@ sub BUILD {
 
     $self->_set_took( $result->{took} || 0 );
     $self->_set_facets( $result->{facets} || {} );
+    $self->_set_aggs($result->{aggregations} || {});
 
     $cache->set( $cache_key, $result, $cache_opts )
         unless $cached;

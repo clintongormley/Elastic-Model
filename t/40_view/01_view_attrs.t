@@ -326,6 +326,42 @@ test_view(
     }
 );
 
+
+## aggs ##
+test_view(
+    'New-aggs',
+    $domain->view( aggs => { foo => { terms => { field => 'foo' } } } ),
+    { aggs => { foo => { terms => { field => 'foo' } } } }
+);
+
+test_view(
+    'Set-aggs-hash',
+    $view->aggs( { bar => { terms => { field => 'bar' } } } ),
+    { aggs => { bar => { terms => { field => 'bar' } } } }
+);
+
+test_view(
+    'Set-aggs-list',
+    my $new = $view->aggs( foo => { terms => { field => 'foo' } } ),
+    { aggs => { foo => { terms => { field => 'foo' } } } }
+);
+
+test_view(
+    'Add-agg',
+    $new = $new->add_agg( bar => { terms => { field => 'bar' } } ),
+    {   aggs => {
+            bar => { terms => { field => 'bar' } },
+            foo => { terms => { field => 'foo' } },
+        }
+    }
+);
+
+test_view(
+    'Remove agg',
+    $new->remove_agg('foo'),
+    { aggs => { bar => { terms => { field => 'bar' } }, } }
+);
+
 ## facets ##
 test_view(
     'New-facets',
@@ -341,7 +377,7 @@ test_view(
 
 test_view(
     'Set-facets-list',
-    my $new = $view->facets( foo => { terms => { field => 'foo' } } ),
+    $new = $view->facets( foo => { terms => { field => 'foo' } } ),
     { facets => { foo => { terms => { field => 'foo' } } } }
 );
 

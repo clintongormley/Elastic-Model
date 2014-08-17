@@ -51,6 +51,19 @@ has 'post_filter' => (
 );
 
 #===================================
+has 'aggs' => (
+#===================================
+    traits  => ['Hash'],
+    isa     => HashRef [HashRef],
+    is      => 'rw',
+    handles => {
+        add_agg    => 'set',
+        remove_agg => 'delete',
+        get_agg    => 'get'
+    }
+);
+
+#===================================
 has 'facets' => (
 #===================================
     traits  => ['Hash'],
@@ -299,8 +312,8 @@ around [
 
 around [
 #===================================
-    'facets', 'index_boosts', 'script_fields', 'highlighting',
-    'query',  'filter',       'post_filter',   'cache_opts'
+    'aggs',  'facets', 'index_boosts', 'script_fields', 'highlighting',
+    'query', 'filter', 'post_filter',  'cache_opts'
 #===================================
 ] => sub { _clone_args( \&_hash_args, @_ ) };
 
@@ -309,7 +322,7 @@ around 'highlight'
 #===================================
     => sub { _clone_args( \&_highlight_args, @_ ) };
 
-for my $name ( 'facet', 'index_boost', 'script_field' ) {
+for my $name ( 'agg', 'facet', 'index_boost', 'script_field' ) {
     my $attr = $name . 's';
     for my $method ( "add_$name", "remove_$name" ) {
         around $method => sub {
@@ -465,7 +478,7 @@ sub _build_search {
     my %args = _strip_undef(
         (   map { $_ => $self->$_ }
                 qw(
-                type sort from size
+                type sort from size aggs
                 min_score post_filter preference routing stats
                 script_fields timeout track_scores explain
                 )
@@ -876,6 +889,41 @@ The number of results returned in a single L</search()>, which defaults to 10.
 
 B<Note:> See L</scan()> for a slightly different application of the L</size>
 value.
+
+=head2 aggs
+
+    $new_view = $view->aggs(
+        active_docs => {
+            filter => {
+                term => { status => 'active' }
+            },
+            aggs => {
+                popular_tags => {
+                    terms => {
+                        field => 'path.to.tags',
+                        size  => 10
+                    }
+                }
+            }
+        },
+        agg_two => {....}
+    );
+
+    $new_view = $view->add_agg( agg_three => {...} )
+    $new_view = $view->remove_agg('agg_three');
+
+    \%aggs  = $view->aggs;
+    \%agg   = $view->get_agg('active_docs');
+
+Aggregations allow you to aggregate data from a query, for instance: most popular
+terms, number of blog posts per day, average price etc. Aggs are calculated
+from the query generated from L</query> and L</filter>.  If you want to filter
+your query results down further after calculating your aggs, you can
+use L</post_filter>.
+
+See L<http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-aggregations.html> for
+an explanation of what aggregations are available.
+
 
 =head2 facets
 
