@@ -838,8 +838,8 @@ query.
     \%filter  = $view->post_filter;
 
 L<Post-filters|http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/search-request-post-filter.html>
-filter the results AFTER any L</facets> have been calculated.  In the above
-example, the facets would be calculated on all values of C<tag>, but the
+filter the results AFTER any L</aggs> have been calculated.  In the above
+example, the aggregations would be calculated on all values of C<tag>, but the
 results would then be limited to just those docs where C<tag == perl>.
 
 You can specify a post_filter using either the native Elasticsearch query DSL or,
@@ -921,11 +921,16 @@ from the query generated from L</query> and L</filter>.  If you want to filter
 your query results down further after calculating your aggs, you can
 use L</post_filter>.
 
+B<NOTE:> There is no support in aggs for L<Elastic::Model::SearchBuilder>.
+
 See L<http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-aggregations.html> for
 an explanation of what aggregations are available.
 
 
 =head2 facets
+
+B<IMPORTANT:> Facets are deprecated in favour of L<aggregations|/aggs>.
+They will be removed in a future version of Elasticsearch.
 
     $new_view = $view->facets(
         facet_one => {
@@ -1020,7 +1025,7 @@ object without requesting it from Elasticsearch in a separate (but automatic) st
 
 L<Script fields|http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/search-request-script-fields.html>
 can be generated using the L<mvel|http://mvel.codehaus.org/Language+Guide+for+2.0>
-scripting language. (You can also use L<Javascript, Python and Java|http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/modules-scripting.html>.)
+scripting language. (You can also use L<Groovy, Javascript, Python and Java|http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/modules-scripting.html>.)
 
 =head2 include_paths / exclude_paths
 
@@ -1041,7 +1046,7 @@ The partial objects returned when L<Elastic::Model::Results/as_partials()>
 is in effect function exactly as real objects, except that they cannot
 be saved.
 
-See C<Partial fields> on L<http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-request-fields.html#partial>.
+See L<http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-request-source-filtering.html>.
 
 =head2 routing
 
@@ -1142,7 +1147,7 @@ L<Elastic::Model::Result/explain> to view the output.
     \@groups  = $view->stats;
 
 The statistics for each search can be aggregated by C<group>. These stats
-can later be retrieved using L<Search::Elasticsearch::Compat/index_stats()>.
+can later be retrieved using L<Search::Elasticsearch::Client::Direct::Indices/stats()>.
 
 =head2 search_builder
 

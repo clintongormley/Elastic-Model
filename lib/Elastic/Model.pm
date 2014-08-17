@@ -134,24 +134,17 @@ Elasticsearch as soon as you are ready to use it.
 
 =cut
 
-=head1 IMPORTANT
+=head1 BACKWARDS COMPATIBILITY BREAK
 
-This version of Elastic::Model has been updated to work with
-L<Search::Elasticsearch::Compat>, a compatibility layer over the new official
-Elasticsearch Perl client: L<Search::Elasticsearch>.
+B<NOTE:> This version of Elastic::Model uses L<Search::Elasticsearch>
+and is intended for Elasticsearch 1.0 and above. However, it can be used
+with Elasticsearch 0.90.x in "compatibility mode".
 
-In the near future, I will be releasing a version of Elastic::Model that
-works with L<Elasticsearch> directly, without need for the compatibility
-layer.  In the meantime, you should be able to continue using Elastic::Model
-as normal by simply changing:
+B<< You can no longer use the old L<Search::Elasticsearch::Compat>. >>
+See L<Elastic::Manual::Delta> for instructions.
 
-    use ElasticSearch;
-    my $es = ElasticSearch->new(...);
-
-to:
-
-    use Search::Elasticsearch::Compat;
-    my $es = Search::Elasticsearch::Compat->new(...);
+For a version of Elastic::Model which uses Search::Elasticsearch::Compat
+please see L<https://metacpan.org/release/DRTECH/Elastic-Model-0.28>.
 
 =head1 USING ELASTIC::MODEL
 

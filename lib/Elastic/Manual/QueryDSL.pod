@@ -150,7 +150,7 @@ class you use to build your searches.
 
 Just a query:
 
-    $view->query(  text  => { title => 'object models'   })->search;
+    $view->query(  match  => { title => 'object models'   })->search;
 
 Just a filter:
 
@@ -158,7 +158,7 @@ Just a filter:
 
 A query and filter combined:
 
-    $view->query(  text  => { title => 'object models'   })
+    $view->query(  match  => { title => 'object models'   })
          ->filter( terms => { tags => ['perl','python' ] })->search
 
 Or, with the SearchBuilder syntax:
@@ -174,7 +174,7 @@ L<query|Elastic::Model::View/query>  attribute.
 
 B<Note:> the L<post_filter|Elastic::Model::View/post_filter> works in exactly
 the same way as L<filter|Elastic::Model::View/filter>, but it only filters
-the results AFTER the L<facets|Elastic::Model::View/facets> (like GROUP BY)
+the results AFTER the L<aggregations|Elastic::Model::View/aggs> (like GROUP BY)
 have been calculated.
 
 =head1 QUERIES

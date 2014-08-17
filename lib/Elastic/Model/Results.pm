@@ -85,6 +85,16 @@ of 2012, with highlighted snippets, plus the most popular tags:
         say "Highlights:" .join ', ', $result->highlight('content');
     }
 
+=head2 Aggregations
+
+    my $tags  = $results->agg('tags');
+    my $terms = $tags->{buckets};
+
+    say "Popular tags: ";
+    for ( @$terms ) {
+        say "$_->{key}:  $_->{doc_count}";
+    }
+
 =head2 Facets
 
     my $tags  = $results->facet('tags');
@@ -155,6 +165,15 @@ The highest score (relevance) found by Elasticsearch. B<Note:> if you
 are sorting by a field other than C<_score> then you will need
 to set L<Elastic::Model::View/track_scores> to true to retrieve the
 L</max_score>.
+
+=head2 aggs
+
+=head2 agg
+
+    $aggs = $results->aggs
+    $agg  = $results->agg($agg_name)
+
+Aggregation results, if any were requested with L<Elastic::Model::View/aggs>.
 
 =head2 facets
 

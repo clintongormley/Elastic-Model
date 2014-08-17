@@ -183,7 +183,7 @@ L<Elastic::Model::Index> or L<Elastic::Model::Alias> object.
 
 =head2 es
 
-The same L<Search::Elasticsearch::Compat> connection as L<Elastic::Model::Role::Model/es>.
+The same L<Search::Elasticsearch> connection as L<Elastic::Model::Role::Model/es>.
 
 =head1 METHODS
 
@@ -193,7 +193,7 @@ The same L<Search::Elasticsearch::Compat> connection as L<Elastic::Model::Role::
     $admin = $admin->delete( %args );
 
 Deletes the index (or indices pointed to by alias ) L</name>. Any
-C<%args> are passed directly to L<Search::Elasticsearch::Compat/delete_index()>.
+C<%args> are passed directly to L<Search::Elasticsearch::Client::Direct::Indices/delete()>.
 For example:
 
     $admin->delete( ignore => 404 );
@@ -275,7 +275,7 @@ update all types known to the L</namespace>.
 
 Any optional args passed
 as a hashref as the final parameter will be passed to
-L<Search::Elasticsearch::Compat/put_mapping()>
+L<Search::Elasticsearch::Client::Direct::Indices/put_mapping()>
 
 =head2 delete_mapping();
 
@@ -285,7 +285,7 @@ L<Search::Elasticsearch::Compat/put_mapping()>
 Deletes the type mapping B<AND THE DOCUMENTS> for the listed types in the index
 (or the indices pointed to by alias) L</name>. Any optional args passed
 as a hashref as the final parameter will be passed to
-L<Search::Elasticsearch::Compat/delete_mapping()>.
+L<Search::Elasticsearch::Client::Direct::Indices/delete_mapping()>.
 
 =head2 exists()
 

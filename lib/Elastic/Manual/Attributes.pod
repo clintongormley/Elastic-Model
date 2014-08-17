@@ -236,13 +236,16 @@ You can disable the C<_all> field completely using L<Elastic::Doc/has_mapping>:
 =back
 
 
-=head2 boost
+=head2 boost [DEPRECATED]
 
     has 'title' => (
         is      => 'rw',
         isa     => 'Str',
         boost   => 2
     );
+
+B<NOTE:> This attribute is deprecated in Elasticsearch and will be removed
+in a future version.
 
 A C<boost> makes a value "more relevant".  For instance, the words in the
 C<title> field of a blog post are probably a better indicator of the topic
@@ -297,13 +300,16 @@ and the "main field" C<name> can also be referred to as C<name.name>.
 Another benefit of multi-fields is that they can be added without reindexing
 all of your data.
 
-=head2 index_name
+=head2 index_name [DEPRECATED]
 
     has 'foo' => (
         is          => 'rw',
         isa         => 'Str',
         index_name  => 'bar'
     );
+
+B<NOTE:> This attribute is deprecated in Elasticsearch and will be removed
+in a future version.
 
 Elasticsearch uses dot-notation to refer to nested hashes. For instance, with
 this data structure:
@@ -457,42 +463,6 @@ L<Query-String query|http://www.elasticsearch.org/guide/en/elasticsearch/referen
 when the search phrase includes quotes (C<"">). If not set, then it falls back
 to the L</search_analyzer> or the L</analyzer>.
 
-=head2 omit_norms
-
-    has 'status' => (
-        is          => 'ro',
-        isa         => 'Str',
-        analyzer    => 'keyword',
-        omit_norms  => 1
-    );
-
-Norms allow for index time L</"boost"> and for field length normalization
-(shorter fields score higher).  This may not always be what you want. For
-instance, a C<status> field may contain a single value that is never used
-for relevance scoring, just for filtering (eg all docs where C<status> is
-C<"active">). Or, if the values in a field are short (eg name, email) then
-the field length normalization may skew the results incorrectly.
-
-You can turn off norms with C<< { omit_norms => 0 } >>.
-
-See L<http://www.lucidimagination.com/content/scaling-lucene-and-solr#d0e71>
-for more about C<omit_norms>.
-
-=head2 omit_term_freq_and_positions
-
-    has 'status' => (
-        is                              => 'ro',
-        isa                             => 'Str',
-        analyzer                        => 'keyword',
-        omit_term_freq_and_positions    => 1
-    )
-
-Elasticsearch normally stores the frequency and position of each term in
-analyzed text. If you don't need this information, then you can turn it off,
-and save space.
-
-See L<http://www.lucidimagination.com/content/scaling-lucene-and-solr#d0e63>
-for more about C<omit_term_freq_and_positions>.
 
 =head2 term_vector
 
@@ -560,21 +530,9 @@ Double-precision 64-bit IEEE 754 floating point
 (See L<http://docs.oracle.com/javase/specs/jls/se7/html/jls-4.html#jls-4.2.3>
 for more on single or double value ranges.)
 
-The following keyword applies only to numeric fields.
-
-You can also use L</index>, L</include_in_all>, L</boost>, L</multi>,
-L</index_name>, L</unique_key>, L</store> and L</null_value>.
-
-=head2 precision_step (numeric)
-
-    has 'count' => (
-        isa             => 'Int',
-        precision_step  => 2,
-    );
-
-The C<precision_step> determines the number of terms generated for each
-value (defaults to 4). The more terms, the faster the lookup, but the more
-memory used.
+There are no numeric-specific keywords, but the general keywords apply:
+L</index>, L</include_in_all>, L</boost>, L</multi>, L</index_name>,
+L</unique_key>, L</store> and L</null_value>.
 
 =head1 DATE FIELDS
 
@@ -582,7 +540,7 @@ Dates in Elasticsearch are stored internally as C<long> values containing
 B<milli>seconds since the epoch. The maximum date range is 292269055 BC to
 292278994 AD.
 
-The following keywords apply only to fields of L</"type"> C<date>.
+The following keyword applies only to fields of L</"type"> C<date>.
 You can also use L</index>, L</include_in_all>, L</boost>, L</multi>,
 L</index_name>, L</unique_key>, L</store> and L</null_value>.
 
@@ -600,17 +558,6 @@ Date fields by default can parse (1) milliseconds since epoch
 If you would like to specify a different format, you can use one of the
 L<built-in formats|http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/mapping-date-format.html>
 or a L<custom format|http://joda-time.sourceforge.net/api-release/org/joda/time/format/DateTimeFormat.html>.
-
-=head2 precision_step (date)
-
-    has 'count' => (
-        isa             => 'Int',
-        precision_step  => 2,
-    );
-
-The C<precision_step> determines the number of terms generated for each
-value (defaults to 4). The more terms, the faster the lookup, but the more
-memory used.
 
 =head1 BOOLEAN FIELDS
 
@@ -675,21 +622,9 @@ L</store> (defaults to C<yes>)and L</index_name>.
 
 Fields of type C<ip> can be used to index IPv4 addresses in numeric form.
 
-The following keyword applies only to fields of L</type> C<ip>.
-You can also use L</index>, L</include_in_all>, L</boost>, L</multi>,
-L</index_name>, L</unique_key>, L</store> and L</null_value>.
-
-=head2 precision_step (ip)
-
-    has 'address' => (
-        isa             => 'Str',
-        type            => 'ip'
-        precision_step  => 2,
-    );
-
-The C<precision_step> determines the number of terms generated for each
-value (defaults to 4). The more terms, the faster the lookup, but the more
-memory used.
+There are no ip-specific keywords, but the general keywords apply: L</index>,
+L</include_in_all>, L</boost>, L</multi>, L</index_name>, L</unique_key>,
+L</store> and L</null_value>.
 
 =head1 GEO_POINT FIELDS
 
@@ -797,7 +732,10 @@ If you know what you're doing, you can set C<dynamic> to  C<1> (auto-detect
 new field types), C<0> (ignore new fields) or C<'strict'> (throw an error
 if an unknown field is included).
 
-=head2 path
+=head2 path [DEPRECATED]
+
+B<NOTE:> This attribute is deprecated in Elasticsearch and will be removed
+in a future version.
 
 The C<path> keyword controls how the attribute names of an object are flattened
 into field names in Elasticsearch. It can be set to C<full> (the default) or
@@ -988,11 +926,6 @@ will be indexed.
 
 The above declaration will index all the C<user> attributes, except for the
 attribute C<secret>.
-
-
-=head1 ATTACHMENT KEYWORDS
-
-TODO
 
 =head1 CUSTOM MAPPING, INFLATION AND DEFLATION
 

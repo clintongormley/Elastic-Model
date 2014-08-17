@@ -21,7 +21,7 @@ we also want the value of the C<email> attribute to be unique.
 
 =head1 STORING UNIQUE KEYS
 
-L<Elastic::Model> uses L<ElasticSearchX::UniqueKey> to enable unique constraints.
+L<Elastic::Model> adds support for unique constraints other than the ID.
 Your unique attributes are tracked in a special index which defaults to
 C<"unique_key">, but which can be specified in your Model class:
 
@@ -89,7 +89,7 @@ the attributes C<account_type> and C<account_name> you could do:
         return $self->account_type . ':' .$self->account_name
     }
 
-When the docs is saved after either the C<account_type> or C<account_name> is
+When the doc is saved after either the C<account_type> or C<account_name> is
 changed, the C<account_key> will be checked for uniqueness.
 
 =head1 HANDLING CONFLICTS
@@ -152,10 +152,6 @@ is up to you to manage any changes.
 =head1 SEE ALSO
 
 =over
-
-=item *
-
-L<ElasticSearchX::UniqueKey>
 
 =item *
 

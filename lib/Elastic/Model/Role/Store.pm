@@ -333,7 +333,7 @@ Returns the connection to Elasticsearch.
     $result = $store->get_doc($uid, %args);
 
 Retrieves the doc specified by the L<$uid|Elastic::Model::UID> from
-Elasticsearch, by calling L<Search::Elasticsearch::Compat/"get()">. Throws an exception
+Elasticsearch, by calling L<Search::Elasticsearch/"get()">. Throws an exception
 if the document does not exist.
 
 =head2 doc_exists()
@@ -341,7 +341,7 @@ if the document does not exist.
     $bool = $store->doc_exists($uid, %args);
 
 Checks whether the doc exists in ElastciSearch. Any C<%args> are passed through
-to L<Search::Elasticsearch::Compat/exists()>.
+to L<Search::Elasticsearch/exists()>.
 
 =head2 create_doc()
 
@@ -349,7 +349,7 @@ to L<Search::Elasticsearch::Compat/exists()>.
 
 Creates a doc in the Elasticsearch backend and returns the raw result.
 Throws an exception if a doc with the same L<$uid|Elastic::Model::UID>
-already exists.  Any C<%args> are passed to L<Search::Elasticsearch::Compat/"create()">
+already exists.  Any C<%args> are passed to L<Search::Elasticsearch::Client::Direct/"create()">
 
 =head2 index_doc()
 
@@ -358,7 +358,7 @@ already exists.  Any C<%args> are passed to L<Search::Elasticsearch::Compat/"cre
 Updates (or creates) a doc in the Elasticsearch backend and returns the raw
 result. Any failure throws an exception.  If the L<version|Elastic::Model::UID/"version">
 number does not match what is stored in Elasticsearch, then a conflict exception
-will be thrown.  Any C<%args> will be passed to L<Search::Elasticsearch::Compat/"index()">.
+will be thrown.  Any C<%args> will be passed to L<Search::Elasticsearch::Client::Direct/"index()">.
 For instance, to overwrite a document regardless of version number, you could
 do:
 
@@ -371,7 +371,7 @@ do:
 Deletes a doc in the Elasticsearch backend and returns the raw
 result. Any failure throws an exception.  If the L<version|Elastic::Model::UID/"version">
 number does not match what is stored in Elasticsearch, then a conflict exception
-will be thrown.  Any C<%args> will be passed to L<Search::Elasticsearch::Compat/"delete()">.
+will be thrown.  Any C<%args> will be passed to L<Search::Elasticsearch::Client::Direct/"delete()">.
 
 =head2 bulk()
 
@@ -379,21 +379,125 @@ will be thrown.  Any C<%args> will be passed to L<Search::Elasticsearch::Compat/
         actions     => $actions,
         on_conflict => sub {...},
         on_error    => sub {...},
+        on_success  => sub {...},
         %args
     );
 
-Performs several actions in a single request. Any %agrs will be passed to
-L<Search::Elasticsearch::Compat/bulk()>.
+Performs several actions in a single request. Any %args will be passed to
+L<Search::Elasticsearch::Client::Direct/bulk_helper()>.
 
 =head2 search()
 
     $results = $store->search(@args);
 
-Performs a search, passing C<@args> to L<Search::Elasticsearch::Compat/"search()">.
+Performs a search, passing C<@args> to L<Search::Elasticsearch::Client::Direct/"search()">.
 
 =head2 scrolled_search()
 
     $results = $store->scrolled_search(@args);
 
-Performs a scrolled search, passing C<@args> to L<Search::Elasticsearch::Compat/"scrolled_search()">.
+Performs a scrolled search, passing C<@args> to L<Search::Elasticsearch::Client::Direct/"scroll_helper()">.
+
+
+=head2 delete_by_query()
+
+    $response = $store->delete_by_query(@args);
+
+Performs a delete-by-query, passing C<@args> to L<Search::Elasticsearch::Client::Direct/delete_by_query()>.
+
+=head2 index_exists()
+
+    $bool = $store->index_exists(@args);
+
+Checks whether the specified index exists, passing C<@args> to L<Search::Elasticsearch::Client::Direct::Indices/exists()>.
+
+=head2 create_index()
+
+    $response = $store->create_index(@args);
+
+Creates the specified index, passing C<@args> to L<Search::Elasticsearch::Client::Direct::Indices/create()>.
+
+=head2 delete_index()
+
+    $response = $store->delete_index(@args);
+
+Deletes the specified index, passing C<@args> to L<Search::Elasticsearch::Client::Direct::Indices/delete()>.
+
+=head2 refresh_index()
+
+    $response = $store->refresh_index(@args);
+
+Refreshes the specified index, passing C<@args> to L<Search::Elasticsearch::Client::Direct::Indices/refresh()>.
+
+=head2 open_index()
+
+    $response = $store->open_index(@args);
+
+Opens the specified index, passing C<@args> to L<Search::Elasticsearch::Client::Direct::Indices/open()>.
+
+=head2 close_index()
+
+    $response = $store->close_index(@args);
+
+Closes the specified index, passing C<@args> to L<Search::Elasticsearch::Client::Direct::Indices/close()>.
+
+=head2 update_index_settings()
+
+    $response = $store->update_index_settings(@args);
+
+Updates the settings of the specified index, passing C<@args> to L<Search::Elasticsearch::Client::Direct::Indices/update_settings()>.
+
+=head2 get_aliases()
+
+    $response = $store->get_aliases(@args);
+
+Retrieves the aliases for the specified indices, passing C<@args> to L<Search::Elasticsearch::Client::Direct::Indices/get_aliases()>.
+
+=head2 put_aliases()
+
+    $response = $store->put_aliases(@args);
+
+Updates the aliases for the specified indices, passing C<@args> to L<Search::Elasticsearch::Client::Direct::Indices/update_aliases()>.
+
+=head2 get_mapping()
+
+    $response = $store->get_mapping(@args);
+
+Retrieves the mappings for the specified index, passing C<@args> to L<Search::Elasticsearch::Client::Direct::Indices/get_mapping()>.
+
+=head2 put_mapping()
+
+    $response = $store->put_mapping(@args);
+
+Updates the mappings for the specified index, passing C<@args> to L<Search::Elasticsearch::Client::Direct::Indices/put_mapping()>.
+
+=head2 delete_mapping()
+
+    $response = $store->delete_mapping(@args);
+
+Deletes the mappings and associated documents for the specified index, passing C<@args> to L<Search::Elasticsearch::Client::Direct::Indices/delete_mapping()>.
+
+=head2 reindex()
+
+    $response = $store->reindex(@args);
+
+Passes the C<@args> to L<Search::Elasticsearch::Bulk/reindex()>.
+
+=head2 bootstrap_uniques()
+
+    $response = $store->bootstrap_uniques(@args);
+
+Creates the index which will store unique constraints, unless it already exists.
+
+=head2 create_unique_keys()
+
+    $response = $store->create_unique_keys(@args);
+
+Inserts the documents representing unique constraints, and throws an error if they already exist.
+
+=head2 delete_unique_keys()
+
+    $response = $store->delete_unique_keys(@args);
+
+Deletes the documents representing the specified unique constraints.
 

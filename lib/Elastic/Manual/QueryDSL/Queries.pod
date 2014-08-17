@@ -82,14 +82,13 @@ Or in the native Query DSL:
     $view->queryb(
         bool => {
             should => [
-                { text => { content => 'perl unicode' } },
-                {   text => {
-                        title => {
-                            query => 'perl unicode',
-                            boost => 2
-                        }
+                { match => { content => 'perl unicode' } },
+                { match => {
+                    title => {
+                        query => 'perl unicode',
+                        boost => 2
                     }
-                }
+                }}
             ]
         }
     );
@@ -145,10 +144,10 @@ See L<< ElasticSearch::SearchBuilder/= E<verbar> -text E<verbar> != E<verbar> <>
 =item QueryDSL
 
     # where title matches "perl unicode"
-    $view->query( text => { title => 'perl unicode' } );
+    $view->query( match => { title => 'perl unicode' } );
 
     # where the _all field matches "perl unicode"
-    $view->query( _all => { match => 'perl unicode' });
+    $view->query( match => { _all => 'perl unicode' });
 
 See L<http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/query-dsl-match-query.html>
 
@@ -288,16 +287,17 @@ See L<ElasticSearch::SearchBuilder/-qs E<verbar> -query_string E<verbar> -not_qs
 
     # where the title field matches '+big +mac -apple'
     $view->query(
-        field => {
-            title => '+big +mac -apple'
+        query_string => {
+            query => '+big +mac -apple',
+            fields => ['title'],
         }
     );
 
     # where the _all field matches '+big +mac -apple'
     $view->query( query_string => { query => '+big +mac -apple' });
     $view->query(
-        field => {
-            _all => '+big +mac -apple',
+        query_string => {
+            query => '+big +mac -apple',
         }
     );
 
@@ -507,7 +507,7 @@ See L<ElasticSearch::SearchBuilder/QUERY E<sol> FILTER CONTEXT>
     $view->queryb(
         filtered => {
             query => {
-                text => { title => 'perl unicode'}
+                match => { title => 'perl unicode'}
             },
             filter => {
                 term => { status => 'active' }
@@ -597,7 +597,7 @@ See L<http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/quer
     $view->query(
         bool => {
             must => [
-                { text => { title  => 'perl unicode' }},
+                { match => { title  => 'perl unicode' }},
                 { term => { status => 'active' }}
             ]
         }
@@ -609,7 +609,7 @@ See L<http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/quer
     $view->query(
         bool => {
             should => [
-                { text => { title  => 'perl unicode' }},
+                { match => { title  => 'perl unicode' }},
                 { term => { status => 'active' }}
             ]
         }
@@ -670,7 +670,7 @@ See L<http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/quer
 
     $view->query(
        bool => {
-           must          => [{ text => { title => 'object oriented' }}],
+           must          => [{ match => { title => 'object oriented' }}],
            must_not      => [{ term => { status => 'inactive' }}],
            should        => [
                 { term   => { tag    => 'perl'   }},
@@ -789,6 +789,12 @@ See L<http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/quer
 These queries allow you to tweak the relevance C<_score>, making certain
 docs more or less relevant.
 
+B<IMPORTANT>: The C<custom_score>, C<custom_filters_score> and C<custom_boost_factor>
+queries have been removed in Elasticsearch 1.0 and replaced with the
+L<function_score query|http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/query-dsl-function-score-query.html#query-dsl-function-score-query>.
+
+Support for this has not yet been added to the SearchBuilder.
+
 =head2 Scoring with filters
 
 The C<custom_filters_score> query allows you to boost documents that match
@@ -827,7 +833,7 @@ See L<ElasticSearch::SearchBuilder/-custom_filters_score>.
     # include recency in the relevance score
     $view->query(
         custom_filters_score => {
-            query       => { text => { title => 'perl unicode' }},
+            query       => { match => { title => 'perl unicode' }},
             score_mode  => 'first',
             filters     => [
                 {

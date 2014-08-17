@@ -267,8 +267,8 @@ Mapped as C<< { type => 'string' } >>. In/deflation via L</"Any">.
 Values are passed through without inflation/deflation. Mapped as:
 
     {
-        type                         => 'string',
-        index                        => 'not_analyzed'
+        type   => 'string',
+        index  => 'not_analyzed'
     }
 
 =head2 Num

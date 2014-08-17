@@ -248,6 +248,13 @@ using L<Elastic::Model::View/"include_paths / exclude_paths">.
 The partial objects returned by L</partial> function exactly as real objects,
 except that they cannot be saved.
 
+=head2 is_partial
+
+    $bool = $result->is_partial;
+
+Return C<true> or C<false> to indicate whether the currently loaded
+C<_source> field is partial or not.
+
 =head2 highlights
 
 =head2 highlight

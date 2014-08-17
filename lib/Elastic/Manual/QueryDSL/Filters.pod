@@ -74,15 +74,6 @@ and L<http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/quer
         }
     );
 
-For ranges on fields that have B<many> values:
-
-    $view->filterb(
-        timestamp  => {
-            '>=' => '2012-01-01',
-            '<'  => '2013-01-01'
-        }
-    );
-
 See L<ElasticSearch::SearchBuilder/RANGES>
 
 =item QueryDSL:
@@ -388,11 +379,18 @@ Assuming that a document has an Elastic::Doc attribute C<user>:
 
 =head2 Scripts
 
-Script filters can be written in mvel, javascript, python or java.
+Script filters can be written in mvel, groovy, javascript, python or java.
 See L<http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/modules-scripting.html>.
 Scripts can be useful, but they do have a performance impact, so consider
 whether you really need a script, or whether you could achieve your
 goals by indexing a field differently.
+
+B<Note:> Mvel is deprecated and will be removed in Elasticsearch 1.4. In
+Elasticsearch 1.2 and above it is disabled by default. The new
+default scripting language is Groovy.
+
+See L<http://www.elasticsearch.org/blog/scripting/> for more.
+
 
 =over
 
@@ -402,6 +400,7 @@ goals by indexing a field differently.
         -script => {
             script => "doc['foo'].value > minimum",
             params => { minimum => 5 },
+            lang   => 'groovy'
         }
     );
 
@@ -413,6 +412,7 @@ See L<ElasticSearch::SearchBuilder/-script>.
         script => {
             script => "doc['foo'].value > minimum",
             params => { minimum => 5 },
+            lang   => 'groovy'
         }
     );
 

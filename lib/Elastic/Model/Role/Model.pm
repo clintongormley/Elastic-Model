@@ -659,7 +659,7 @@ __END__
 
     use MyApp;
 
-    my $es         = Search::Elasticsearch::Compat->new( servers => 'es.domain.com:9200' );
+    my $es         = Search::Elasticsearch->new( nodes => 'es.domain.com:9200' );
     my $model      = MyApp->new( es => $es );
 
     my $namespace  = $model->namespace('myapp');
@@ -686,12 +686,12 @@ See L<Elastic::Model> for more about how to setup your Model class.
 =head2 new()
 
 Usually, the only parameter that you need to pass to C<new()> is C<es>,
-which contains your L<Search::Elasticsearch::Compat> connection.
+which contains your L<Search::Elasticsearch> connection.
 
-    $es    = Search::Elasticsearch::Compat->new( servers => 'es1.domain.com:9200' );
+    $es    = Search::Elasticsearch->new( nodes => 'es1.domain.com:9200' );
     $model = MyApp->new( es => $es );
 
-If the C<es> parameter is omitted, then it will default to a L<Search::Elasticsearch::Compat>
+If the C<es> parameter is omitted, then it will default to a L<Search::Elasticsearch>
 connection to C<localhost:9200>.
 
     $model = MyApp->new();   # localhost:9200
@@ -854,8 +854,9 @@ of multiple docs in batches.
 
     $bulk = $model->bulk(
         size        => 1000,
-        on_conflict => sub {....},
-        on_error    => sub {....}
+        on_conflict => sub {...},
+        on_error    => sub {...},
+        on_success  => sub {...}
     );
 
 =head2 Miscellaneous
@@ -886,14 +887,7 @@ known to the model.
 
     $es = $model->es
 
-Returns the L<Search::Elasticsearch::Compat> instance that was passed to L</"new()">.
-
-=head3 es_unique
-
-    $uniq = $model->es_unique
-
-Returns the L<ElasticSearchX::UniqueKey> instance pointing to the index
-specified with L<has_unique_index|Elastic::Model/Custom unique key index>.
+Returns the L<Search::Elasticsearch> instance that was passed to L</"new()">.
 
 =head3 store
 

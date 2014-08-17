@@ -345,6 +345,15 @@ are sorting by a field other than C<_score> then you will need
 to set L<Elastic::Model::View/track_scores> to true to retrieve the
 L</max_score>.
 
+=head2 aggs
+
+=head2 agg
+
+    $aggs = $results->aggs
+    $agg  = $results->agg($agg_name)
+
+Aggregation results, if any were requested with L<Elastic::Model::View/aggs>.
+
 =head2 facets
 
 =head2 facet
@@ -366,6 +375,13 @@ An array ref containing all of the data structures that we can iterate over.
 
 Contains the hash ref of the search request passed to
 L<Elastic::Model::Role::Store/search()>
+
+=head2 is_partial
+
+    $bool = $result->is_partial
+
+Returns C<true> or C<false> to indicate whether the specified search
+returns full or partial results.
 
 =head1 WRAPPERS
 

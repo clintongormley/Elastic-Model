@@ -50,7 +50,7 @@ which works pretty much like any iterator, eg:
 
     $it->size;          # number of elements in $it
     $it->total;         # total number of matching docs
-    $it->facets;        # any facets that were requested
+    $it->aggs;          # any aggregations that were requested
 
 =head2 What elements can the iterator return?
 

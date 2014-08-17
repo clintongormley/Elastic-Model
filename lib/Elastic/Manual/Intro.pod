@@ -13,10 +13,12 @@ You need a recent version of Java installed, then download the current
 stable release of Elasticsearch from L<http://www.Elasticsearch.org/download/>.
 For instance:
 
-    curl -L -O https://github.com/downloads/elasticsearch/elasticsearch/elasticsearch-0.20.5.tar.gz
-    tar -xzf elasticsearch-0.20.5.tar.gz
+    curl -L -O https://github.com/downloads/elasticsearch/elasticsearch/elasticsearch-1.3.2.tar.gz
+    tar -xzf elasticsearch-1.3.2.tar.gz
 
-B<Note: The minimum required version of Elasticsearch is 0.19.11.>
+B<< Note: This version of Elastic::Model is intended for Elasticsearch 1.0
+and above. However, it can be used with Elasticsearch 0.90.x in "compatibility mode".
+See L<Elastic::Manual::Delta> for instructions. >>
 
 =head2 Install Elastic::Model
 
@@ -29,8 +31,8 @@ against a local Elasticsearch cluster.
 
 =head2 Start Elasticsearch
 
-    cd elasticsearch-0.20.5/
-    ./bin/Elasticsearch -f      # -f starts the server in the foreground
+    cd elasticsearch-1.3.2/
+    ./bin/elasticsearch       # -d starts the server in the background
 
 You now have a running Elasticsearch cluster with one node. You can test that
 it is running with:
@@ -115,8 +117,8 @@ introspection, we have enough information to setup everything we need.
 This creates an instance of your model, with a connection to a local
 Elasticsearch cluster.  The last line is the equivalent of:
 
-    use Search::Elasticsearch::Compat();
-    my $es     = Search::Elasticsearch::Compat->new( servers => 'localhost:9200' );
+    use Search::Elasticsearch();
+    my $es     = Search::Elasticsearch->new( nodes => 'localhost:9200' );
     my $model  = MyApp->new( es => $es );
 
 =head2 Create an index
@@ -279,7 +281,7 @@ the search and returns a L<Results|Elastic::Model::Results> object.
     }
 
 Views can also be used to return highlighted results, and
-L<facets|http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/search-facets.html>,
+L<aggregations|http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-aggregations.html>,
 which provide aggregated results, much like GROUP-BY functions in SQL, for
 instance, the most popular terms, or the number of posting per day.
 

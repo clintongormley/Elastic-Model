@@ -57,6 +57,11 @@ just keep on working.
 Start by reading L<Elastic::Manual::Intro> for a gentle introduction to
 L<Elastic::Model>.
 
+=head2 L<Elastic::Manual::Delta>
+
+Contains important information about changes to Elastic::Model and migration
+paths.
+
 =head2 L<Elastic::Manual::Terminology>
 
 A brief definition of some of the terms used by Elasticsearch and Elastic::Model.
