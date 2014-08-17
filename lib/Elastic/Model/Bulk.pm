@@ -11,6 +11,13 @@ our $Conflict = qr/
 use Carp;
 
 #===================================
+has 'on_success' => (
+#===================================
+    is  => 'rw',
+    isa => 'CodeRef',
+);
+
+#===================================
 has 'on_conflict' => (
 #===================================
     is  => 'rw',
@@ -121,6 +128,7 @@ sub commit {
 
     my $actions     = $self->_actions;
     my $docs        = $self->_docs;
+    my $on_success  = $self->on_success;
     my $on_conflict = $self->on_conflict;
     my $on_error    = $self->on_error;
 
@@ -166,6 +174,7 @@ sub commit {
             my $ns = $model->namespace_for_domain( $result->{_index} );
             $scope->store_object( $ns->name, $doc );
         }
+        $on_success->($doc) if $on_success;
     }
 
     if (@unhandled) {
@@ -232,6 +241,12 @@ L<unique key constraints|Elastic::Manual::Attributes/unique_key>.
 =head2 size
 
 The number of docs that will be saved in a single request. Defaults to 1000.
+
+=head2 on_success
+
+An optional callback which will be called when a document has been
+indexed successfully.  It is called with a single argument: the current
+document.
 
 =head2 on_conflict
 
