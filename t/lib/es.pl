@@ -17,8 +17,15 @@ if ( $ENV{ES} ) {
     $es = Search::Elasticsearch->new(
         nodes    => $ENV{ES},
         trace_to => $trace,
-        client   => '0_90::Direct'
     );
+    my ($version) = ( $es->info->{version}{number} =~ /^(\d+)/ );
+    if ( $version < 1 ) {
+        $es = Search::Elasticsearch->new(
+            nodes    => $ENV{ES},
+            trace_to => $trace,
+            client   => '0_90::Direct',
+        );
+    }
     eval { $es->ping } or do {
         diag $@;
         undef $es;

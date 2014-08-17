@@ -1,12 +1,26 @@
-package Elastic::Model::Result;
+package Elastic::Model::Result_0_90;
 
 use Moose;
+extends 'Elastic::Model::Result';
 
 use Carp;
 use Elastic::Model::Types qw(UID);
 use MooseX::Types::Moose qw(HashRef Maybe Num Bool);
 
 use namespace::autoclean;
+
+around BUILDARGS => sub {
+    my $orig   = shift;
+    my $class  = shift;
+    my $params = ref $_[0] eq 'HASH' ? shift : {@_};
+    my $fields = $params->{result}{fields};
+    for ( keys %$fields ) {
+        next if substr( $_, 0, 1 ) eq '_';
+        $fields->{$_} = [ $fields->{$_} ]
+            unless ref $fields->{$_} eq 'ARRAY';
+    }
+    return $class->$orig($params);
+};
 
 #===================================
 has 'result' => (
@@ -323,3 +337,5 @@ C<'_source'> then you will be unable to inflate your object without a separate
 (but automatic) step to retrieve it from Elasticsearch.
 
 =cut
+
+1;

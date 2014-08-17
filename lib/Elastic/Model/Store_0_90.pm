@@ -1,17 +1,9 @@
-package Elastic::Model::Role::Store;
+package Elastic::Model::Store_0_90;
 
-use Moose::Role;
+use Moose;
 
-use Elastic::Model::Types qw(ES);
+with 'Elastic::Model::Role::Store';
 use namespace::autoclean;
-
-#===================================
-has 'es' => (
-#===================================
-    isa      => ES,
-    is       => 'ro',
-    required => 1,
-);
 
 my @Top_Level = qw(
     index       type        lenient
@@ -23,7 +15,7 @@ my @Top_Level = qw(
 sub search {
 #===================================
     my $self = shift;
-    my $args = _tidy_search(@_);
+    my $args = _tidy_search( $self, @_ );
     $self->es->search($args);
 }
 
@@ -31,19 +23,26 @@ sub search {
 sub scrolled_search {
 #===================================
     my $self = shift;
-    my $args = _tidy_search(@_);
+    my $args = _tidy_search( $self, @_ );
     $self->es->scroll_helper($args);
 }
 
 #===================================
 sub _tidy_search {
 #===================================
+    my $self = shift;
     my %body = ref $_[0] eq 'HASH' ? %{ shift() } : @_;
     my %args;
     for (@Top_Level) {
         my $val = delete $body{$_};
         if ( defined $val ) {
             $args{$_} = $val;
+        }
+    }
+    if ( $self->es->isa('Search::Elasticsearch::Client::0_90::Direct') ) {
+        if ( delete $body{_source} ) {
+            push @{ $body{fields} }, '_source'
+                unless grep { $_ eq '_source' } @{ $body{fields} };
         }
     }
     $args{body} = \%body;
@@ -53,7 +52,12 @@ sub _tidy_search {
 sub delete_by_query {
 #===================================
     my $self = shift;
-    my $args = _tidy_search(@_);
+    my $args = _tidy_search( $self, @_ );
+    $args->{body} = $args->{body}{query};
+    my $result = eval { $self->es->delete_by_query($args) };
+    return $result if $result;
+    die $@ unless $@ =~ /request does not support/;
+    $args->{body} = { query => $args->{body} };
     $self->es->delete_by_query($args);
 }
 
@@ -62,8 +66,7 @@ sub get_doc {
 #===================================
     my ( $self, $uid, %args ) = @_;
     return $self->es->get(
-        fields  => [qw(_routing _parent)],
-        _source => 1,
+        fields => [qw(_routing _parent _source)],
         %{ $uid->read_params },
         %args,
     );
@@ -185,16 +188,22 @@ sub put_aliases {
 #===================================
 sub get_mapping {
 #===================================
-    my $self = shift;
-    my %args = _cleanup(@_);
-    return $self->es->indices->get_mapping(%args);
+    my $self   = shift;
+    my %args   = _cleanup(@_);
+    my $result = $self->es->indices->get_mapping(%args);
+    for ( keys %$result ) {
+        next unless $result->{$_};
+        return $result if $result->{$_}{mappings};
+        $result->{$_} = { mappings => $result->{$_} };
+    }
+    return $result;
 }
 
 #===================================
 sub put_mapping {
 #===================================
     my ( $self, %args ) = @_;
-    $args{body} = delete $args{mapping};
+    $args{body} = { $args{type} => delete $args{mapping} };
     return $self->es->indices->put_mapping(%args);
 }
 

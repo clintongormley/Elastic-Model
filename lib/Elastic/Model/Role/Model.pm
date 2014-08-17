@@ -20,6 +20,22 @@ my @wrapped_classes = qw(
     results cached_results scrolled_results result  bulk
 );
 
+#===================================
+sub BUILD {
+#===================================
+    my $self = shift;
+    my $es   = $self->es;
+    if ( $es->isa('Search::Elasticsearch::Client::0_90::Direct') ) {
+        $self->_set_result_class(
+            $self->_wrap_class('Elastic::Model::Result_0_90') );
+        $self->_set_store_class(
+            $self->_wrap_class('Elastic::Model::Store_0_90') );
+    }
+    $self->doc_class_wrappers;
+    return $self;
+
+}
+
 for my $class (@wrapped_classes) {
 #===================================
     has "${class}_class" => (
@@ -27,6 +43,7 @@ for my $class (@wrapped_classes) {
         isa     => Str,
         is      => 'ro',
         lazy    => 1,
+        writer  => "_set_${class}_class",
         default => sub { shift->wrap_class($class) }
     );
 }
@@ -137,9 +154,8 @@ has 'current_scope' => (
 );
 
 #===================================
-sub BUILD        { shift->doc_class_wrappers }
 sub _build_store { $_[0]->store_class->new( es => $_[0]->es ) }
-sub _build_es    { Search::Elasticsearch->new }
+sub _build_es { Search::Elasticsearch->new }
 #===================================
 
 #===================================

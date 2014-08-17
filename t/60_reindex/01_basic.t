@@ -57,7 +57,7 @@ sub compare_results {
             body => {
                 size   => 300,
                 query  => { match_all => {} },
-                'sort' => ['timestamp'],
+                'sort' => [ 'timestamp', '_uid' ],
             },
         )->{hits}{hits}
     };
@@ -68,7 +68,7 @@ sub compare_results {
             body => {
                 size   => 300,
                 query  => { match_all => {} },
-                'sort' => ['timestamp'],
+                'sort' => [ 'timestamp', '_uid' ],
             },
         )->{hits}{hits}
     };
