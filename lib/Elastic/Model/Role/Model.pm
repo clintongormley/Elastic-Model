@@ -27,9 +27,9 @@ sub BUILD {
     my $es   = $self->es;
     if ( $es->isa('Search::Elasticsearch::Client::0_90::Direct') ) {
         $self->_set_result_class(
-            $self->_wrap_class('Elastic::Model::Result_0_90') );
+            $self->_wrap_class('Elastic::Model::0_90::Result') );
         $self->_set_store_class(
-            $self->_wrap_class('Elastic::Model::Store_0_90') );
+            $self->_wrap_class('Elastic::Model::0_90::Store') );
     }
     $self->doc_class_wrappers;
     return $self;
