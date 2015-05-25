@@ -50,10 +50,7 @@ my @enums = (
         'date',   'ip',      'geo_point'
     ],
     TermVectorMapping,
-    [   'no',           'yes',
-        'with_offsets', 'with_positions',
-        'with_positions_offsets'
-    ],
+    [ 'no', 'yes', 'with_offsets', 'with_positions', 'with_positions_offsets' ],
     IndexMapping,
     [ 'analyzed', 'not_analyzed', 'no' ],
     DynamicMapping,
@@ -76,7 +73,7 @@ while ( my $type = shift @enums ) {
     );
 }
 
-class_type ES_1x, { class => 'Search::Elasticsearch::Client::Direct' };
+class_type ES_1x, { class => 'Search::Elasticsearch::Client::1_0::Direct' };
 class_type ES_90, { class => 'Search::Elasticsearch::Client::0_90::Direct' };
 
 #===================================

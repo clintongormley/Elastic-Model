@@ -68,25 +68,23 @@ SKIP: {
 }
 
 ## SCAN ##
+
+isa_ok $view
+    = $model->domain('myapp')->view->track_scores(1),
+    'Elastic::Model::View',
+    'View';
+
 isa_ok $results = $view->scan, 'Elastic::Model::Results::Scrolled', 'Scan';
 is $results->_scroll->scroll, '1m', 'Scan default time';
 is $view->scan('30s')->_scroll->scroll, '30s', 'Scan manual time';
-is $results->total,      196,    'Scan total ';
-is $results->size,       196,    'Scan size';
-is $results->max_score,  0,      'Scan max score';
-isa_ok $results->facets, 'HASH', 'Scan facets';
-isa_ok $results->facet('name'), 'HASH', 'Scan named facet';
+is $results->total,     196, 'Scan total ';
+is $results->size,      196, 'Scan size';
+is $results->max_score, 0,   'Scan max score';
 is 0 + ( $results->all ), 196, 'Scan - all results';
 isa_ok $results->first, 'MyApp::User', 'Scan first';
 ok $view->sort( [] )->scan, 'Scan empty sort';
 throws_ok sub { $view->sort('_score')->scan }, qr/combined with sorting/,
     'Scan sort';
-
-SKIP: {
-    skip "aggs not supported in 0.90", 2 if $is_090;
-    isa_ok $results->aggs, 'HASH', 'Search aggs';
-    isa_ok $results->agg('name'), 'HASH', 'Search named agg';
-}
 
 ## FIRST ##
 isa_ok $view->first, 'Elastic::Model::Result', 'First';

@@ -18,7 +18,7 @@ requires "MooseX::Types" => "0";
 requires "MooseX::Types::Moose" => "0";
 requires "MooseX::Types::Structured" => "0";
 requires "Scalar::Util" => "0";
-requires "Search::Elasticsearch" => "1.12";
+requires "Search::Elasticsearch" => "1.20";
 requires "Sub::Exporter" => "0";
 requires "Time::HiRes" => "0";
 requires "Try::Tiny" => "0";
@@ -48,6 +48,7 @@ on 'configure' => sub {
 };
 
 on 'develop' => sub {
+  requires "Test::EOL" => "0";
   requires "Test::More" => "0";
   requires "Test::NoTabs" => "0";
   requires "Test::Pod" => "1.41";

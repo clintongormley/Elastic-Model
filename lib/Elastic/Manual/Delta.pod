@@ -12,6 +12,10 @@ a focus on things that affect backwards compatibility. This does duplicate
 data from the Changes file, but aims to provide more details and when possible
 workarounds.
 
+=head2 0.51
+
+Requires Search::Elasticsearch v1.20 or above.  Tested on Elasticsearch v1.6
+
 =head2 0.50
 
 This is the first version which supports the B<1.x releases of Elasticsearch>,
@@ -122,8 +126,8 @@ follows:
 
 =item Responses from Elasticsearch
 
-Some response formats have changed in Elasticsearch. The structure of the C
-<get-mapping> and C<get-settings> responses have changed, responses no longer
+Some response formats have changed in Elasticsearch. The structure of the
+C<get-mapping> and C<get-settings> responses have changed, responses no longer
 include the C<ok> key, and the C<exists> has been replaced by C<found>.  The
 C<field> values are now returned as arrays rather than scalars.
 

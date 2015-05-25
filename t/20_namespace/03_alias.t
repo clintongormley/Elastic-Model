@@ -36,13 +36,13 @@ cmp_deeply $alias->aliased_to, { myapp2 => {}, myapp3 => {} },
 
 ok $alias->to(
     myapp2 => { routing => 'foo' },
-    myapp3 => { filterb => { foo => 'bar' } }
+    myapp3 => { filterb => { name => 'bar' } }
     ),
     'Alias with settings';
 cmp_deeply $alias->aliased_to,
     {
     myapp2 => { index_routing => 'foo', search_routing => 'foo' },
-    myapp3 => { filter => { term => { foo => 'bar' } } }
+    myapp3 => { filter => { term => { name => 'bar' } } }
     },
     'Aliased to myapp2/3';
 

@@ -65,7 +65,7 @@ isa_ok $model->view, 'Elastic::Model::View', 'View';
 
 note 'Other';
 isa_ok $model->store, 'Elastic::Model::Store', 'store';
-isa_ok $model->es, 'Search::Elasticsearch::Client::Direct', 'es';
+isa_ok $model->es, 'Search::Elasticsearch::Client::1_0::Direct', 'es';
 
 done_testing;
 
