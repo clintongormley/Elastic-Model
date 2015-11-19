@@ -1,3 +1,22 @@
+0.52    2015-11-19
+        Adjusted to work with Search::Elasticsearch v2.00
+
+        Elastic::Model is not compatible with Elasticsearch 2.x.
+        Search::Elasticsearch, however, defaults to using a 2.x compatible
+        client: 2_0::Direct.  You should specify
+        the client version explicitly when creating a Search::Elasticsearch instance:
+
+            use Search::Elasticsearch;
+            use MyApp;
+
+            my $es = Search::Elasticsearch->new(
+                client => '1_0::Direct', #### explicit client ####
+                nodes  => [ "192.168.1.100:9200", "192.168.1.101:9200"]
+            );
+
+            my $model = MyApp->new( es => $es )
+
+
 0.51    2015-05-25
 
         Require Search::Elasticsearch v1.20

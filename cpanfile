@@ -49,7 +49,7 @@ on 'configure' => sub {
 
 on 'develop' => sub {
   requires "Test::EOL" => "0";
-  requires "Test::More" => "0";
+  requires "Test::More" => "0.88";
   requires "Test::NoTabs" => "0";
   requires "Test::Pod" => "1.41";
 };
