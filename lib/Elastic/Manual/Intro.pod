@@ -5,6 +5,32 @@ __END__
 
 =pod
 
+=head1 FUTURE OF ELASTIC::MODEL - PLEASE READ AND COMMENT
+
+Hi all users of Elastic::Model
+
+Elasticsearch 2.0.0 is out, and Elastic::Model doesn't support it.
+In fact, Elastic::Model doesn't support a number of things from
+Elasticsearch 1.x either. I apologise for neglecting this module.
+
+My feeling is that Elastic::Model tries to do way too much.
+Like many frameworks, it ties you into doing things in a
+particular way, which may or may not make sense for your use
+case. Most people who use Elastic::Model seem to use a
+subset of the functionality, and then talk to Elasticsearch
+directly the rest of the time.
+
+I don't think it makes sense to just update the code for
+2.x, it needs a complete rethink.
+
+=head2 TELL ME HOW YOU USE IT
+
+Please could you add comments to
+L<this issue|https://github.com/clintongormley/Elastic-Model/issues/42>
+explaining what bits you find useful, what bits you never use,
+and what bits you find annoying. Perhaps the code can be split
+out into smaller more useful chunks.
+
 =head1 INSTALLING REQUIREMENTS
 
 =head2 Install Elasticsearch
