@@ -14,10 +14,10 @@ stable release of Elasticsearch from L<http://www.Elasticsearch.org/download/>.
 For instance:
 
     curl -L -O https://github.com/downloads/elasticsearch/elasticsearch/elasticsearch-1.6.0.tar.gz
-    tar -xzf elasticsearch-1.6.0.tar.gz
+    tar -xzf elasticsearch-1.7.3.tar.gz
 
-B<< Note: This version of Elastic::Model is intended for Elasticsearch 1.0
-and above. However, it can be used with Elasticsearch 0.90.x in "compatibility mode".
+B<< Note: This version of Elastic::Model is intended for Elasticsearch 1.x
+. However, it can be used with Elasticsearch 0.90.x in "compatibility mode".
 See L<Elastic::Manual::Delta> for instructions. >>
 
 =head2 Install Elastic::Model
@@ -118,7 +118,10 @@ This creates an instance of your model, with a connection to a local
 Elasticsearch cluster.  The last line is the equivalent of:
 
     use Search::Elasticsearch();
-    my $es     = Search::Elasticsearch->new( nodes => 'localhost:9200' );
+    my $es     = Search::Elasticsearch->new(
+        client => '1_0::Direct',
+        nodes => 'localhost:9200'
+    );
     my $model  = MyApp->new( es => $es );
 
 =head2 Create an index

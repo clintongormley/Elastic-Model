@@ -155,7 +155,7 @@ has 'current_scope' => (
 
 #===================================
 sub _build_store { $_[0]->store_class->new( es => $_[0]->es ) }
-sub _build_es { Search::Elasticsearch->new }
+sub _build_es { Search::Elasticsearch->new( client => '1_0::Direct' ) }
 #===================================
 
 #===================================
@@ -659,7 +659,10 @@ __END__
 
     use MyApp;
 
-    my $es         = Search::Elasticsearch->new( nodes => 'es.domain.com:9200' );
+    my $es         = Search::Elasticsearch->new(
+        client => '1_0::Direct',
+        nodes  => 'es.domain.com:9200'
+    );
     my $model      = MyApp->new( es => $es );
 
     my $namespace  = $model->namespace('myapp');

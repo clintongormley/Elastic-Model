@@ -32,7 +32,8 @@ Elastic::Model.  Instead, use the official L<Search::Elasticsearch> client:
     use MyApp;
 
     my $es = Search::Elasticsearch->new(
-        nodes => [ "192.168.1.100:9200", "192.168.1.101:9200"]
+        client => '1_0::Direct',
+        nodes  => [ "192.168.1.100:9200", "192.168.1.101:9200"]
     );
 
     my $model = MyApp->new( es => $es )

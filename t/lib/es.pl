@@ -17,6 +17,7 @@ if ( $ENV{ES} ) {
     $es = Search::Elasticsearch->new(
         nodes    => $ENV{ES},
         trace_to => $trace,
+        client   => '1_0::Direct'
     );
     my ($version) = ( $es->info->{version}{number} =~ /^(\d+)/ );
     if ( $version < 1 ) {

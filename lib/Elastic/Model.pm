@@ -137,8 +137,9 @@ Elasticsearch as soon as you are ready to use it.
 =head1 BACKWARDS COMPATIBILITY BREAK
 
 B<NOTE:> This version of Elastic::Model uses L<Search::Elasticsearch>
-and is intended for Elasticsearch 1.0 and above. However, it can be used
-with Elasticsearch 0.90.x in "compatibility mode".
+and is intended for Elasticsearch 1.x. However, it can be used
+with Elasticsearch 0.90.x in "compatibility mode". Elasticsearch 2.x is
+not supported.
 
 B<< You can no longer use the old L<Search::Elasticsearch::Compat>. >>
 See L<Elastic::Manual::Delta> for instructions.
